@@ -9,7 +9,7 @@ from ShipGeoConfig import AttrDict, ConfigRegistry
 if "muShieldDesign" not in globals():
     muShieldDesign = 5
 if "nuTargetDesign" not in globals():
-    nuTargetDesign = 1
+    nuTargetDesign = 2
 if "targetOpt" not in globals():
     targetOpt = 17
 if "strawDesign" not in globals():
