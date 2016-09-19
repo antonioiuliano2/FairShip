@@ -4,6 +4,7 @@ import rootUtils as ut
 import shipunit as u
 from ShipGeoConfig import ConfigRegistry
 from rootpyPickler import Unpickler
+from decorators import *
 import shipRoot_conf
 shipRoot_conf.configure()
 
@@ -13,7 +14,7 @@ PDG = ROOT.TDatabasePDG.Instance()
 inputFile  = None
 geoFile    = None
 dy         = None
-nEvents    = 99999
+nEvents    = 9999999
 fiducialCut = True
 measCutFK = 25
 measCutPR = 22
@@ -45,7 +46,7 @@ else:
  inputFile = 'ship.'+str(dy)+'.Pythia8-TGeant4_rec.root'
 
 if inputFile[0:4] == "/eos":
-  eospath = "root://eoslhcb/"+inputFile
+  eospath = "root://eoslhcb.cern.ch/"+inputFile
   f = ROOT.TFile.Open(eospath)
   sTree = f.cbmsim
 elif not inputFile.find(',')<0 :  
@@ -60,7 +61,7 @@ else:
 if not geoFile:
  geoFile = inputFile.replace('ship.','geofile_full.').replace('_rec.','.')
 if geoFile[0:4] == "/eos":
-  eospath = "root://eoslhcb/"+geoFile
+  eospath = "root://eoslhcb.cern.ch/"+geoFile
   fgeo = ROOT.TFile.Open(eospath)
 else:  
   fgeo = ROOT.TFile(geoFile)
@@ -334,6 +335,7 @@ def  RedoVertexing(t1,t2):
       if pid == 2212: pid = 211
       mass = PDG.GetParticle(pid).Mass()
       E = ROOT.TMath.Sqrt( mass*mass + mom.Mag2() )
+      LV[tr] = ROOT.TLorentzVector()
       LV[tr].SetPxPyPzE(mom.x(),mom.y(),mom.z(),E)
      HNLMom = LV[t1]+LV[t2]
      return xv,yv,zv,doca,HNLMom
@@ -514,6 +516,7 @@ z_ecalBack  = z_ecal + top.GetNode('Ecal_1').GetVolume().GetShape().GetDZ()
 
 # start event loop
 def myEventLoop(n):
+  global ecalReconstructed
   rc = sTree.GetEntry(n)
 # check if tracks are made from real pattern recognition
   measCut = measCutFK
@@ -536,8 +539,10 @@ def myEventLoop(n):
     else : x.Exec('start')
    for aClus in ecalReconstructed:
     mMax = aClus.MCTrack()
-    if mMax>0:    
-      aP = sTree.MCTrack[mMax]   
+    if mMax <0 or mMax > sTree.MCTrack.GetEntries(): 
+     aP = None # this should never happen, otherwise the ECAL MC matching has a bug
+    else: aP = sTree.MCTrack[mMax]
+    if aP:    
       tmp = PDG.GetParticle(aP.GetPdgCode())
       if tmp: pName = 'ecalReconstructed_'+tmp.GetName()
       else: pName = 'ecalReconstructed_'+str(aP.GetPdgCode())

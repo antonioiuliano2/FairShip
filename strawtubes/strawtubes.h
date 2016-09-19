@@ -44,7 +44,7 @@ class strawtubes: public FairDetector
     /**      has to be called after each event to reset the containers      */
     virtual void   Reset();
 
-    void SetZpositions(Double_t z0, Double_t z1, Double_t z2, Double_t z3, Double_t z4);
+    void SetZpositions(Double_t z0, Double_t z1, Double_t z2, Double_t z3, Double_t z4);   
     void SetStrawLength(Double_t strawlength);
     void SetInnerStrawDiameter(Double_t innerstrawdiameter);
     void SetOuterStrawDiameter(Double_t outerstrawdiameter);
@@ -55,10 +55,16 @@ class strawtubes: public FairDetector
     void SetStereoAngle(Int_t stereoangle);
     void SetWireThickness(Double_t wirethickness);
     void SetDeltazView(Double_t deltazview);
+    void SetStrawLength12(Double_t strawlength12);
+    void SetStrawLengthVeto(Double_t strawlengthveto); 
     void SetVacBox_x(Double_t vacbox_x);
     void SetVacBox_y(Double_t vacbox_y);
     void StrawDecode(Int_t detID,int &statnb,int &vnb,int &pnb,int &lnb, int &snb);
     void StrawEndPoints(Int_t detID, TVector3 &top, TVector3 &bot);
+// for the digitizing step
+    void SetStrawResolution(Double_t a, Double_t b) {v_drift = a; sigma_spatial=b;}
+    Double_t StrawVdrift() {return v_drift;}
+    Double_t StrawSigmaSpatial() {return sigma_spatial;}
 
     /**      Create the detector geometry        */
     void ConstructGeometry();
@@ -106,6 +112,8 @@ class strawtubes: public FairDetector
     Double_t     fT3z;                    //!  z-position of tracking station 3
     Double_t     fT4z;                    //!  z-position of tracking station 4
     Double_t     fStraw_length;           //!  Length (y) of a straw
+    Double_t     fStraw_length_12;        //!  strawlength for tracking station 1 & 2
+    Double_t     fStraw_length_veto;      //!  strawlength for veto station 
     Double_t     fInner_Straw_diameter;   //!  Inner Straw diameter
     Double_t     fOuter_Straw_diameter;   //!  Outer Straw diameter
     Double_t     fStraw_pitch;            //!  Distance (x) between straws in one layer
@@ -113,7 +121,7 @@ class strawtubes: public FairDetector
     Double_t     fDeltaz_plane12;         //!  Distance (z) between plane 1&2
     Double_t     fOffset_layer12;         //!  Offset (x) between straws of layer2&1
     Double_t     fOffset_plane12;         //!  Offset (x) between straws of plane1&2
-    Int_t          fStraws_per_layer;       //!  Number of straws in one layer
+    Int_t        fStraws_per_layer;       //!  Number of straws in one layer
     Double_t     fView_angle;             //!  Stereo angle of layers in a view
     Double_t     fcosphi;
     Double_t     fsinphi;
@@ -121,6 +129,8 @@ class strawtubes: public FairDetector
     Double_t     fDeltaz_view;            //!  Distance (z) between views
     Double_t     fVacBox_x;               //!  x size of station vacuumbox
     Double_t     fVacBox_y;               //!  y size of station vacuumbox
+    Double_t     v_drift;                 //! drift velocity  
+    Double_t     sigma_spatial;           //! spatial resolution 
     /** container for data points */
 
     TClonesArray*  fstrawtubesPointCollection;
@@ -128,7 +138,7 @@ class strawtubes: public FairDetector
     strawtubes(const strawtubes&);
     strawtubes& operator=(const strawtubes&);
     Int_t InitMedium(const char* name);
-    ClassDef(strawtubes,1)
+    ClassDef(strawtubes,3)
 };
 
 #endif //STRAWTUBES_H

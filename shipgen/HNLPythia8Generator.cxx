@@ -39,7 +39,7 @@ Bool_t HNLPythia8Generator::Init()
   if (fextFile != ""){
     if (0 == strncmp("/eos",fextFile,4) ) {
      char stupidCpp[100];
-     strcpy(stupidCpp,"root://eoslhcb/");
+     strcpy(stupidCpp,"root://eoslhcb.cern.ch/");
      strcat(stupidCpp,fextFile);
      fLogger->Info(MESSAGE_ORIGIN,"Open external file with charm or beauty hadrons on eos: %s",stupidCpp);
      fInputFile  = TFile::Open(stupidCpp); 
@@ -118,6 +118,7 @@ Bool_t HNLPythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
     while(x){ 
      if (fn==fNevents) {fLogger->Warning(MESSAGE_ORIGIN, "End of input file. Rewind.");}
      fTree->GetEntry(fn%fNevents);
+     fn++;
      if ( int(fabs(hid[0]) ) != 431){ x = false; }
      else {
        Double_t rnr = gRandom->Uniform(0,1);
@@ -128,7 +129,6 @@ Bool_t HNLPythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
    fPythia->event.reset();
    fPythia->event.append( (Int_t)hid[0], 1, 0, 0, hpx[0],  hpy[0],  hpz[0],  hE[0],  hM[0], 0., 9. );
    }
-   fn++;
   fPythia->next();
    for(int i=0; i<fPythia->event.size(); i++){
 // find first HNL
@@ -182,14 +182,26 @@ Bool_t HNLPythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
          pmy =fPythia->event[im].py();  
          em  =fPythia->event[im].e();  
          tm  =fPythia->event[im].tProd();  
+// foresee finite beam size
+         Double_t dx=0;
+         Double_t dy=0;
+         if (fsmearBeam>0){
+            Double_t test = fsmearBeam*fsmearBeam;
+            Double_t Rsq  = test+1.;
+            while(Rsq>test){
+               dx = gRandom->Uniform(-1.,1.) * fsmearBeam;
+               dy = gRandom->Uniform(-1.,1.) * fsmearBeam;
+               Rsq = dx*dx+dy*dy;
+            }
+         }
          if (fextFile != ""){
 // take grand mother particle from input file, to know if primary or secondary production
-          cpg->AddTrack((Int_t)mid[0],mpx[0],mpy[0],mpz[0],xm/cm,ym/cm,zm/cm,-1,false,mE[0],0.,1.);
-	  cpg->AddTrack((Int_t)fPythia->event[im].id(),pmx,pmy,pmz,xm/cm,ym/cm,zm/cm,0,false,em,tm/cm/c_light,w); // convert pythia's (x,y,z[mm], t[mm/c]) to ([cm], [s])
-	  cpg->AddTrack(fHNL, px, py, pz, xp/cm,yp/cm,zp/cm, 1,false,e,tp/cm/c_light,w); 
+          cpg->AddTrack((Int_t)mid[0],mpx[0],mpy[0],mpz[0],xm/cm+dx,ym/cm+dy,zm/cm,-1,false,mE[0],0.,1.);
+	  cpg->AddTrack((Int_t)fPythia->event[im].id(),pmx,pmy,pmz,xm/cm+dx,ym/cm+dy,zm/cm,0,false,em,tm/cm/c_light,w); // convert pythia's (x,y,z[mm], t[mm/c]) to ([cm], [s])
+	  cpg->AddTrack(fHNL, px, py, pz, xp/cm+dx,yp/cm+dy,zp/cm, 1,false,e,tp/cm/c_light,w); 
          }else{
-	  cpg->AddTrack((Int_t)fPythia->event[im].id(),pmx,pmy,pmz,xm/cm,ym/cm,zm/cm,-1,false,em,tm/cm/c_light,w); // convert pythia's (x,y,z[mm], t[mm/c]) to ([cm], [s])
-	  cpg->AddTrack(fHNL, px, py, pz, xp/cm,yp/cm,zp/cm, 0,false,e,tp/cm/c_light,w); 
+	  cpg->AddTrack((Int_t)fPythia->event[im].id(),pmx,pmy,pmz,xm/cm+dx,ym/cm+dy,zm/cm,-1,false,em,tm/cm/c_light,w); // convert pythia's (x,y,z[mm], t[mm/c]) to ([cm], [s])
+	  cpg->AddTrack(fHNL, px, py, pz, xp/cm+dx,yp/cm+dy,zp/cm, 0,false,e,tp/cm/c_light,w); 
          }
          // bookkeep the indices of stored particles
          dec_chain.push_back( im );
@@ -235,8 +247,8 @@ Bool_t HNLPythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
      py =fPythia->event[k].py();  
      e  =fPythia->event[k].e();  
      if (fextFile != ""){im+=1;};
-     cpg->AddTrack((Int_t)fPythia->event[k].id(),px,py,pz,xS/cm,yS/cm,zS/cm,im,wanttracking,e,tp/cm/c_light,w);
-     // cout <<k<< " insert pdg =" <<fPythia->event[k].id() << " pz = " << pz << " [GeV] zS = " << zS << " [mm] tp = " << tp << "[mm/c]" <<  endl;
+     cpg->AddTrack((Int_t)fPythia->event[k].id(),px,py,pz,xS/cm,yS/cm,zS/cm,im,wanttracking,e,tS/cm/c_light,w);
+     // cout <<k<< " insert pdg =" <<fPythia->event[k].id() << " pz = " << pz << " [GeV] zS = " << zS << " [mm] tS = " << tS << "[mm/c]" <<  endl;
   }
   return kTRUE;
 }

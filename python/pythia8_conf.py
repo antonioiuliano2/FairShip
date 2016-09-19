@@ -82,9 +82,6 @@ def configure(P8gen, mass, couplings, inclusive, deepCopy=False):
     P8gen.SetMom(400)  # beam momentum in GeV 
     if deepCopy: P8gen.UseDeepCopy()
     pdg = ROOT.TDatabasePDG.Instance()
-    # pythia stuff not known to ROOT
-    pdg.AddParticle('system','system', 0., False, 0., 0., 'XXX', 90)
-    pdg.AddParticle('p_diffr+','p_diffr+', 0., False, 0., 0., 'XXX', 9902210)
     # let strange particle decay in Geant4
     ## the following does not work because need to have N2 decaying
     #P8gen.SetParameters("ParticleDecays:limitTau0 = on")
@@ -96,6 +93,7 @@ def configure(P8gen, mass, couplings, inclusive, deepCopy=False):
     if debug: cf.write('P8gen.SetParameters("310:mayDecay  = off")\n')
     P8gen.SetParameters("3122:mayDecay = off")
     if debug: cf.write('P8gen.SetParameters("3122:mayDecay = off")\n')
+    P8gen.SetParameters("3222:mayDecay = off")
     if inclusive=="True":
         P8gen.SetParameters("SoftQCD:inelastic = on")
         P8gen.SetParameters("PhotonCollision:gmgm2mumu = on")
