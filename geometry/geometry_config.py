@@ -10,9 +10,9 @@ from ShipGeoConfig import AttrDict, ConfigRegistry
 # preshowerOption = 0 # 1=simple preShower detector for conceptual studies, moves calo and muon stations
 # tankDesign = 5 #  4=TP, elliptical shape, 5=rectangular, conical
 if "muShieldDesign" not in globals():
-    muShieldDesign = 5
+    muShieldDesign = 7
 if "nuTargetDesign" not in globals():
-    nuTargetDesign = 2
+    nuTargetDesign = 1
 
 if "nuTauTPDesign" not in globals():
     nuTauTPDesign = 1
