@@ -80,7 +80,8 @@ def configure(run,ship_geo):
   
 # -----Create geometry----------------------------------------------
  cave= ROOT.ShipCave("CAVE")
- cave.SetGeometryFileName("cave.geo")
+ if ship_geo.tankDesign < 5: cave.SetGeometryFileName("cave.geo")
+ else: cave.SetGeometryFileName("caveWithAir.geo")
  detectorList.append(cave)
 
  if ship_geo.muShieldDesign==6 or ship_geo.muShieldDesign==7: # magnetized hadron absorber defined in ShipMuonShield 
@@ -115,7 +116,9 @@ def configure(run,ship_geo):
 
  magnet_design = 2
  if ship_geo.tankDesign == 5: magnet_design = 3
- if ship_geo.strawDesign > 1 : magnet = ROOT.ShipMagnet("Magnet","SHiP Magnet",ship_geo.Bfield.z, magnet_design, ship_geo.Bfield.x, ship_geo.Bfield.y)
+ if ship_geo.strawDesign > 1 : 
+   if not hasattr(ship_geo.Bfield,'x') :  ship_geo.Bfield.x   = 3.*u.m
+   magnet = ROOT.ShipMagnet("Magnet","SHiP Magnet",ship_geo.Bfield.z, magnet_design, ship_geo.Bfield.x, ship_geo.Bfield.y)
  else: magnet = ROOT.ShipMagnet("Magnet","SHiP Magnet",ship_geo.Bfield.z)
  detectorList.append(magnet)
   
@@ -127,13 +130,17 @@ def configure(run,ship_geo):
                     ship_geo.chambers.Tub4length,ship_geo.chambers.Tub5length,ship_geo.chambers.Tub6length);
  Veto.SetB(ship_geo.Yheight/2.)
  if ship_geo.tankDesign == 5: 
-    dz =  ship_geo.zFocus+ship_geo.target.z0    
-    x1 = ship_geo.xMax/(ship_geo.Chamber1.z -ship_geo.chambers.Tub1length-dz)*(ship_geo.TrackStation4.z-dz)
-    Veto.SetXstart(x1,dz)
-
+    dzX = ship_geo.zFocusX+ship_geo.target.z0    
+    x1  = ship_geo.xMax/(ship_geo.Chamber1.z -ship_geo.chambers.Tub1length-dzX)*(ship_geo.TrackStation4.z-dzX)
+    dzY = ship_geo.zFocusY+ship_geo.target.z0    
+    y1  = ship_geo.Yheight/(ship_geo.Chamber1.z -ship_geo.chambers.Tub1length-dzY)*(ship_geo.TrackStation4.z-dzY)
+    Veto.SetXYstart(x1,dzX,y1,dzY)
+    Veto.SetVesselStructure(ship_geo.Veto.innerSupport,ship_geo.Veto.sensitiveThickness,ship_geo.Veto.outerSupport,\
+                            ship_geo.Veto.innerSupportMed,ship_geo.Veto.sensitiveMed,ship_geo.Veto.outerSupportMed,ship_geo.Veto.decayMed,\
+                            ship_geo.Veto.rib,ship_geo.Veto.ribMed)
  detectorList.append(Veto)
 
- if ship_geo.muShieldDesign not in [2,3,4]:
+ if ship_geo.muShieldDesign not in [2,3,4] and hasattr(ship_geo.tauMS,'Xtot'):
   taumagneticspectrometer = ROOT.MagneticSpectrometer("MagneticSpectrometer", ship_geo.tauMS.zMSC,  ROOT.kTRUE)
   taumagneticspectrometer.SetTotDimensions(ship_geo.tauMS.Xtot,ship_geo.tauMS.Ytot, ship_geo.tauMS.Ztot )
   taumagneticspectrometer.SetFeDimensions(ship_geo.tauMS.XFe,ship_geo.tauMS.YFe, ship_geo.tauMS.ZFe)
@@ -210,12 +217,19 @@ def configure(run,ship_geo):
   Strawtubes.SetVacBox_x(ship_geo.strawtubes.VacBox_x)
   Strawtubes.SetVacBox_y(ship_geo.strawtubes.VacBox_y)
   Strawtubes.SetStrawLength(ship_geo.strawtubes.StrawLength)
+ 
   if hasattr(ship_geo.strawtubes,"StrawLengthVeto"):
    Strawtubes.SetStrawLengthVeto(ship_geo.strawtubes.StrawLengthVeto) 
-   Strawtubes.SetStrawLength12(ship_geo.strawtubes.StrawLength12) 
+   Strawtubes.SetStrawLength12(ship_geo.strawtubes.StrawLength12)
+   Strawtubes.SetVetoYDim(ship_geo.strawtubes.vetoydim)  
+   Strawtubes.SetTr12YDim(ship_geo.strawtubes.tr12ydim)
+   Strawtubes.SetTr34YDim(ship_geo.strawtubes.tr34ydim)    
   else:
    Strawtubes.SetStrawLengthVeto(ship_geo.strawtubes.StrawLength) 
-   Strawtubes.SetStrawLength12(ship_geo.strawtubes.StrawLength) 
+   Strawtubes.SetStrawLength12(ship_geo.strawtubes.StrawLength)
+   Strawtubes.SetVetoYDim(ship_geo.Yheight/2.)  
+   Strawtubes.SetTr12YDim(ship_geo.Yheight/2.)
+   Strawtubes.SetTr34YDim(ship_geo.Yheight/2.)    
   # for the digitizing step
   Strawtubes.SetStrawResolution(getParameter("strawtubes.v_drift",ship_geo,latestShipGeo),getParameter("strawtubes.sigma_spatial",ship_geo,latestShipGeo) )
   detectorList.append(Strawtubes)
