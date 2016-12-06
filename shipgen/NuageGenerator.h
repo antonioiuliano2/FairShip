@@ -37,6 +37,7 @@ public:
         endY        = yE;
     }
     void AddBox(TVector3 dVec, TVector3 box);
+    void EnableExternalDecayer(Bool_t value){fExtDecayer=value;}
     
     
 private:
@@ -44,6 +45,7 @@ private:
     Double_t MeanMaterialBudget(const Double_t *start, const Double_t *end, Double_t *mparam);
     
 protected:
+    Bool_t fExtDecayer;//1=YES external Decayer, 0=Read 2ry vtx from Nuage produced beamfile
     Double_t Yvessel,Xvessel,Lvessel,ztarget,startZ,endZ, startX,endX, startY,endY;
     Float_t Ev,pxv,pyv,pzv, El,pxl, pyl, pzl,vtxx,vtxy,vtxz,vtxt;
     Float_t vtxx2, vtxy2,vtxz2,vtxt2; // position of secondary vtx

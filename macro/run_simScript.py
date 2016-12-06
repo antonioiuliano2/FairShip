@@ -244,6 +244,7 @@ if simEngine == "Nuage":
  endz = ship_geo.EmuMagnet.zC - ship_geo.NuTauTarget.zdim/2 + ntt *ship_geo.NuTauTT.TTZ + nZcells * ship_geo.NuTauTarget.CellW + ship_geo.NuTauTarget.BrZ
  Nuagegen.SetPositions(ship_geo.target.z0, startz, endz, startx, endx, starty, endy)
  #--------------------------------
+ Nuagegen.EnableExternalDecayer(1)  #with 0 external decayer is disable, 1 is enabled
  Nuagegen.Init(inputFile,firstEvent)
  primGen.AddGenerator(Nuagegen)
  nEvents = min(nEvents,Nuagegen.GetNevents())

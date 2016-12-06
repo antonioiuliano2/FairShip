@@ -431,78 +431,11 @@ Bool_t NuageGenerator::ReadEvent(FairPrimaryGenerator* cpg)
       //cout << "oLpdgCode " << oLPdgCode << " pz "<< pzl << endl;
       if(TMath::Abs(oLPdgCode)==15)
 	{ 
-	  cpg->AddTrack(oLPdgCode,pp[0],pp[1],pp[2],x,y,z,0,false,TMath::Sqrt(pp[0]*pp[0]+pp[1]*pp[1]+pp[2]*pp[2]),tof,mparam[0]*mparam[4]);
-	  nAddTrk++;
-	  if(TMath::Abs(parent2)==15)
+	  if(fExtDecayer==0)
 	    {
-	      //Coordinate secondary vertex
-	      Double_t x2=0., y2=0., z2=0.;
-	      x2=x+vtxx2;
-	      y2=y+vtxy2;
-	      z2=z+vtxz2;
-	      Double_t zrelative2 = z2-z;
-	      Double_t tof2=TMath::Sqrt(x2*x2+y2*y2+zrelative2*zrelative2)/2.99792458e+6;
-	      for(int j=0; j<nf2; j++)
-		{
-		  pp = Rotate(x2,y2,zrelative2,pxf2[j],pyf2[j],pzf2[j]);
-		  cpg->AddTrack(pdgf2[j],pp[0],pp[1],pp[2],x2,y2,z2,nAddTrk,true,TMath::Sqrt(pp[0]*pp[0]+pp[1]*pp[1]+pp[2]*pp[2]),tof2,mparam[0]*mparam[4]);
-		  //	cout << "pdgf2 " << pdgf2[j] << " p2 "<< TMath::Sqrt(pp[0]*pp[0]+pp[1]*pp[1]+pp[2]*pp[2]) << endl;
-		}
-	      nAddTrk+=nf2;
-	    }
-	  
-	  if(TMath::Abs(parent3)==15)
-	    {
-	      //Coordinate third vertex
-	      Double_t x3=0., y3=0., z3=0.;
-	      x3=x+vtxx3;
-	      y3=y+vtxy3;
-	      z3=z+vtxz3;
-	      Double_t zrelative3 = z3-z;
-	      Double_t tof3=TMath::Sqrt(x3*x3+y3*y3+zrelative3*zrelative3)/2.99792458e+6;
-	      for(int j=0; j<nf3; j++)
-		{
-		  pp = Rotate(x3,y3,zrelative3,pxf3[j],pyf3[j],pzf3[j]);
-		  cpg->AddTrack(pdgf3[j],pp[0],pp[1],pp[2],x3,y3,z3,nAddTrk,true,TMath::Sqrt(pp[0]*pp[0]+pp[1]*pp[1]+pp[2]*pp[2]),tof3,mparam[0]*mparam[4]);
-		}
-	      nAddTrk+=nf3;
-	    }
-	  if(TMath::Abs(parent4)==15)
-	    {
-	      //Coordinate third vertex
-	      Double_t x4=0., y4=0., z4=0.;
-	      x4=x+vtxx4;
-	      y4=y+vtxy4;
-	      z4=z+vtxz4;
-	      Double_t zrelative4 = z4-z;
-	      Double_t tof4=TMath::Sqrt(x4*x4+y4*y4+zrelative4*zrelative4)/2.99792458e+6;
-	      for(int j=0; j<nf4; j++)
-		{
-		  pp = Rotate(x4,y4,zrelative4,pxf4[j],pyf4[j],pzf4[j]);
-		  cpg->AddTrack(pdgf4[j],pp[0],pp[1],pp[2],x4,y4,z4,nAddTrk,true,TMath::Sqrt(pp[0]*pp[0]+pp[1]*pp[1]+pp[2]*pp[2]),tof4,mparam[0]*mparam[4]);
-		}
-	      nAddTrk+=nf4;
-	    }
-	  
-	}
-        
-      // last, all others
-      cout<< "nf: " << nf<<endl;
-      for(int i=0; i<nf; i++)
-	{
-	  pp = Rotate(x,y,zrelative,pxf[i],pyf[i],pzf[i]);
-	  if(Abs(pdgf[i])!= 411&&Abs(pdgf[i])!=421&&Abs(pdgf[i])!=431&&Abs(pdgf[i])!=4122)
-	    {
-	      cpg->AddTrack(pdgf[i],pp[0],pp[1],pp[2],x,y,z,0,true,TMath::Sqrt(pp[0]*pp[0]+pp[1]*pp[1]+pp[2]*pp[2]),tof,mparam[0]*mparam[4]);
+	      cpg->AddTrack(oLPdgCode,pp[0],pp[1],pp[2],x,y,z,0,false,TMath::Sqrt(pp[0]*pp[0]+pp[1]*pp[1]+pp[2]*pp[2]),tof,mparam[0]*mparam[4]);
 	      nAddTrk++;
-	    }
-	  //cout << "f " << pdgf[i] << " p "<< TMath::Sqrt(pp[0]*pp[0]+pp[1]*pp[1]+pp[2]*pp[2]) << endl;
-	  if(Abs(pdgf[i]) == 411 || Abs(pdgf[i])==421 || Abs(pdgf[i])==431||Abs(pdgf[i])==4122)
-	    {
-	      //disabilitated the tracking
-	      cpg->AddTrack(pdgf[i],pp[0],pp[1],pp[2],x,y,z,0,false,TMath::Sqrt(pp[0]*pp[0]+pp[1]*pp[1]+pp[2]*pp[2]),tof,mparam[0]*mparam[4]);
-	      nAddTrk++;
-	      if(TMath::Abs(parent2)==pdgf[i])
+	      if(TMath::Abs(parent2)==15)
 		{
 		  //Coordinate secondary vertex
 		  Double_t x2=0., y2=0., z2=0.;
@@ -519,8 +452,8 @@ Bool_t NuageGenerator::ReadEvent(FairPrimaryGenerator* cpg)
 		    }
 		  nAddTrk+=nf2;
 		}
-		
-	      if(TMath::Abs(parent3)==pdgf[i])
+	  
+	      if(TMath::Abs(parent3)==15)
 		{
 		  //Coordinate third vertex
 		  Double_t x3=0., y3=0., z3=0.;
@@ -536,7 +469,7 @@ Bool_t NuageGenerator::ReadEvent(FairPrimaryGenerator* cpg)
 		    }
 		  nAddTrk+=nf3;
 		}
-	      if(TMath::Abs(parent4)==pdgf[i])
+	      if(TMath::Abs(parent4)==15)
 		{
 		  //Coordinate third vertex
 		  Double_t x4=0., y4=0., z4=0.;
@@ -552,6 +485,82 @@ Bool_t NuageGenerator::ReadEvent(FairPrimaryGenerator* cpg)
 		    }
 		  nAddTrk+=nf4;
 		}
+	    }
+	  else
+	    cpg->AddTrack(oLPdgCode,pp[0],pp[1],pp[2],x,y,z,0,true,TMath::Sqrt(pp[0]*pp[0]+pp[1]*pp[1]+pp[2]*pp[2]),tof,mparam[0]*mparam[4]);
+	}
+        
+      // last, all others
+      cout<< "nf: " << nf<<endl;
+      for(int i=0; i<nf; i++)
+	{
+	  pp = Rotate(x,y,zrelative,pxf[i],pyf[i],pzf[i]);
+	  if(Abs(pdgf[i])!= 411&&Abs(pdgf[i])!=421&&Abs(pdgf[i])!=431&&Abs(pdgf[i])!=4122)
+	    {
+	      cpg->AddTrack(pdgf[i],pp[0],pp[1],pp[2],x,y,z,0,true,TMath::Sqrt(pp[0]*pp[0]+pp[1]*pp[1]+pp[2]*pp[2]),tof,mparam[0]*mparam[4]);
+	      nAddTrk++;
+	    }
+	  //cout << "f " << pdgf[i] << " p "<< TMath::Sqrt(pp[0]*pp[0]+pp[1]*pp[1]+pp[2]*pp[2]) << endl;
+	  if(Abs(pdgf[i]) == 411 || Abs(pdgf[i])==421 || Abs(pdgf[i])==431||Abs(pdgf[i])==4122)
+	    {
+	      if(fExtDecayer==0)
+		{
+		  //disabilitated the tracking
+		  cpg->AddTrack(pdgf[i],pp[0],pp[1],pp[2],x,y,z,0,false,TMath::Sqrt(pp[0]*pp[0]+pp[1]*pp[1]+pp[2]*pp[2]),tof,mparam[0]*mparam[4]);
+		  nAddTrk++;
+		  if(TMath::Abs(parent2)==pdgf[i])
+		    {
+		      //Coordinate secondary vertex
+		      Double_t x2=0., y2=0., z2=0.;
+		      x2=x+vtxx2;
+		      y2=y+vtxy2;
+		      z2=z+vtxz2;
+		      Double_t zrelative2 = z2-z;
+		      Double_t tof2=TMath::Sqrt(x2*x2+y2*y2+zrelative2*zrelative2)/2.99792458e+6;
+		      for(int j=0; j<nf2; j++)
+			{
+			  pp = Rotate(x2,y2,zrelative2,pxf2[j],pyf2[j],pzf2[j]);
+			  cpg->AddTrack(pdgf2[j],pp[0],pp[1],pp[2],x2,y2,z2,nAddTrk,true,TMath::Sqrt(pp[0]*pp[0]+pp[1]*pp[1]+pp[2]*pp[2]),tof2,mparam[0]*mparam[4]);
+			  //	cout << "pdgf2 " << pdgf2[j] << " p2 "<< TMath::Sqrt(pp[0]*pp[0]+pp[1]*pp[1]+pp[2]*pp[2]) << endl;
+			}
+		      nAddTrk+=nf2;
+		    }
+		
+		  if(TMath::Abs(parent3)==pdgf[i])
+		    {
+		      //Coordinate third vertex
+		      Double_t x3=0., y3=0., z3=0.;
+		      x3=x+vtxx3;
+		      y3=y+vtxy3;
+		      z3=z+vtxz3;
+		      Double_t zrelative3 = z3-z;
+		      Double_t tof3=TMath::Sqrt(x3*x3+y3*y3+zrelative3*zrelative3)/2.99792458e+6;
+		      for(int j=0; j<nf3; j++)
+			{
+			  pp = Rotate(x3,y3,zrelative3,pxf3[j],pyf3[j],pzf3[j]);
+			  cpg->AddTrack(pdgf3[j],pp[0],pp[1],pp[2],x3,y3,z3,nAddTrk,true,TMath::Sqrt(pp[0]*pp[0]+pp[1]*pp[1]+pp[2]*pp[2]),tof3,mparam[0]*mparam[4]);
+			}
+		      nAddTrk+=nf3;
+		    }
+		  if(TMath::Abs(parent4)==pdgf[i])
+		    {
+		      //Coordinate third vertex
+		      Double_t x4=0., y4=0., z4=0.;
+		      x4=x+vtxx4;
+		      y4=y+vtxy4;
+		      z4=z+vtxz4;
+		      Double_t zrelative4 = z4-z;
+		      Double_t tof4=TMath::Sqrt(x4*x4+y4*y4+zrelative4*zrelative4)/2.99792458e+6;
+		      for(int j=0; j<nf4; j++)
+			{
+			  pp = Rotate(x4,y4,zrelative4,pxf4[j],pyf4[j],pzf4[j]);
+			  cpg->AddTrack(pdgf4[j],pp[0],pp[1],pp[2],x4,y4,z4,nAddTrk,true,TMath::Sqrt(pp[0]*pp[0]+pp[1]*pp[1]+pp[2]*pp[2]),tof4,mparam[0]*mparam[4]);
+			}
+		      nAddTrk+=nf4;
+		    }
+		}
+	      else
+		cpg->AddTrack(pdgf[i],pp[0],pp[1],pp[2],x,y,z,0,true,TMath::Sqrt(pp[0]*pp[0]+pp[1]*pp[1]+pp[2]*pp[2]),tof,mparam[0]*mparam[4]);
 	    }
 	
 	  
