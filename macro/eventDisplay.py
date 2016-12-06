@@ -11,6 +11,8 @@ fMan = None
 fRun = None
 pdg  = ROOT.TDatabasePDG.Instance()
 g    = ROOT.gROOT 
+gEnv = ROOT.gEnv
+gEnv.SetValue('Eve.Viewer.HideMenus',0)
 
 ParFile    = None
 geoFile    = None
@@ -21,7 +23,11 @@ InputFile = None
 withGeo   = False
 dy = str(10.)
 withMCTracks = True
-# simEngine = "Genie"
+#                        muon shield  strawtube                     decay vessel  
+transparentMaterials = {'iron':80,'aluminium':80,'mylar':60,'STTmix9010_2bar':95,'steel':80,'Aluminum':80,'Scintillator':80,
+#                        tau nu detector  
+                        'CoilCopper':70,'copper':90,'HPTgas':70,'Bakelite':70,'RPCgas':70,'TTmedium':70}
+
 #
 try:
         opts, args = getopt.getopt(sys.argv[1:], "o:D:FHPu:f:p:g:x:c:hqv:sl:A:Y:i",["paramFile=","geoFile="])
@@ -262,7 +268,7 @@ class DrawTracks(ROOT.FairTask):
     da.GetStartVertex(fPos)
     hitlist[fPos.Z()] = [fPos.X(),fPos.Y()]
   # loop over all sensitive volumes to find hits
-   for P in ["vetoPoint","muonPoint","EcalPoint","HcalPoint","preshowerPoint","strawtubesPoint","ShipRpcPoint","TargetPoints"]:
+   for P in ["vetoPoint","muonPoint","EcalPoint","HcalPoint","preshowerPoint","strawtubesPoint","ShipRpcPoint","TargetPoint"]:
     if not sTree.GetBranch(P): continue
     c=eval("sTree."+P)
     for p in c:
@@ -280,7 +286,7 @@ class DrawTracks(ROOT.FairTask):
    if len(hitlist)==1:
     if fT.GetMotherId()<0: continue
     if abs(sTree.MCTrack[fT.GetMotherId()].GetPdgCode()) == 9900015:
-     # still would like to draw track stumb
+     # still would like to draw track stub
      # check for end vertex
      evVx = False
      for da in sTree.MCTrack:
@@ -432,6 +438,45 @@ class IO():
          self.lbut[x]['command'] = lambda j=x: self.toogle(j)
          self.lbut[x].pack(side=Tkinter.BOTTOM)
         self.fram1.pack()
+# add ship actions to eve display
+        gEve = ROOT.gEve
+        slot = ROOT.TEveWindow.CreateWindowInTab(gEve.GetBrowser().GetTabLeft())
+        slot.SetShowTitleBar(ROOT.kFALSE)
+        packs = slot.MakePack();
+        packs.SetShowTitleBar(ROOT.kFALSE);
+        packs.SetElementName("SHiP actions")
+        packs.SetHorizontal()
+        slot = packs.NewSlot()
+        frame = slot.MakeFrame()
+        frame.SetElementName("commands")
+        frame.SetShowTitleBar(ROOT.kFALSE)
+        cf = frame.GetGUICompositeFrame()
+        hf = ROOT.TGVerticalFrame(cf)
+        hf.SetCleanup(ROOT.kLocalCleanup)
+        hf.SetWidth(150)
+        cf.AddFrame(hf)
+        guiFrame = ROOT.TGVerticalFrame(hf)
+        hf.AddFrame(guiFrame, ROOT.TGLayoutHints(ROOT.kLHintsExpandX))
+        guiFrame.SetCleanup(ROOT.kDeepCleanup)
+        b = ROOT.TGTextButton(guiFrame, "Add particle follower")
+        b.SetWidth(150)
+        b.SetToolTipText('start new window with top projection and energy loss')
+        b.SetCommand('TPython::ExecScript("'+os.environ['FAIRSHIP']+'/macro/evd_addParticleFollower.py")')
+        guiFrame.AddFrame(b, ROOT.TGLayoutHints(ROOT.kLHintsExpandX))
+        bn = ROOT.TGTextButton(guiFrame, "fill histogram")
+        bn.SetWidth(150)
+        bn.SetToolTipText('Fill histogram with energy along flight path')
+        bn.SetCommand('TPython::ExecScript("'+os.environ['FAIRSHIP']+'/macro/evd_fillEnergy.py")')
+        guiFrame.AddFrame(bn, ROOT.TGLayoutHints(ROOT.kLHintsExpandX))
+        bt = ROOT.TGTextButton(guiFrame, "switch transparent mode on/off")
+        bt.SetWidth(150)
+        bt.SetToolTipText('switch transparent mode on/off for better visibility of tracks')
+        bt.SetCommand('TPython::ExecScript("'+os.environ['FAIRSHIP']+'/macro/evd_transparentMode.py")')
+        guiFrame.AddFrame(bt, ROOT.TGLayoutHints(ROOT.kLHintsExpandX))
+#
+        cf.MapSubwindows()
+        cf.Layout()
+        cf.MapWindow()
     def nextEvent(self,event=None):
         i = int(self.contents.get())
         if i==self.n: self.n+=1
@@ -495,6 +540,7 @@ class EventLoop(ROOT.FairTask):
    self.tracks.InitTask()
 # create SHiP GUI
    self.ioBar = IO()
+   self.TransparentMode = 0
  def NextEvent(self,i=-1):
    if i<0: self.n+=1
    else  : self.n=i
@@ -507,41 +553,86 @@ class EventLoop(ROOT.FairTask):
    if sTree.FindBranch("EcalClusters"):
      if sTree.EcalClusters.GetEntries()>0:
       self.ecalFiller.Exec('start',sTree.EcalPointLite)
-      self.calos.ExecuteTask()
+     self.calos.ExecuteTask()
    print 'Event %i ready'%(self.n)
-   if self.first:
 # make pointsets pickable
-    for x in mcHits: 
+   for x in mcHits: 
      p = ROOT.gEve.GetCurrentEvent().FindChild(mcHits[x].GetName())
-     p.SetPickable(ROOT.kTRUE)
-     p.SetTitle(p.__repr__())
-     self.first = False
- def defaultView(self):
+     if p: 
+      p.SetPickable(ROOT.kTRUE)
+      p.SetTitle(p.__repr__())
+ def rotateView(self,hor=0,ver=0):
   v   = ROOT.gEve.GetDefaultGLViewer()
   cam  = v.CurrentCamera()
   cam.Reset()
-  return cam,v
+  if hor!=0 or ver!=0:
+   cam.RotateRad(hor,ver)
+  v.DoDraw()
  def topView(self):
-  cam,v = self.defaultView()
-  cam.RotateRad(ROOT.TMath.Pi()/2.,0.) # rotation around z axis
-  v.DoDraw()
+  self.rotateView(ROOT.TMath.Pi()/2.,0.) # rotation around z axis
  def bottomView(self):
-  cam,v = self.defaultView()
-  cam.RotateRad(-ROOT.TMath.Pi()/2.,0.) # rotation around z axis
-  v.DoDraw()
+  self.rotateView(-ROOT.TMath.Pi()/2.,0.) # rotation around z axis
  def frontView(self):
-  cam,v = self.defaultView()
-  cam.RotateRad(0.,ROOT.TMath.Pi()/2.) # rotation around y or x axis
-  v.DoDraw()
+  self.rotateView(0.,ROOT.TMath.Pi()/2.) # rotation around y or x axis
  def backView(self):
-  cam,v = self.defaultView()
-  cam.RotateRad(0.,-ROOT.TMath.Pi()/2.) # rotation around y or x axis
-  v.DoDraw()
- def sideView(self):
-  cam,v = self.defaultView()
-  cam.RotateRad(0.,ROOT.TMath.Pi()) # rotation around y or x axis
-  v.DoDraw()
-#
+  self.rotateView(0.,-ROOT.TMath.Pi()/2.) # rotation around y or x axis
+ def leftView(self):
+  self.rotateView(0.,ROOT.TMath.Pi()) # rotation around y or x axis
+ def rightView(self):
+  self.rotateView(0.,ROOT.TMath.Pi()) # rotation around y or x axis
+ def transparentMode(self,mode='on'):
+   for m in transparentMaterials:
+     mat = ROOT.gGeoManager.GetMaterial(m)
+     if mode.lower()=='on' or mode==1:
+       mat.SetTransparency(transparentMaterials[m])
+       self.TransparentMode = 1
+     else: 
+       mat.SetTransparency("\x00")
+       self.TransparentMode = 0  
+   sc    = evmgr.GetScenes()
+   geoscene = sc.FindChild('Geometry scene')
+   if geoscene:   evmgr.ElementChanged(geoscene,True,True)
+# add projections DOES NOT WORK YET AS FORESEEN, under investigation. 30.11.2016
+def projection():
+#if 1>0:
+   # camera
+   s = ROOT.gEve.SpawnNewScene("Projected Event")
+   ROOT.gEve.GetDefaultViewer().AddScene(s)
+   v = ROOT.gEve.GetDefaultGLViewer()
+   v.SetCurrentCamera(ROOT.TGLViewer.kCameraOrthoXOY)
+   cam = v.CurrentCamera()
+   cam.SetZoomMinMax(0.2, 20)
+   # projections
+   mng = ROOT.TEveProjectionManager(ROOT.TEveProjection.kPT_RPhi)
+   s.AddElement(mng)
+   axes = ROOT.TEveProjectionAxes(mng)
+   axes.SetTitle("TEveProjections demo")
+   s.AddElement(axes)
+   ROOT.gEve.AddToListTree(axes, ROOT.kTRUE)
+   ROOT.gEve.AddToListTree(mng, ROOT.kTRUE)
+
+def projection_prescale():
+#if 1>0:
+   v = evmgr.GetViewers()
+   vw = v.FindChild('Viewer 1')
+   if vw: vw.SetName('3d')
+   sev = ROOT.gEve.SpawnNewViewer("Scaled 2D")
+   smng = ROOT.TEveProjectionManager(ROOT.TEveProjection.kPP_Plane)
+   sp = smng.GetProjection()
+   sp.SetUsePreScale(ROOT.kTRUE)
+   sp.AddPreScaleEntry(2, 100000000.,  0.1)
+   ss = ROOT.gEve.SpawnNewScene("Scaled Geom")
+   sev.AddScene(ss)
+   ss.AddElement(smng)
+   N = fGeo.GetTopNode()
+   TNod=ROOT.TEveGeoTopNode(fGeo, N, 1, 3, 10)
+   ss.AddElement(TNod)
+   eventscene = ROOT.gEve.SpawnNewScene('Scaled event')
+   eventscene.AddElement(ROOT.FairEventManager.Instance())
+   sev.AddScene(eventscene)
+   eventscene.AddElement(smng)
+   ROOT.gEve.GetBrowser().GetTabRight().SetTab(1)
+   ROOT.gEve.FullRedraw3D(kTRUE)
 def speedUp():
  for x in ["wire","gas","rockD","rockS","rockSFe"]:  
    xvol = fGeo.GetVolume(x)
@@ -720,7 +811,7 @@ class Rulers(ROOT.FairTask):
   ty = ROOT.TEveText("y-axis")
   ty.SetFontSize(10)
   ty.RefMainTrans().SetPos(0.,ypos+1*u.m,z)
-  ty.SetMainColor(ROOT.kRed-2);
+  ty.SetMainColor(ROOT.kRed-2)
   a2.AddElement(ty)
   xpos,ypos = 0., 0.
   xlength = 3*u.m
@@ -752,16 +843,16 @@ class Rulers(ROOT.FairTask):
   tx = ROOT.TEveText("x-axis")
   tx.SetFontSize(10)
   tx.RefMainTrans().SetPos(xpos+1*u.m,0.,z)
-  tx.SetMainColor(ROOT.kRed-2);
+  tx.SetMainColor(ROOT.kRed-2)
   a3.AddElement(tx)
 
   t1 = ROOT.TEveText("SHiP")
   t1.SetFontSize(200)
   t1.RefMainTrans().SetPos(0.,600.,ShipGeo.TrackStation1.z-10*u.m)
-  t1.PtrMainTrans().RotateLF(1, 3, ROOT.TMath.PiOver2());
-  t1.SetMainColor(ROOT.kOrange-2);
-  t1.SetFontMode(ROOT.TGLFont.kExtrude);
-  t1.SetLighting(ROOT.kTRUE);
+  t1.PtrMainTrans().RotateLF(1, 3, ROOT.TMath.PiOver2())
+  t1.SetMainColor(ROOT.kOrange-2)
+  t1.SetFontMode(ROOT.TGLFont.kExtrude)
+  t1.SetLighting(ROOT.kTRUE)
   a1.AddElement(t1)
   self.ruler.CloseCompound()
   sc    = ROOT.gEve.GetScenes()
@@ -868,9 +959,15 @@ fMan.Init(1,5,10) # default Init(visopt=1, vislvl=3, maxvisnds=10000), ecal disp
 #
 fRman = ROOT.FairRootManager.Instance()
 sTree = fRman.GetInChain()
+lsOfGlobals = ROOT.gROOT.GetListOfGlobals()
+lsOfGlobals.Add(sTree) 
 fGeo  = ROOT.gGeoManager 
 top   = fGeo.GetTopVolume()
 evmgr = ROOT.gEve
+
+br = evmgr.GetBrowser()
+br.HideBottomTab() # make more space for graphics
+br.SetWindowName('SHiP Eve Window')
 
 if not fRun.GetGeoFile().FindKey('ShipGeo'):
  # old geofile, missing Shipgeo dictionary
@@ -885,12 +982,28 @@ else:
   ecalGeoFile = ShipGeo.ecal.File
 if hasattr(ShipGeo,'preshowerOption'): 
  if ShipGeo.preshowerOption >0: 
-  preshowerPoints  = ROOT.FairMCPointDraw("preshowerPoint", ROOT.kYellow, ROOT.kFullCircle)
-  fMan.AddTask(preshowerPoints)
+  mcHits['preshowerPoints']  = ROOT.FairMCPointDraw("preshowerPoint", ROOT.kYellow, ROOT.kFullCircle)
+  fMan.AddTask(mcHits['preshowerPoints'])
 # switchOfAll('RockD')
 rulers = Rulers()
 SHiPDisplay = EventLoop()
+SHiPDisplay.SetName('SHiP Displayer')
+lsOfGlobals.Add(SHiPDisplay) 
 SHiPDisplay.InitTask()
 SHiPDisplay.NextEvent()
+
+print 'How to find Help? Until a better solution found, move with the mouse to the line which is just below Viewer 1'
+print '                  A hidden tab should appear. Click on File, unclick Hide Menus to have it permanent.' 
+print '                  Help can be found on the left. Und camera, you can switch to different views.'
+# short cuts
+# w go to wire frame
+# r smooth display
+# t technical display
+# e black<->white background
+# j zoom in 
+# k zoom out
+# d GL debug mode
+
+
 
 
