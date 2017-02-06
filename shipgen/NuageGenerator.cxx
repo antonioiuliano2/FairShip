@@ -408,7 +408,7 @@ Bool_t NuageGenerator::ReadEvent(FairPrimaryGenerator* cpg)
     }
   //cout << "Info NuageGenerator: prob2int " << prob2int << ", " << count << endl;
 
-  cout <<" Neutrino pdg = " <<  neu << endl;
+  //cout <<" Neutrino pdg = " <<  neu << endl;
     
   Double_t zrelative=z-ztarget;
   Double_t tof=TMath::Sqrt(x*x+y*y+zrelative*zrelative)/2.99792458e+6;
@@ -491,7 +491,7 @@ Bool_t NuageGenerator::ReadEvent(FairPrimaryGenerator* cpg)
 	}
         
       // last, all others
-      cout<< "nf: " << nf<<endl;
+      // cout<< "nf: " << nf<<endl;
       for(int i=0; i<nf; i++)
 	{
 	  pp = Rotate(x,y,zrelative,pxf[i],pyf[i],pzf[i]);
@@ -502,6 +502,7 @@ Bool_t NuageGenerator::ReadEvent(FairPrimaryGenerator* cpg)
 	    }
 	  //cout << "f " << pdgf[i] << " p "<< TMath::Sqrt(pp[0]*pp[0]+pp[1]*pp[1]+pp[2]*pp[2]) << endl;
 	  if(Abs(pdgf[i]) == 411 || Abs(pdgf[i])==421 || Abs(pdgf[i])==431||Abs(pdgf[i])==4122)
+             cout << "charm particle "  << endl;
 	    {
 	      if(fExtDecayer==0)
 		{

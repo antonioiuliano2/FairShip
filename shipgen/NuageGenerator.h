@@ -64,7 +64,7 @@ protected:
     Int_t cc;
     Int_t nf, nf2,nf3, nf4,neu;
     Int_t parent2, parent3, parent4;
-    UInt_t fNvtx;
+    Int_t fNvtx;
     FairLogger*  fLogger; //!   don't make it persistent, magic ROOT command
     TFile* fInputFile;
     TTree* fTree;
