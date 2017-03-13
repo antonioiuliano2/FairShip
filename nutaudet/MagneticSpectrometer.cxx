@@ -172,6 +172,15 @@ void MagneticSpectrometer::SetCoilParameters(Double_t CoilH, Double_t CoilW, Int
   fNCoil = N;
 }
 
+
+void MagneticSpectrometer::SetPillarDimensions(Double_t X, Double_t Y, Double_t Z)
+{
+  fPillarX = X;
+  fPillarY = Y;
+  fPillarZ = Z;
+}
+
+
 MagneticSpectrometer::~MagneticSpectrometer()
 {
   if (fShipRpcPointCollection) {
@@ -221,6 +230,9 @@ void MagneticSpectrometer::ConstructGeometry()
 
   InitMedium("iron");
   TGeoMedium *Iron =gGeoManager->GetMedium("iron");
+
+  InitMedium("steel");
+  TGeoMedium *Steel =gGeoManager->GetMedium("steel");
     
   InitMedium("copper");
   TGeoMedium *Cu =gGeoManager->GetMedium("copper");
@@ -373,11 +385,21 @@ void MagneticSpectrometer::ConstructGeometry()
       volArm2->AddNode(volRpcContainer, nr + i,new TGeoTranslation(0, -fYFe/2 + fYRpc/2, -fZArm/2+(i+1)*fZFe + i*fZRpc +fZRpc/2));
     }
     
-  //10 cm of Concrete on which the whole Magnetic Spectrometer volume will be placed
-  TGeoBBox *Base = new TGeoBBox("Base", fXtot/2, 10*cm/2, fZRyoke/2);
+  //10 cm of Concrete on which the whole Magnetic Spectrometer volume (HPT included) will be placed
+  TGeoBBox *Base = new TGeoBBox("Base", fXtot/2, 10*cm/2, fZtot/2);
   TGeoVolume *volBase = new TGeoVolume("volBase",Base,Conc);
   volBase->SetLineColor(kYellow-3);
   top->AddNode(volBase,1, new TGeoTranslation(0,-fYtot/2 + 10*cm/2,fZcenter));
+
+  TGeoBBox *Pillar1Box = new TGeoBBox(fPillarX/2,fPillarY/2, fPillarZ/2);
+  TGeoVolume *Pillar1Vol = new TGeoVolume("Pillar1Vol",Pillar1Box,Steel);
+  Pillar1Vol->SetLineColor(kGreen+3);
+  top->AddNode(Pillar1Vol,1, new TGeoTranslation(-fXtot/2+fPillarX/2,-fYtot/2-fPillarY/2,fZcenter-fZArm/2 - fGapMiddle/2 +fPillarZ/2));
+  top->AddNode(Pillar1Vol,2, new TGeoTranslation(fXtot/2-fPillarX/2,-fYtot/2-fPillarY/2,fZcenter-fZArm/2 - fGapMiddle/2 +fPillarZ/2));
+  top->AddNode(Pillar1Vol,3, new TGeoTranslation(-fXtot/2+fPillarX/2,-fYtot/2-fPillarY/2,fZcenter+fZArm/2+fGapMiddle/2-fPillarZ/2));
+  top->AddNode(Pillar1Vol,4, new TGeoTranslation(fXtot/2-fPillarX/2,-fYtot/2-fPillarY/2,fZcenter+fZArm/2+fGapMiddle/2-fPillarZ/2));
+
+
 }
 
 

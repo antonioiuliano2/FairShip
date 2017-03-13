@@ -45,7 +45,7 @@ ShipMuonShield::ShipMuonShield(const char* name, const Int_t Design, const char*
  fDesign = Design;
  fField  = fl;
  if (fDesign==1){
-     fMuonShieldLength = L1;   
+   fMuonShieldLength = L1;   
     }
  if (fDesign==2 || fDesign==3 || fDesign==4 ){
      Fatal("ShipMuonShield","Design %i not anymore supported",fDesign);

@@ -103,6 +103,13 @@ void EmulsionMagnet::SetMagneticField(Double_t B)
   fField=B;
 }
 
+void EmulsionMagnet::SetPillarDimensions(Double_t X, Double_t Y, Double_t Z)
+{
+  fPillarX=X;
+  fPillarY=Y;
+  fPillarZ=Z;
+}
+
 Int_t EmulsionMagnet::InitMedium(const char* name)
 {
   static FairGeoLoader *geoLoad=FairGeoLoader::Instance();
@@ -139,6 +146,9 @@ void EmulsionMagnet::ConstructGeometry()
   InitMedium("CoilCopper");
   TGeoMedium *Cu  = gGeoManager->GetMedium("CoilCopper");
     
+  InitMedium("steel");
+  TGeoMedium *Steel = gGeoManager->GetMedium("steel");
+
   gGeoManager->SetVisLevel(10);
 
 
@@ -409,6 +419,14 @@ void EmulsionMagnet::ConstructGeometry()
       TGeoVolume *BaseVol = new TGeoVolume("BaseVol",BaseBox,Fe);
       BaseVol->SetLineColor(kRed);
       MagnetVol->AddNode(BaseVol,1, new TGeoTranslation(0,-fMagnetY/2+fColumnY/2,0));
+
+      TGeoBBox *PillarBox = new TGeoBBox(fPillarX/2,fPillarY/2, fPillarZ/2);
+      TGeoVolume *PillarVol = new TGeoVolume("PillarVol",PillarBox,Steel);
+      PillarVol->SetLineColor(kGreen+3);
+      top->AddNode(PillarVol,1, new TGeoTranslation(-fMagnetX/2+fPillarX/2,-fMagnetY/2-fPillarY/2, fCenterZ-fMagnetZ/2+fPillarZ/2));
+      top->AddNode(PillarVol,2, new TGeoTranslation(fMagnetX/2-fPillarX/2,-fMagnetY/2-fPillarY/2, fCenterZ-fMagnetZ/2+fPillarZ/2));
+      top->AddNode(PillarVol,3, new TGeoTranslation(-fMagnetX/2+fPillarX/2,-fMagnetY/2-fPillarY/2, fCenterZ+fMagnetZ/2-fPillarZ/2));
+      top->AddNode(PillarVol,4, new TGeoTranslation(fMagnetX/2-fPillarX/2,-fMagnetY/2-fPillarY/2, fCenterZ+fMagnetZ/2-fPillarZ/2));
     }
 }
 
