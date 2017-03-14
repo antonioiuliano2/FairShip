@@ -39,13 +39,13 @@ ShipMuonShield::ShipMuonShield()
 
 ShipMuonShield::ShipMuonShield(const char* name, const Int_t Design, const char* Title, 
                                Double_t Z, Double_t L0, Double_t L1, Double_t L2, Double_t L3, Double_t L4, Double_t L5, Double_t L6,
-                               Double_t L7, Double_t L8, Double_t gap, Double_t LE, Double_t y, Double_t fl, Double_t floor)
+                               Double_t L7, Double_t L8, Double_t gap, Double_t LE, Double_t y, Double_t floor, Double_t field)
   : FairModule(name ,Title)
 {
  fDesign = Design;
- fField  = fl;
+ fField  = field;
  if (fDesign==1){
-   fMuonShieldLength = L1;   
+     fMuonShieldLength = L1;   
     }
  if (fDesign==2 || fDesign==3 || fDesign==4 ){
      Fatal("ShipMuonShield","Design %i not anymore supported",fDesign);
@@ -553,7 +553,7 @@ void ShipMuonShield::ConstructGeometry()
       Double_t dZD =  100*m + fMuonShieldLength;
       TGeoBBox *box3    = new TGeoBBox("box3", 15*m, 15*m,dZD/2.);
       TGeoBBox *box4    = new TGeoBBox("box4", 10*m, 10*m,dZD/2.);
-// cover also Tau nu area
+
       if (fDesign == 7) {
 	// Only add floor for new shield
 	TGeoBBox *box5 = new TGeoBBox("shield_floor", 10 * m, fFloor / 2.,

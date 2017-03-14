@@ -218,7 +218,9 @@ Int_t MagneticSpectrometer::InitMedium(const char* name)
 void MagneticSpectrometer::ConstructGeometry()
 {
   TGeoVolume *top = gGeoManager->GetTopVolume();
-    
+  TGeoVolumeAssembly *tTauNuDet = new TGeoVolumeAssembly("tTauNuDet");
+  top->AddNode(tTauNuDet, 1, new TGeoTranslation(0, 0, 0));
+
   InitMedium("RPCgas");
   TGeoMedium *RPCmat =gGeoManager->GetMedium("RPCgas");
    
@@ -247,7 +249,7 @@ void MagneticSpectrometer::ConstructGeometry()
     
   TGeoBBox *MSBox = new TGeoBBox("MagneticSpectrometerBox", fXRyoke/2, fYtot/2, fZtot/2);
   TGeoVolume *volMSBox = new TGeoVolume("volMagneticSpectrometer", MSBox, vacuum);
-  top->AddNode(volMSBox, 1, new TGeoTranslation(0,10*cm,fZcenter));
+  tTauNuDet->AddNode(volMSBox, 1, new TGeoTranslation(0,10*cm,fZcenter));
   
       
   TGeoBBox *UpYokeBox = new TGeoBBox("UpYokeBox", fXRyoke/2, fYRyoke/2, fZRyoke/2);
@@ -389,15 +391,19 @@ void MagneticSpectrometer::ConstructGeometry()
   TGeoBBox *Base = new TGeoBBox("Base", fXtot/2, 10*cm/2, fZtot/2);
   TGeoVolume *volBase = new TGeoVolume("volBase",Base,Conc);
   volBase->SetLineColor(kYellow-3);
-  top->AddNode(volBase,1, new TGeoTranslation(0,-fYtot/2 + 10*cm/2,fZcenter));
+
+  tTauNuDet->AddNode(volBase,1, new TGeoTranslation(0,-fYtot/2 + 10*cm/2,fZcenter));
+
 
   TGeoBBox *Pillar1Box = new TGeoBBox(fPillarX/2,fPillarY/2, fPillarZ/2);
   TGeoVolume *Pillar1Vol = new TGeoVolume("Pillar1Vol",Pillar1Box,Steel);
   Pillar1Vol->SetLineColor(kGreen+3);
-  top->AddNode(Pillar1Vol,1, new TGeoTranslation(-fXtot/2+fPillarX/2,-fYtot/2-fPillarY/2,fZcenter-fZArm/2 - fGapMiddle/2 +fPillarZ/2));
-  top->AddNode(Pillar1Vol,2, new TGeoTranslation(fXtot/2-fPillarX/2,-fYtot/2-fPillarY/2,fZcenter-fZArm/2 - fGapMiddle/2 +fPillarZ/2));
-  top->AddNode(Pillar1Vol,3, new TGeoTranslation(-fXtot/2+fPillarX/2,-fYtot/2-fPillarY/2,fZcenter+fZArm/2+fGapMiddle/2-fPillarZ/2));
-  top->AddNode(Pillar1Vol,4, new TGeoTranslation(fXtot/2-fPillarX/2,-fYtot/2-fPillarY/2,fZcenter+fZArm/2+fGapMiddle/2-fPillarZ/2));
+
+  tTauNuDet->AddNode(Pillar1Vol,1, new TGeoTranslation(-fXtot/2+fPillarX/2,-fYtot/2-fPillarY/2,fZcenter-fZArm/2 - fGapMiddle/2 +fPillarZ/2));
+  tTauNuDet->AddNode(Pillar1Vol,2, new TGeoTranslation(fXtot/2-fPillarX/2,-fYtot/2-fPillarY/2,fZcenter-fZArm/2 - fGapMiddle/2 +fPillarZ/2));
+  tTauNuDet->AddNode(Pillar1Vol,3, new TGeoTranslation(-fXtot/2+fPillarX/2,-fYtot/2-fPillarY/2,fZcenter+fZArm/2+fGapMiddle/2-fPillarZ/2));
+  tTauNuDet->AddNode(Pillar1Vol,4, new TGeoTranslation(fXtot/2-fPillarX/2,-fYtot/2-fPillarY/2,fZcenter+fZArm/2+fGapMiddle/2-fPillarZ/2));
+
 
 
 }
