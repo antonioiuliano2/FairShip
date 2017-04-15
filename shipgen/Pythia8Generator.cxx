@@ -223,7 +223,7 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
      cpg->AddTrack(id,px,py,pz,x/cm,y/cm,z/cm,im,wanttracking,e,tof,1.);
      addedParticles+=1;
     } 
-    key+=addedParticles;
+    key+=addedParticles-1; // pythia counts from 1
   } 
   counter+=1; 
 // now the underyling event
@@ -236,7 +236,7 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
      fn++;
      cpg->AddTrack((Int_t)hid[0],hpx[0],hpy[0],hpz[0],(mpx[0]+fPythia->event[0].xProd())/cm,
                                                       (mpy[0]+fPythia->event[0].yProd())/cm,
-                                                      (mpz[0]+fPythia->event[0].zProd())/cm+zinter,-1,true);
+                                                      (mpz[0]+fPythia->event[0].zProd())/cm+zinter/cm,-1,true);
      // mpx,mpy,mpz are the vertex coordinates with respect to charm hadron, first particle in Pythia is (system) 
    }
   } 

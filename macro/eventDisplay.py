@@ -105,6 +105,42 @@ def printParticles():
    Rsq = (aP.Vx()/(2.45*u.m) )**2 + (aP.Vy()/((10./2.-0.05)*u.m) )**2
    print '%3i %6.3F  %6.3F  %9.3F    %6.3F   %6.3F %4i  %4i '%(n,aP.P()/u.GeV,aP.Pt()/u.GeV,\
             doca/u.mm,Rsq,aP.Vz()/u.m,aP.GetDaughter(0),aP.GetDaughter(1) )
+class DrawVetoDigi(ROOT.FairTask):
+ " My Fair Task"
+ def InitTask(self):
+  self.comp  = ROOT.TEveCompound('Veto Digis')
+  gEve.AddElement(self.comp)
+  sc    = gEve.GetScenes()
+  self.evscene = sc.FindChild('Event scene')
+ def FinishEvent(self):
+  pass
+ def ExecuteTask(self,option=''):
+   self.comp.DestroyElements()
+   self.comp.OpenCompound()
+   for digi in sTree.Digi_SBTHits:
+    if digi.GetDetectorID()<100000: continue
+    if not digi.isValid(): continue
+    node = digi.GetNode()
+    # take into account offsets
+    shape = node.GetVolume().GetShape()  
+    xoff,yoff,zoff = shape.GetOrigin()[0],shape.GetOrigin()[1],shape.GetOrigin()[2]
+    centre = digi.GetXYZ()
+    bx = ROOT.TEveBox('LiSc'+str(digi.GetDetectorID() ) )
+    bx.SetPickable(ROOT.kTRUE)
+    bx.SetTitle(digi.__repr__())
+    bx.SetMainColor(ROOT.kMagenta+3)
+    dx,dy,dz = shape.GetDX(),shape.GetDY(),shape.GetDZ()
+    bx.SetVertex(0,centre.X()-dx+xoff,centre.Y()-dy+yoff,centre.Z()-dz+zoff )
+    bx.SetVertex(1,centre.X()-dx+xoff,centre.Y()+dy+yoff,centre.Z()-dz+zoff )
+    bx.SetVertex(2,centre.X()+dx+xoff,centre.Y()+dy+yoff,centre.Z()-dz+zoff )
+    bx.SetVertex(3,centre.X()+dx+xoff,centre.Y()-dy+yoff,centre.Z()-dz+zoff )
+    bx.SetVertex(4,centre.X()-dx+xoff,centre.Y()-dy+yoff,centre.Z()+dz+zoff )
+    bx.SetVertex(5,centre.X()-dx+xoff,centre.Y()+dy+yoff,centre.Z()+dz+zoff )
+    bx.SetVertex(6,centre.X()+dx+xoff,centre.Y()+dy+yoff,centre.Z()+dz+zoff )
+    bx.SetVertex(7,centre.X()+dx+xoff,centre.Y()-dy+yoff,centre.Z()+dz+zoff )
+    self.comp.AddElement(bx)
+   self.comp.CloseCompound()
+   gEve.ElementChanged(self.evscene,True,True)
 class DrawEcalCluster(ROOT.FairTask):
  " My Fair Task"
  def InitTask(self,ecalStructure):
@@ -557,6 +593,8 @@ class EventLoop(ROOT.FairTask):
     self.ecalStructure = self.ecalFiller.InitPython(sTree.EcalPointLite)
     self.calos  = DrawEcalCluster()
     self.calos.InitTask(self.ecalStructure)
+   self.veto = DrawVetoDigi()
+   self.veto.InitTask()
    self.tracks = DrawTracks()
    self.tracks.InitTask()
 # create SHiP GUI
@@ -580,6 +618,7 @@ class EventLoop(ROOT.FairTask):
      if sTree.EcalClusters.GetEntries()>0:
       self.ecalFiller.Exec('start',sTree.EcalPointLite)
      self.calos.ExecuteTask()
+   if sTree.FindBranch("Digi_SBTHits"): self.veto.ExecuteTask()
    if ROOT.gROOT.FindObject('Root Canvas EnergyLoss'): evd_fillEnergy.execute()
    print 'Event %i ready'%(self.n)
 # make pointsets pickable
