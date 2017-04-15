@@ -141,4 +141,4 @@ class Config(AttrDict):
             return fh.write(self.dumps())
 
     def __str__(self):
-        return "ShipGeoConfig:\n  " + "\n  ".join(["%s: %s" % (k, self[k].__str__()) for k in sorted(self.keys()) if not k.startswith("_")])
+        return "ShipGeoConfig:\n  " + "\n  ".join(["%s: %s " % (k, self[k].__str__()) for k in sorted(self.keys()) if not k.startswith("_")])

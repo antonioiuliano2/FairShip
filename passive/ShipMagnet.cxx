@@ -168,11 +168,7 @@ void ShipMagnet::ConstructGeometry()
     TGeoVolume* SMS =MagnetSupport(fDx+0.7*m, hsupport, Yokel,15,Fe);
     tMagnet->AddNode(SMS, 1, new TGeoTranslation(0, -bradius-1.2*m-hsupport, fSpecMagz));
 
-    Double_t hsupport=(10.*m-(bradius+1.2*m)-floorheight)/2.;
-    TGeoVolume* SMS =MagnetSupport(fDx+0.7*m, hsupport, Yokel,15,Fe);
-    top->AddNode(SMS, 1, new TGeoTranslation(0, -bradius-1.2*m-hsupport, fSpecMagz));
-
-    //Attempt to make Al coils...
+        //Attempt to make Al coils...
     TGeoCompositeShape *MCoilc;
     if(fDesign==2){
      TGeoEltu *C2  = new TGeoEltu("C2",fDx,bradius+0.5*m,Yokel+0.6*m+magnetIncrease/2.);
