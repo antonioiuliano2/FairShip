@@ -54,7 +54,8 @@ void strawtubesHit::StrawEndPoints(TVector3 &vbot, TVector3 &vtop)
     TString view;
     switch (vnb) {
 	      case 0:
-	        view = "_x1";      	      	 
+	        view = "_x1";   
+                if (statnb==5){view = "_x";}   	      	 
 	        break;
 	      case 1:  
 	      	view = "_u";     
@@ -67,25 +68,29 @@ void strawtubesHit::StrawEndPoints(TVector3 &vbot, TVector3 &vtop)
 	        break;
 	      default:
 	        view = "_x1";}
-    TGeoNode* T =  gGeoManager->GetTopVolume()->FindNode(stat);
-    TString plane = "Tr";plane+=statnb;plane+=view;plane+="_plane_";plane+=pnb;plane+="_";plane+=+statnb;plane+=vnb;plane+=+pnb;plane+="00000";
-    TGeoNode* P = T->GetVolume()->FindNode(plane);
-    TString layer = "Tr";layer+=statnb;layer+=view;layer+="_plane_";layer+=pnb;layer+="_layer_";layer+=lnb;layer+="_";layer+=statnb;layer+=vnb;layer+=pnb;layer+=lnb;layer+="0000";
-    TGeoNode* L = P->GetVolume()->FindNode(layer);
-    TString wire = "wire_"+fDetectorID;wire+=1000;
+    TGeoNavigator* nav = gGeoManager->GetCurrentNavigator();
+    TString prefix = "Tr";
+    if (statnb==5){prefix="Veto";}
+    else{prefix+=statnb;}
+    prefix+=view;prefix+="_plane_";prefix+=pnb;prefix+="_";
+    TString plane = prefix;plane+=statnb;plane+=vnb;plane+=+pnb;plane+="00000";
+    TString layer = prefix+"layer_";layer+=lnb;layer+="_";layer+=statnb;layer+=vnb;layer+=pnb;layer+=lnb;layer+="0000";
+    TString wire = "wire_";
+    if (statnb==5){wire+="veto_";}
+    wire+=(fDetectorID+1000);
     if (statnb<3){wire = "wire_12_";wire+=(fDetectorID+1000);}
-    TGeoNode* W =  L->GetVolume()->FindNode(wire);
+    TString path = "/";path+=stat;path+="/";path+=plane;path+="/";path+=layer;path+="/";path+=wire;
+    Bool_t rc = nav->cd(path);
+    if (not rc){
+      cout << "strawtubes::StrawDecode, TgeoNavigator failed "<<path<<endl; 
+      return;
+    }  
+    TGeoNode* W = nav->GetCurrentNode();
     TGeoTube* S = dynamic_cast<TGeoTube*>(W->GetVolume()->GetShape());
     Double_t top[3] = {0,0,S->GetDZ()};
     Double_t bot[3] = {0,0,-S->GetDZ()};
     Double_t Gtop[3],Gbot[3];
-    W->LocalToMaster(top, Gtop);   W->LocalToMaster(bot, Gbot);
-    std::copy(Gtop, Gtop+3, top); std::copy(Gbot,Gbot+3,bot);
-    L->LocalToMaster(top, Gtop);   L->LocalToMaster(bot, Gbot);
-    std::copy(Gtop, Gtop+3, top); std::copy(Gbot,Gbot+3,bot);
-    P->LocalToMaster(top, Gtop);   P->LocalToMaster(bot, Gbot);
-    std::copy(Gtop, Gtop+3, top); std::copy(Gbot,Gbot+3,bot);
-    T->LocalToMaster(top, Gtop);   T->LocalToMaster(bot, Gbot);
+    nav->LocalToMaster(top, Gtop);   nav->LocalToMaster(bot, Gbot);
     vtop.SetXYZ(Gtop[0],Gtop[1],Gtop[2]);
     vbot.SetXYZ(Gbot[0],Gbot[1],Gbot[2]);
 }
@@ -97,7 +102,7 @@ strawtubesHit::~strawtubesHit() { }
 // -------------------------------------------------------------------------
 
 // -----   Public method Print   -------------------------------------------
-void strawtubesHit::Print(Int_t detID) const
+void strawtubesHit::Print() const
 {
   cout << "-I- strawtubesHit: strawtubes hit " << " in detector " << fDetectorID << endl;
   cout << "  TDC " << fdigi << " ns" << endl;
