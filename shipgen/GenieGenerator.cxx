@@ -487,81 +487,86 @@ Bool_t GenieGenerator::ReadEvent(FairPrimaryGenerator* cpg)
       Double_t ptlog10=pyslice[idhnu][nbx]->GetRandom();
 //hist was filled with: log10(pt+0.01)
       Double_t pt=pow(10.,ptlog10)-0.01;
-      //rotate pt in phi:
-      Double_t phi=gRandom->Uniform(0.,2*TMath::Pi());
-      pout[0] = cos(phi)*pt;
-      pout[1] = sin(phi)*pt;
-      pout[2] = pzv*pzv-pt*pt;
-      //printf("p= %f pt=%f px,py,pz**2=%f,%f,%f\n",pzv,pt,pout[0],pout[1],pout[2]);
-
-      if (pout[2]>=0.) {
-        pout[2]=TMath::Sqrt(pout[2]);
-        if (gRandom->Uniform(-1.,1.)<0.) pout[0]=-pout[0];
-        if (gRandom->Uniform(-1.,1.)<0.) pout[1]=-pout[1];
-        //cout << "Info GenieGenerator: neutrino pxyz " << pout[0] << ", " << pout[1] << ", " << pout[2] << endl;
-        // xyz at start and end
-        start[0]=(pout[0]/pout[2])*(start[2]-ztarget);
-        start[1]=(pout[1]/pout[2])*(start[2]-ztarget);
-        //cout << "Info GenieGenerator: neutrino xyz-start " << start[0] << "-" << start[1] << "-" << start[2] << endl;
-        txnu=pout[0]/pout[2];
-        tynu=pout[1]/pout[2];
-        end[0]=txnu*(end[2]-ztarget);
-        end[1]=tynu*(end[2]-ztarget);
-        //cout << "Info GenieGenerator: neutrino xyz-end " << end[0] << "-" << end[1] << "-" << end[2] << endl;
-        //get material density between these two points
-        bparam=MeanMaterialBudget(start, end, mparam);
-        //printf("param %e %e %e \n",bparam,mparam[6],mparam[7]);
-       }
-    }
-    //loop over trajectory between start and end to pick an interaction point
-    Double_t prob2int = -1.;
-    Double_t x;
-    Double_t y;
-    Double_t z;
-    Int_t count=0;
-    while (prob2int<gRandom->Uniform(0.,1.)) {
-      //place x,y,z uniform along path
-      z=gRandom->Uniform(start[2],end[2]);
-      x=txnu*(z-ztarget);
-      y=tynu*(z-ztarget);
-      if (mparam[6]<0.5){
-        //mparam is number of boundaries along path. mparam[6]=0.: uniform material budget along path, use present x,y,z
-        prob2int=2.;
-      }else{
-        //get local material at this point, to calculate probability that interaction is at this point.
-        TGeoNode *node = gGeoManager->FindNode(x,y,z);
-        TGeoMaterial *mat = 0;
-        if (node && !gGeoManager->IsOutside()) {
-          mat = node->GetVolume()->GetMaterial();
-         //cout << "Info GenieGenerator: mat " <<  count << ", " << mat->GetName() << ", " << mat->GetDensity() << endl;
-         //density relative to Prob largest density along this trajectory, i.e. use rho(Pt)
-         prob2int= mat->GetDensity()/mparam[7];
-         if (prob2int>1.) cout << "***WARNING*** GenieGenerator: prob2int > Maximum density????" << prob2int << " maxrho:" << mparam[7] << " material: " <<  mat->GetName() << endl;
-         count+=1;
-        }else{
-          prob2int=0.;
-        }
-     } 
-    }
-    //cout << "Info GenieGenerator: prob2int " << prob2int << ", " << count << endl;
-
-    Double_t zrelative=z-ztarget;
-    Double_t tof=TMath::Sqrt(x*x+y*y+zrelative*zrelative)/2.99792458e+6;
-    cpg->AddTrack(neu,pout[0],pout[1],pout[2],x,y,z,-1,false,TMath::Sqrt(pout[0]*pout[0]+pout[1]*pout[1]+pout[2]*pout[2]),tof,mparam[0]*mparam[4]);
-    if (not fNuOnly){ 
-// second, outgoing lepton
-    std::vector<double> pp = Rotate(x,y,zrelative,pxl,pyl,pzl);
-    Int_t oLPdgCode = neu;
-    if (cc){oLPdgCode = copysign(fabs(neu)-1,neu);}
-    cpg->AddTrack(oLPdgCode,pp[0],pp[1],pp[2],x,y,z,0,true,TMath::Sqrt(pp[0]*pp[0]+pp[1]*pp[1]+pp[2]*pp[2]),tof,mparam[0]*mparam[4]);
-// last, all others
-    for(int i=0; i<nf; i++)
-    	{
-         pp = Rotate(x,y,zrelative,pxf[i],pyf[i],pzf[i]);
-         cpg->AddTrack(pdgf[i],pp[0],pp[1],pp[2],x,y,z,0,true,TMath::Sqrt(pp[0]*pp[0]+pp[1]*pp[1]+pp[2]*pp[2]),tof,mparam[0]*mparam[4]);
-         // cout << "f " << pdgf[i] << " pz "<< pzf[i] << endl;
-       }
-    //cout << "Info GenieGenerator Return from GenieGenerator" << endl;
+      Double_t ptot = pow(10.,pl10);
+      if((pt+0.01)<ptot/50.)
+	{
+	  //rotate pt in phi:
+	  Double_t phi=gRandom->Uniform(0.,2*TMath::Pi());
+	  pout[0] = cos(phi)*pt;
+	  pout[1] = sin(phi)*pt;
+	  pout[2] = pzv*pzv-pt*pt;
+	  //printf("p= %f pt=%f px,py,pz**2=%f,%f,%f\n",pzv,pt,pout[0],pout[1],pout[2]);
+	  
+	  if (pout[2]>=0.) {
+	    pout[2]=TMath::Sqrt(pout[2]);
+	    if (gRandom->Uniform(-1.,1.)<0.) pout[0]=-pout[0];
+	    if (gRandom->Uniform(-1.,1.)<0.) pout[1]=-pout[1];
+	    //cout << "Info GenieGenerator: neutrino pxyz " << pout[0] << ", " << pout[1] << ", " << pout[2] << endl;
+	    // xyz at start and end
+	    start[0]=(pout[0]/pout[2])*(start[2]-ztarget);
+	    start[1]=(pout[1]/pout[2])*(start[2]-ztarget);
+	    //cout << "Info GenieGenerator: neutrino xyz-start " << start[0] << "-" << start[1] << "-" << start[2] << endl;
+	    txnu=pout[0]/pout[2];
+	    tynu=pout[1]/pout[2];
+	    end[0]=txnu*(end[2]-ztarget);
+	    end[1]=tynu*(end[2]-ztarget);
+	    //cout << "Info GenieGenerator: neutrino xyz-end " << end[0] << "-" << end[1] << "-" << end[2] << endl;
+	    //get material density between these two points
+	    bparam=MeanMaterialBudget(start, end, mparam);
+	    //printf("param %e %e %e \n",bparam,mparam[6],mparam[7]);
+	  }
+	}
+      //loop over trajectory between start and end to pick an interaction point
+      Double_t prob2int = -1.;
+      Double_t x;
+      Double_t y;
+      Double_t z;
+      Int_t count=0;
+      while (prob2int<gRandom->Uniform(0.,1.)) {
+	//place x,y,z uniform along path
+	z=gRandom->Uniform(start[2],end[2]);
+	x=txnu*(z-ztarget);
+	y=tynu*(z-ztarget);
+	if (mparam[6]<0.5){
+	  //mparam is number of boundaries along path. mparam[6]=0.: uniform material budget along path, use present x,y,z
+	  prob2int=2.;
+	}else{
+	  //get local material at this point, to calculate probability that interaction is at this point.
+	  TGeoNode *node = gGeoManager->FindNode(x,y,z);
+	  TGeoMaterial *mat = 0;
+	  if (node && !gGeoManager->IsOutside()) {
+	    mat = node->GetVolume()->GetMaterial();
+	    //cout << "Info GenieGenerator: mat " <<  count << ", " << mat->GetName() << ", " << mat->GetDensity() << endl;
+	    //density relative to Prob largest density along this trajectory, i.e. use rho(Pt)
+	    prob2int= mat->GetDensity()/mparam[7];
+	    if (prob2int>1.) cout << "***WARNING*** GenieGenerator: prob2int > Maximum density????" << prob2int << " maxrho:" << mparam[7] << " material: " <<  mat->GetName() << endl;
+	    count+=1;
+	  }else{
+	    prob2int=0.;
+	  }
+	} 
+      }
+      //cout << "Info GenieGenerator: prob2int " << prob2int << ", " << count << endl;
+      
+      Double_t zrelative=z-ztarget;
+      Double_t tof=TMath::Sqrt(x*x+y*y+zrelative*zrelative)/2.99792458e+6;
+      cpg->AddTrack(neu,pout[0],pout[1],pout[2],x,y,z,-1,false,TMath::Sqrt(pout[0]*pout[0]+pout[1]*pout[1]+pout[2]*pout[2]),tof,mparam[0]*mparam[4]);
+      if (not fNuOnly){ 
+	// second, outgoing lepton
+	std::vector<double> pp = Rotate(x,y,zrelative,pxl,pyl,pzl);
+	Int_t oLPdgCode = neu;
+	if (cc){oLPdgCode = copysign(fabs(neu)-1,neu);}
+	cpg->AddTrack(oLPdgCode,pp[0],pp[1],pp[2],x,y,z,0,true,TMath::Sqrt(pp[0]*pp[0]+pp[1]*pp[1]+pp[2]*pp[2]),tof,mparam[0]*mparam[4]);
+	// last, all others
+	for(int i=0; i<nf; i++)
+	  {
+	    pp = Rotate(x,y,zrelative,pxf[i],pyf[i],pzf[i]);
+	    cpg->AddTrack(pdgf[i],pp[0],pp[1],pp[2],x,y,z,0,true,TMath::Sqrt(pp[0]*pp[0]+pp[1]*pp[1]+pp[2]*pp[2]),tof,mparam[0]*mparam[4]);
+	    // cout << "f " << pdgf[i] << " pz "<< pzf[i] << endl;
+	  }
+	
+	//cout << "Info GenieGenerator Return from GenieGenerator" << endl;
+      }
     }
   return kTRUE;
 }

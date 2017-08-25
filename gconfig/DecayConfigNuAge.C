@@ -6,7 +6,7 @@ void DecayConfig() {
 	
 	// Access the external decayer singleton and initialize it  
 	TPythia8Decayer* decayer = new TPythia8Decayer();
-	decayer->SetDebugLevel(1);
+	decayer->SetDebugLevel(0);
         TPythia8* tp8 = TPythia8::Instance();
         tp8->ReadString("ProcessLevel:all = off");
         // example how to overwrite decay table
