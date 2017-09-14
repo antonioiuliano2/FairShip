@@ -34,7 +34,7 @@
 #include "ShipUnit.h"
 #include "ShipStack.h"
 
-#include "TGeoUniformMagField.h"
+//#include "TGeoUniformMagField.h"
 #include <stddef.h>                     // for NULL
 #include <iostream>                     // for operator<<, basic_ostream, etc
 
@@ -244,6 +244,7 @@ void MagneticSpectrometer::ConstructGeometry()
     
   TGeoUniformMagField *retFieldU    = new TGeoUniformMagField(0.,0.,-fField); //magnetic field up return yoke
   TGeoUniformMagField *retFieldL   = new TGeoUniformMagField(0.,0.,fField); //magnetic field low return yoke
+  cout<<"fField"<<fField<<endl;
     
   Double_t d = 0;
     
@@ -255,7 +256,7 @@ void MagneticSpectrometer::ConstructGeometry()
   TGeoBBox *UpYokeBox = new TGeoBBox("UpYokeBox", fXRyoke/2, fYRyoke/2, fZRyoke/2);
   TGeoVolume *volUpYoke = new TGeoVolume("volUpYoke",UpYokeBox,vacuum);
   volMSBox->AddNode(volUpYoke,1,new TGeoTranslation(0,fYtot/2 - fYRyoke/2,0));
-  volUpYoke->SetField(retFieldU);
+
     
     
   TGeoBBox *FeYoke = new TGeoBBox("FeYoke",fXtot/2, fYRyoke/2, fZArm/2);
@@ -291,7 +292,9 @@ void MagneticSpectrometer::ConstructGeometry()
     }
 
   //cout <<"fZArm: " << fZArm<< endl;
-    
+
+  volFeYoke->SetField(retFieldU);
+  volFeYoke1->SetField(retFieldU);    
   volUpYoke->AddNode(volFeYoke,1, new TGeoTranslation(0,0,- (fZArm + fGapMiddle)/2));
   volUpYoke->AddNode(volFeYoke,2, new TGeoTranslation(0,0,(fZArm + fGapMiddle)/2));
   volUpYoke->AddNode(volFeYoke1,1,new TGeoTranslation(0,0,0));
