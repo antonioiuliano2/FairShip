@@ -10,7 +10,7 @@ const Bool_t debug = false;
 using namespace Pythia8;
 
 // -----   Default constructor   -------------------------------------------
-NLPythia8Generator::HNLPythia8Generator()
+HNLPythia8Generator::HNLPythia8Generator()
 {
   fId         = 2212; // proton
   fMom        = 400;  // proton
@@ -90,7 +90,7 @@ Bool_t HNLPythia8Generator::Init()
 
 
 // -----   Destructor   ----------------------------------------------------
-NLPythia8Generator::~HNLPythia8Generator()
+HNLPythia8Generator::~HNLPythia8Generator()
 {
 }
 // -------------------------------------------------------------------------

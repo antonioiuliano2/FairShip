@@ -73,4 +73,4 @@ class ShipMuonShield : public FairModule
 };
 
 #endif //MuonSield_H
->>>>>>> official/master
+

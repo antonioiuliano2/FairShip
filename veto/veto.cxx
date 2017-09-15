@@ -397,7 +397,7 @@ TGeoVolume* veto::MakeSegments(Int_t seg,Double_t dz,Double_t dx_start,Double_t 
       nm = "T"; nm += seg;
       TGeoVolumeAssembly *tTankVol = new TGeoVolumeAssembly(nm);
       //Assume ~1 m between ribs, calculate number of ribs
-     Double_t dist =  0.8*m; //with Napoli design: 0.8 m
+      Double_t dist =  0.8*m; //with Napoli design: 0.8 m
       Int_t nribs = 2+dz*2./dist  ;
       Double_t ribspacing = (dz*2.-nribs*f_InnerSupportThickness)/(nribs-1)+f_InnerSupportThickness;
 
@@ -843,6 +843,7 @@ TGeoVolume* veto::MakeLidSegments(Int_t seg,Double_t dx,Double_t dy)
       nm+= "Lid";
       TGeoVolumeAssembly *tDecayVol = new TGeoVolumeAssembly(nm);
       //Assume ~1 m between ribs, calculate number of ribs
+      Double_t dist = 0.8*m; //with Napoli design: 0.8 m
      Int_t nribs = 2+dx*2./dist  ;
       Double_t ribspacing = (dx*2.-nribs*f_InnerSupportThickness)/(nribs-1)+f_InnerSupportThickness;
 
@@ -916,7 +917,7 @@ void veto::GeoPlateEllipse(const char* name,Double_t thick,Double_t a,Double_t b
        top->AddNode(T, 1, new TGeoTranslation(0, 0, z));
 }
 
-/ -----   Private method InitMedium
+// -----   Private method InitMedium
 Int_t veto::InitMedium(const char* name)
 {
    static FairGeoLoader *geoLoad=FairGeoLoader::Instance();
