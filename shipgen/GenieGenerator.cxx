@@ -34,7 +34,6 @@ Bool_t GenieGenerator::Init(const char* fileName, const int firstEvent) {
    char stupidCpp[100];
    strcpy(stupidCpp,"root://eoslhcb.cern.ch/");
    strcat(stupidCpp,fileName);
-   fInputFile  = TFile::Open(stupidCpp); 
    fLogger->Info(MESSAGE_ORIGIN,"Opening input file on eos %s",stupidCpp);
   }else{
    fInputFile  = new TFile(fileName);
@@ -60,7 +59,8 @@ Bool_t GenieGenerator::Init(const char* fileName, const int firstEvent) {
   fTree->SetBranchAddress("pxl",&pxl);
   fTree->SetBranchAddress("pyl",&pyl);
   fTree->SetBranchAddress("pzl",&pzl);
-  fTree->SetBranchAddress("pxf",&pxf);   // outgoing hadronic momenta
+ fTree->SetBranchAddress("Ef",&Ef);   // outgoing hadronic momenta
+  fTree->SetBranchAddress("pxf",&pxf);    
   fTree->SetBranchAddress("pyf",&pyf);
   fTree->SetBranchAddress("pzf",&pzf);
   fTree->SetBranchAddress("nf",&nf);     // nr of outgoing hadrons
@@ -94,11 +94,11 @@ Double_t GenieGenerator::MeanMaterialBudget(const Double_t *start, const Double_
   //  Corrections and improvements by
   //        Andrea Dainese, Andrea.Dainese@lnl.infn.it,
   //        Andrei Gheata,  Andrei.Gheata@cern.ch
-  //        Thomas Ruf,  Thomas.Ruf@cern.ch 
+ //        Thomas Ruf,  Thomas.Ruf@cern.ch
   //
 
-  mparam[0]=0; mparam[1]=1; mparam[2]=0; mparam[3]=0; mparam[4]=0; 
-  mparam[5]=0; mparam[6]=0; mparam[7]=0; mparam[8]=0; mparam[9]=0; 
+  mparam[0]=0; mparam[1]=1; mparam[2]=0; mparam[3]=0; mparam[4]=0;
+  mparam[5]=0; mparam[6]=0; mparam[7]=0; mparam[8]=0; mparam[9]=0;
   //
   Double_t bparam[7]; // total parameters
   Double_t lparam[7]; // local parameters
@@ -384,7 +384,7 @@ Bool_t GenieGenerator::OldReadEvent(FairPrimaryGenerator* cpg)
 // second, outgoing lepton
     pout = Rotate(x,y,zrelative,pxl,pyl,pzl);
     Int_t oLPdgCode = neu;
-    if (cc){oLPdgCode = copysign(fabs(neu)-1,neu);}
+   if (cc){oLPdgCode = copysign(TMath::Abs(neu)-1,neu);}
     cpg->AddTrack(oLPdgCode,pout[0],pout[1],pout[2],x,y,z,0,true);
 // last, all others
     for(int i=0; i<nf; i++)
@@ -431,8 +431,8 @@ Bool_t GenieGenerator::ReadEvent(FairPrimaryGenerator* cpg)
 	  sprintf(ts,"%d",idhnu);
 	  //pickup corresponding (log10(p),log10(pt)) histogram
           if (fInputFile->FindObjectAny(ts)){
-           TH2F* h2tmp = (TH2F*) fInputFile->Get(ts);                      
-           printf("HISTID=%d, Title:%s\n",idhnu,h2tmp->GetTitle());
+          TH2F* h2tmp = (TH2F*) fInputFile->Get(ts);
+          printf("HISTID=%d, Title:%s\n",idhnu,h2tmp->GetTitle());
 	   sprintf(ts,"px_%d",idhnu);
           //make its x-projection, to later be able to convert log10(p) to its bin-number
            pxhist[idhnu]=h2tmp->ProjectionX(ts,1,-1);
@@ -442,8 +442,8 @@ Bool_t GenieGenerator::ReadEvent(FairPrimaryGenerator* cpg)
            for (Int_t k=1;k<nbinx+1;k+=1){
 	    sprintf(ts,"h%d%d",idhnu,k);
             //printf("idnu %d idhnu %d bin%d  ts=%s\n",idnu,idhnu,k,ts);
-            pyslice[idhnu][k]=h2tmp->ProjectionY(ts,k,k);  
-	  }
+           pyslice[idhnu][k]=h2tmp->ProjectionY(ts,k,k);
+  }
          }
 	}
       }
@@ -476,8 +476,8 @@ Bool_t GenieGenerator::ReadEvent(FairPrimaryGenerator* cpg)
       //pout[2] = pzv*pzv-pout[0]*pout[0]-pout[1]*pout[1];
 
       //**NEW** get pt of this neutrino from 2D hists.
-      Int_t idhnu=fabs(neu)+idbase;
-      if (neu<0) idhnu+=1000;
+     Int_t idhnu=TMath::Abs(neu)+idbase;
+     if (neu<0) idhnu+=1000;
       Int_t nbinmx=pxhist[idhnu]->GetNbinsX();
       Double_t pl10=log10(pzv);
       Int_t nbx=pxhist[idhnu]->FindBin(pl10);
@@ -487,7 +487,7 @@ Bool_t GenieGenerator::ReadEvent(FairPrimaryGenerator* cpg)
       Double_t ptlog10=pyslice[idhnu][nbx]->GetRandom();
 //hist was filled with: log10(pt+0.01)
       Double_t pt=pow(10.,ptlog10)-0.01;
-      Double_t ptot = pow(10.,pl10);
+     Double_t ptot = pow(10.,pl10);
       if((pt+0.01)<ptot/50.)
 	{
 	  //rotate pt in phi:
@@ -567,6 +567,81 @@ Bool_t GenieGenerator::ReadEvent(FairPrimaryGenerator* cpg)
 	
 	//cout << "Info GenieGenerator Return from GenieGenerator" << endl;
       }
+      //rotate pt in phi:
+      Double_t phi=gRandom->Uniform(0.,2*TMath::Pi());
+      pout[0] = cos(phi)*pt;
+      pout[1] = sin(phi)*pt;
+      pout[2] = pzv*pzv-pt*pt;
+      //printf("p= %f pt=%f px,py,pz**2=%f,%f,%f\n",pzv,pt,pout[0],pout[1],pout[2]);
+
+      if (pout[2]>=0.) {
+        pout[2]=TMath::Sqrt(pout[2]);
+        if (gRandom->Uniform(-1.,1.)<0.) pout[0]=-pout[0];
+        if (gRandom->Uniform(-1.,1.)<0.) pout[1]=-pout[1];
+        //cout << "Info GenieGenerator: neutrino pxyz " << pout[0] << ", " << pout[1] << ", " << pout[2] << endl;
+        // xyz at start and end
+        start[0]=(pout[0]/pout[2])*(start[2]-ztarget);
+        start[1]=(pout[1]/pout[2])*(start[2]-ztarget);
+        //cout << "Info GenieGenerator: neutrino xyz-start " << start[0] << "-" << start[1] << "-" << start[2] << endl;
+        txnu=pout[0]/pout[2];
+        tynu=pout[1]/pout[2];
+        end[0]=txnu*(end[2]-ztarget);
+        end[1]=tynu*(end[2]-ztarget);
+        //cout << "Info GenieGenerator: neutrino xyz-end " << end[0] << "-" << end[1] << "-" << end[2] << endl;
+        //get material density between these two points
+        bparam=MeanMaterialBudget(start, end, mparam);
+        //printf("param %e %e %e \n",bparam,mparam[6],mparam[7]);
+       }
+    }
+    //loop over trajectory between start and end to pick an interaction point
+    Double_t prob2int = -1.;
+    Double_t x;
+    Double_t y;
+    Double_t z;
+    Int_t count=0;
+    while (prob2int<gRandom->Uniform(0.,1.)) {
+      //place x,y,z uniform along path
+      z=gRandom->Uniform(start[2],end[2]);
+      x=txnu*(z-ztarget);
+      y=tynu*(z-ztarget);
+      if (mparam[6]<0.5){
+        //mparam is number of boundaries along path. mparam[6]=0.: uniform material budget along path, use present x,y,z
+        prob2int=2.;
+      }else{
+        //get local material at this point, to calculate probability that interaction is at this point.
+        TGeoNode *node = gGeoManager->FindNode(x,y,z);
+        TGeoMaterial *mat = 0;
+        if (node && !gGeoManager->IsOutside()) {
+          mat = node->GetVolume()->GetMaterial();
+         //cout << "Info GenieGenerator: mat " <<  count << ", " << mat->GetName() << ", " << mat->GetDensity() << endl;
+         //density relative to Prob largest density along this trajectory, i.e. use rho(Pt)
+         prob2int= mat->GetDensity()/mparam[7];
+         if (prob2int>1.) cout << "***WARNING*** GenieGenerator: prob2int > Maximum density????" << prob2int << " maxrho:" << mparam[7] << " material: " <<  mat->GetName() << endl;
+         count+=1;
+        }else{
+          prob2int=0.;
+        }
+     }
+    }
+    //cout << "Info GenieGenerator: prob2int " << prob2int << ", " << count << endl;
+
+    Double_t zrelative=z-ztarget;
+    Double_t tof=TMath::Sqrt(x*x+y*y+zrelative*zrelative)/2.99792458e+6;
+    cpg->AddTrack(neu,pout[0],pout[1],pout[2],x,y,z,-1,false,TMath::Sqrt(pout[0]*pout[0]+pout[1]*pout[1]+pout[2]*pout[2]),tof,mparam[0]*mparam[4]);
+    if (not fNuOnly){
+// second, outgoing lepton
+    std::vector<double> pp = Rotate(x,y,zrelative,pxl,pyl,pzl);
+    Int_t oLPdgCode = neu;
+    if (cc){oLPdgCode = copysign(TMath::Abs(neu)-1,neu);}
+    cpg->AddTrack(oLPdgCode,pp[0],pp[1],pp[2],x,y,z,0,true,El,tof,mparam[0]*mparam[4]);
+// last, all others
+    for(int i=0; i<nf; i++)
+    	{
+         pp = Rotate(x,y,zrelative,pxf[i],pyf[i],pzf[i]);
+         cpg->AddTrack(pdgf[i],pp[0],pp[1],pp[2],x,y,z,0,true,Ef[i],tof,mparam[0]*mparam[4]);
+         //cout << "f " << pdgf[i] << " pz "<< pzf[i] << endl;
+       }
+    //cout << "Info GenieGenerator Return from GenieGenerator" << endl;
     }
   return kTRUE;
 }
