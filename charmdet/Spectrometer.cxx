@@ -91,13 +91,6 @@ void Spectrometer::Initialize()
     FairDetector::Initialize();
 }
 
-//Sets the dimension of the Magnetic Spectrometer volume in which the HPT are placed
-/*void Spectrometer::SetZsize(const Double_t MSsize)
-{
-  zSizeMS = MSsize;
-}
-*/
-
 // -----   Private method InitMedium 
 Int_t Spectrometer::InitMedium(const char* name)
 {
@@ -126,6 +119,33 @@ void Spectrometer::SetBoxParam(Double_t SX, Double_t SY, Double_t SZ, Double_t z
   SBoxZ = SZ;
   zBoxPosition = zBox;
 }
+
+void Spectrometer::SetMagneticField(Double_t Bvalue)
+{
+ Bfield = Bvalue;
+}
+
+void Spectrometer::SetSiliconZ(Double_t SiliconZ)
+{
+  DimZSi = SiliconZ;
+}
+
+void Spectrometer::SetTransverseSizes(Double_t D1X, Double_t D1Y, Double_t D2X, Double_t D2Y, Double_t D3X, Double_t D3Y, Double_t D4X, Double_t D4Y){
+  Dim1X = D1X;
+  Dim1Y = D1Y;
+  Dim2X = D2X;
+  Dim2Y = D2Y;
+  Dim3X = D3X;
+  Dim3Y = D3Y;
+  Dim4X = D4X;
+  Dim4Y = D4Y;
+}   
+
+void Spectrometer::ChooseGeometry(bool issilicon)
+{
+  silicongeometry = issilicon;
+}
+
 //Methods for Goliath by Annarita
 void Spectrometer::SetGoliathSizes(Double_t H, Double_t TS, Double_t LS, Double_t BasisH)
 {
@@ -145,88 +165,109 @@ void Spectrometer::SetCoilParameters(Double_t CoilR, Double_t UpCoilH, Double_t 
 //
 void Spectrometer::ConstructGeometry()
 { 
-    InitMedium("vacuum");
-  TGeoMedium *vacuum = gGeoManager->GetMedium("vacuum");
+    InitMedium("air");
+  TGeoMedium *air = gGeoManager->GetMedium("air");
 
     InitMedium("iron");
     TGeoMedium *Fe =gGeoManager->GetMedium("iron");
+    
+    InitMedium("silicon");
+    TGeoMedium *Silicon = gGeoManager->GetMedium("silicon");
 
     InitMedium("CoilCopper");
     TGeoMedium *Cu  = gGeoManager->GetMedium("CoilCopper");
 
     InitMedium("CoilAluminium");
     TGeoMedium *Al  = gGeoManager->GetMedium("CoilAluminium");
+
+    InitMedium("TTmedium");
+    TGeoMedium *TT  = gGeoManager->GetMedium("TTmedium");
+    
+    InitMedium("STTmix8020_2bar");
+    TGeoMedium *sttmix8020_2bar   = gGeoManager->GetMedium("STTmix8020_2bar");
   
   TGeoVolume *top = gGeoManager->GetTopVolume();
 
-  const Double_t MagneticField = 1 * tesla; //magnetic field
-  TGeoUniformMagField *magfield = new TGeoUniformMagField(0., MagneticField, 0.); //The magnetic field must be only in the vacuum space between the stations
+  const Double_t MagneticField = Bfield;
+  TGeoUniformMagField *magfield = new TGeoUniformMagField(0., MagneticField, 0.); //The magnetic field must be only in the air space between the stations
 
-  TGeoBBox *SpectrometerBox = new TGeoBBox("SpectrometerBox", SBoxX/2, SBoxY/2, SBoxZ/2);
-  TGeoVolume *volSciFi = new TGeoVolume("volSciFi", SpectrometerBox, vacuum);
-  volSciFi->SetTransparency(1);
-  
-  //  top->AddNode(volSciFi,1,new TGeoTranslation(0,0,zBoxPosition));
-  // Double_t Goloffset = 4.5*m; //additional space required for the Goliath magnet
-  TGeoBBox *ProvaBox = new TGeoBBox("ProvaBox", DimX/2  + 1 * m/2, DimY/2  + 1 * m/2, SBoxZ/2);
-  TGeoVolume *volProva = new TGeoVolume("volProva", ProvaBox, vacuum);
+  TGeoBBox *ProvaBox = new TGeoBBox("ProvaBox", Dim4X/2, Dim4Y/2, SBoxZ/2);
+  TGeoVolume *volProva = new TGeoVolume("volProva", ProvaBox, air);
   volProva->SetTransparency(1);
 
-  top->AddNode(volProva,1,new TGeoTranslation(0,0,zBoxPosition));
+ // top->AddNode(volProva,1,new TGeoTranslation(0,0,zBoxPosition));
   
-    InitMedium("Scintillator");
-    TGeoMedium *Scintillator = gGeoManager->GetMedium("Scintillator");
+    TGeoBBox *SciFi1; //first declare, then define inside the if clause
+    TGeoVolume *subvolSciFi1; 
+    TGeoBBox *SciFi2;
+    TGeoVolume *subvolSciFi2; 
+  
+    TGeoBBox *Pixel;
+    TGeoVolume *volPixel;
 
-    TGeoBBox *SciFi1 = new TGeoBBox("SciFi1", (DimX-87*cm)/2, (DimY-39*cm)/2, DimZ/2); //planes now have different dimensions (DimX è 1m,DimY è 0.5m)
-      TGeoVolume *subvolSciFi1 = new TGeoVolume("volSciFi1",SciFi1,Scintillator);
-    // TGeoVolume *subvolSciFi1 = new TGeoVolume("volSciFi1",SciFi1,vacuum);
+    if (silicongeometry){
+    Pixel = new TGeoBBox("Pixel", (Dim1X)/2, (Dim1Y)/2, DimZSi/2); 
+    volPixel = new TGeoVolume("volPixel",Pixel,Silicon); 
+    volPixel->SetLineColor(kBlue-5);
+    AddSensitiveVolume(volPixel);
+}
+  else{
+    SciFi1 = new TGeoBBox("SciFi1", (Dim1X)/2, (Dim1Y)/2, (4*DimZSi)/2); //the silicon blocks are united in single blocks
+    subvolSciFi1 = new TGeoVolume("volSciFi1",SciFi1,Silicon);
     subvolSciFi1->SetLineColor(kBlue-5);
     AddSensitiveVolume(subvolSciFi1);
+    
 
-    TGeoBBox *SciFi2 = new TGeoBBox("SciFi2", (DimX-80*cm)/2, (DimY-30*cm)/2, DimZ/2);
-    TGeoVolume *subvolSciFi2 = new TGeoVolume("volSciFi2",SciFi2,Scintillator);
-   // TGeoVolume *subvolSciFi2 = new TGeoVolume("volSciFi2",SciFi2,vacuum);
+    SciFi2 = new TGeoBBox("SciFi2", (Dim2X)/2, (Dim2Y)/2, (2*DimZSi)/2);	
+    subvolSciFi2 = new TGeoVolume("volSciFi2",SciFi2,Silicon);
     subvolSciFi2->SetLineColor(kBlue-5);
     AddSensitiveVolume(subvolSciFi2);
+}  
     
-    TGeoBBox *SciFi3 = new TGeoBBox("SciFi3", DimX/2 + 1*m/2 , DimY/2 + 1*m/2, DimZ/2); 
-    TGeoVolume *subvolSciFi3 = new TGeoVolume("volSciFi3",SciFi3,Scintillator);
-    //TGeoVolume *subvolSciFi3 = new TGeoVolume("volSciFi3",SciFi3,vacuum);
+    TGeoBBox *SciFi3 = new TGeoBBox("SciFi3", Dim3X/2, Dim3Y/2, DimZ/2); 
+    TGeoVolume *subvolSciFi3 = new TGeoVolume("volSciFi3",SciFi3,sttmix8020_2bar);
     subvolSciFi3->SetLineColor(kBlue-5);
     AddSensitiveVolume(subvolSciFi3);
-
-    TGeoBBox *SciFi4 = new TGeoBBox("SciFi4", DimX/2 + 1*m/2, DimY/2 + 1*m/2 , DimZ/2); 
-    TGeoVolume *subvolSciFi4 = new TGeoVolume("volSciFi4",SciFi4,Scintillator);
-    //TGeoVolume *subvolSciFi4 = new TGeoVolume("volSciFi4",SciFi4,vacuum);
+  		
+    TGeoBBox *SciFi4 = new TGeoBBox("SciFi4", Dim4X/2, Dim4Y/2, DimZ/2);
+    TGeoVolume *subvolSciFi4 = new TGeoVolume("volSciFi4",SciFi4,sttmix8020_2bar);
     subvolSciFi4->SetLineColor(kBlue-5);
-    AddSensitiveVolume(subvolSciFi4);
+    AddSensitiveVolume(subvolSciFi4);    
 
-    
-    //Double_t z[4] = {0,20*cm,1*m+20*cm,1*m + 40*cm}; //distanze relative (20 cm fra le stazioni) (situazione precedente)
-    
+    Double_t z[4];
+   if (silicongeometry){
+    Double_t Sidist = 5*cm; //Distance between siliconDetectors
 
-    Double_t z[4] = {DimZ/2., DimZ/2. +20*cm + DimZ, DimZ/2. + 4.5*m +20*cm + 2 * DimZ, DimZ/2. + 4.5*m + 40*cm + 3 * DimZ}; //relative distances (20 cm between tracking stations) (after implementation of Goliath)
-    //const int nreplica = 4;
+    z[0] = (DimZSi)/2.;
+    z[1] = z[0] + 3 *DimZSi + 2 * Sidist;
+    z[2] = z[1] + DimZ/2. + LongitudinalSize + 10 *cm;
+    z[3] = z[1] + DimZ/2. + LongitudinalSize + 10* cm + 5*cm + DimZ;   
 
+    for (int k = 0; k < 3; k++){ //3 silicon planes are the new detectors
+      Double_t zreplica = 0 + k * Sidist * cm + DimZSi/2.;      
+      top->AddNode(volPixel, 100 + k+1,  new TGeoTranslation(0,0, zBoxPosition -SBoxZ/2 + z[0] + zreplica)); //101, 102, 103
+    }
+}
+   else{ //T1-T4 classical configuration
+    z[0] = (4*DimZSi)/2.; 
+    z[1] = (2*DimZSi)/2. +20*cm + 4*DimZSi;
+    z[2] = DimZ/2. + LongitudinalSize +20*cm + 6 * DimZSi;
+    z[3] = DimZ/2. + LongitudinalSize + 40*cm + 6 * DimZSi;
     volProva->AddNode(subvolSciFi1,1,new TGeoTranslation(0,0,-SBoxZ/2 + z[0]));
-    volProva->AddNode(subvolSciFi2,1,new TGeoTranslation(0,0,-SBoxZ/2 + z[1]));
-    volProva->AddNode(subvolSciFi3,1,new TGeoTranslation(0,0,-SBoxZ/2 + z[2]));
-    volProva->AddNode(subvolSciFi4,1,new TGeoTranslation(0,0,-SBoxZ/2 + z[3]));
-
- 
-    /*    for(int n = 0; n<nreplica; n++){
-    volProva->AddNode(subvolSciFi,n,new TGeoTranslation(0,0,-SBoxZ/2 + z[n]));
-     }*/
+    volProva->AddNode(subvolSciFi2,2,new TGeoTranslation(0,0,-SBoxZ/2 + z[1])); //I need to recognize them with indexes
+}
+ //I am trying to activate only the first two slabs
+    //volProva->AddNode(subvolSciFi3,3,new TGeoTranslation(0,0,-SBoxZ/2 + z[2]));
+    //volProva->AddNode(subvolSciFi4,4,new TGeoTranslation(0,0,-SBoxZ/2 + z[3]));
+    top->AddNode(subvolSciFi3,3,new TGeoTranslation(0,0,zBoxPosition-SBoxZ/2 + z[2]));
+    top->AddNode(subvolSciFi4,4,new TGeoTranslation(0,0,zBoxPosition-SBoxZ/2 + z[3]));
   
-   TGeoBBox *VacuumBox = new TGeoBBox("VacuumBox", TransversalSize/2, 90*cm/2., (175 * cm)/2.);
-    TGeoVolume *volVacuum = new TGeoVolume("VolVacuum", VacuumBox, vacuum);
-    volVacuum->SetVisibility(0);
-    volVacuum->SetField(magfield);
-    volVacuum->SetLineColor(kYellow);
-    // volProva->AddNode(volVacuum, 1, new TGeoTranslation(0,0,-SBoxZ/2 + z[1] + DimZ/2+50*cm)); //commented to insert the new Goliath
-    volProva->AddNode(volVacuum, 1, new TGeoTranslation(0,-5 * cm,-SBoxZ/2 + z[1] + LongitudinalSize/2.)); //commented to insert the new Goliath 
-    
-    TGeoUniformMagField *magField2 = new TGeoUniformMagField(0.,MagneticField,0.); //magnetic field in target (how to insert in my case???)
+    TGeoBBox *MagneticBox = new TGeoBBox("MagneticBox", TransversalSize/2, 90*cm/2., (195 * cm)/2.); //(less than the real 200 cm, due to overlapping issues)
+    TGeoVolume *volMagnetic = new TGeoVolume("VolMagnetic", MagneticBox, air);
+    volMagnetic->SetVisibility(0);
+    volMagnetic->SetField(magfield);
+    volMagnetic->SetLineColor(kYellow);
+    top->AddNode(volMagnetic, 1, new TGeoTranslation(0,-5 * cm,zBoxPosition-SBoxZ/2 + z[1] + 2*DimZSi + 0.2 *cm +  LongitudinalSize/2.));
 
  
     
@@ -238,7 +279,7 @@ void Spectrometer::ConstructGeometry()
     TGeoUniformMagField *magField1 = new TGeoUniformMagField(0.,-MagneticField,0.); //magnetic field in Goliath pillars
     
     TGeoBBox *BoxGoliath = new TGeoBBox(TransversalSize/2,Height/2,LongitudinalSize/2);
-    TGeoVolume *volGoliath = new TGeoVolume("volGoliath",BoxGoliath,vacuum);
+    TGeoVolume *volGoliath = new TGeoVolume("volGoliath",BoxGoliath,air);
     //volProva->AddNode(volGoliath,1,new TGeoTranslation(0,0,-SBoxZ/2 + z[1] + LongitudinalSize/2));  
     //Goliath raised by 17cm
     top->AddNode(volGoliath,1,new TGeoTranslation(0,17*cm,zBoxPosition-SBoxZ/2 + z[1] + LongitudinalSize/2)); 
@@ -455,7 +496,7 @@ void Spectrometer::ConstructGeometry()
     volGoliath->AddNode(volLateralS2_c, 1, m3_c);
 
     //END GOLIATH PART BY ANNARITA
-    
+
 }
 
 Bool_t  Spectrometer::ProcessHits(FairVolume* vol)

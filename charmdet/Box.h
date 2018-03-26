@@ -28,17 +28,23 @@ public:
     virtual ~Box();
     
     /**      Create the detector geometry        */
-    void ConstructGeometry();  
+    void ConstructGeometry(); 
+    void AddEmulsionFilm(Double_t zposition, Int_t nreplica, TGeoVolume * volTarget, TGeoVolume * volEmulsionFilm, TGeoVolume * volEmulsionFilm2, TGeoVolume * volPlBase); 
+  
+    void SetTargetDesign(Bool_t charmtarget);
+    void SetRunNumber(Int_t RunNumber);
 
-    void SetPassiveParam(Double_t PX, Double_t PY, Double_t Pz);
     void SetBrickParam(Double_t BrX, Double_t BrY, Double_t BrZ, Double_t BrPackX, Double_t BrPackY, Double_t BrPackZ);
     void SetEmulsionParam(Double_t EmTh, Double_t EmX, Double_t EmY, Double_t PBTh,Double_t EPlW, Double_t MolybdenumTh, Double_t AllPW);
-  
+    void SetPassiveComposition(Double_t Molblock1Z, Double_t Molblock2Z, Double_t Molblock3Z, Double_t Molblock4Z, Double_t Wblock1Z, Double_t Wblock2Z, Double_t Wblock3Z, Double_t Wblock3_5Z, Double_t Wblock4Z); 
+    void SetPassiveSampling(Double_t Passive3mmZ, Double_t Passive2mmZ, Double_t Passive1mmZ);
+ 
     void SetTargetParam(Double_t TX, Double_t TY, Double_t TZ);
     void SetCoolingParam(Double_t CoolX, Double_t CoolY, Double_t CoolZ);
     void SetCoatingParam(Double_t CoatX, Double_t CoatY, Double_t CoatZ);
 
-   
+    void SetMagneticField(Double_t Bvalue);
+    void SetGapGeometry(Double_t GapInTargetTh, Double_t GapPostTargetTh);
     
     /**      Initialization of the detector is done here    */
     virtual void Initialize();
@@ -93,22 +99,21 @@ private:
     
 protected:
 
- 
+    //Uniform magnetic field intensity
+    Double_t Bfield; 
 
-    //Target
-    
-    Double_t   BoxX;
-    Double_t   BoxY;
-    Double_t   BoxZ;
+    //new segmentation with gaps
+    Double_t GapInTargetThickness; //gap between ECC
+    Double_t GapPostTargetThickness; //gap between target and T1 station
+
+    //Target position
     Double_t zBoxPosition;
     
     Int_t InitMedium(const char* name);
 
-
-    //attributes for an additional pre-target
-    Double_t PassiveX;
-    Double_t PassiveY;
-    Double_t PassiveZ;
+    Bool_t fcharmtarget; //Lead ECC vs SHiP ECC
+    //Number of the simulated run
+    Int_t nrun;
     
     //attributes for the brick
     Double_t EmulsionThickness;
@@ -119,6 +124,22 @@ protected:
     Double_t TargetX;
     Double_t TargetY;
     Double_t TargetZ;
+
+    //target composition thicknesses (passive configuration)
+    Double_t Mol1Z;
+    Double_t Mol2Z;
+    Double_t Mol3Z;
+    Double_t Mol4Z;
+    Double_t W1Z;
+    Double_t W2Z;
+    Double_t W3Z;
+    Double_t W3_5Z; 
+    Double_t W4Z;
+
+    //target sampling components
+    Double_t Pas3mmZ;
+    Double_t Pas2mmZ;
+    Double_t Pas1mmZ;
          
     //attributes for the cooling system( water )
     Double_t CoolingX;

@@ -198,6 +198,7 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
          Double_t n = mat->GetDensity()/mat->GetA();
          sigma = 1./(n*mat->GetIntLen())/mbarn;   // no need to multiply with intLengthFactor, will cancel in next equation.
          prob2int = TMath::Exp(-interLength)*sigma/maxCrossSection;
+         if (mat->GetDensity() < 0.002) prob2int = 0.; //NOT IN THE AIR, PLS
       }else{
          prob2int=0.;
       }

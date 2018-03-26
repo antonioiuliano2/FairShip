@@ -116,6 +116,11 @@ Int_t MufluxSpectrometer::InitMedium(const char* name)
    return geoBuild->createMedium(ShipMedium);
 }
 
+void MufluxSpectrometer::ChooseDetector(Bool_t muflux)
+{
+ fMuonFlux = muflux;
+}
+
 void MufluxSpectrometer::SetBoxParam(Double_t SX, Double_t SY, Double_t SZ, Double_t zBox)
 {
   SBoxX = SX;
@@ -233,6 +238,10 @@ void MufluxSpectrometer::SetTr34XDim(Double_t tr34xdim)
       ftr34xdim = tr34xdim;                                          //! x size of stations 34      
 }
 
+void MufluxSpectrometer::SetT3T4Distance(Double_t T3T4_dist)
+{
+ T3T4_distance = T3T4_dist;
+}
 
 void MufluxSpectrometer::ConstructGeometry()
 { 
@@ -347,12 +356,12 @@ void MufluxSpectrometer::ConstructGeometry()
       TString nmstation="x";
       if (statnb==1) {
          volDriftTube1->SetVisibility(kFALSE);
-	 top->AddNode(volDriftTube1,1,new TGeoTranslation(0,0,DimZ+5.1*cm));
+	 if (fMuonFlux)top->AddNode(volDriftTube1,1,new TGeoTranslation(0,0,DimZ+5.1*cm));
          nmstation = "Station_1"; 
 	 }  
       if (statnb==2) {
          volDriftTube2->SetVisibility(kFALSE);      
-	 top->AddNode(volDriftTube2,2,new TGeoTranslation(0,0,85.1*cm + DimZ)); //with SA
+	 if (fMuonFlux)top->AddNode(volDriftTube2,2,new TGeoTranslation(0,0,85.1*cm + DimZ)); //with SA
          nmstation = "Station_2";	  
 	 }      
   
@@ -491,7 +500,8 @@ void MufluxSpectrometer::ConstructGeometry()
     //volProva->AddNode(volGoliath,1,new TGeoTranslation(0,0,-SBoxZ/2 + z[1] + LongitudinalSize/2));  
     
     //Goliath raised by 17cm
-    top->AddNode(volGoliath,1,new TGeoTranslation(0,17*cm,zBoxPosition-SBoxZ/2 + z[1] + LongitudinalSize/2)); 
+    if (fMuonFlux) top->AddNode(volGoliath,1,new TGeoTranslation(0,17*cm,zBoxPosition-SBoxZ/2 + z[1] + LongitudinalSize/2)); 
+    //else top->AddNode(volGoliath,1,new TGeoTranslation(0,17*cm,zBoxPosition-SBoxZ/2 + z[1] + LongitudinalSize/2 -77 *cm)); 
     volGoliath->AddNode(volVacuum, 1, new TGeoTranslation(0,-5 * cm,0)); //commented to insert the new Goliath 
 
     //
@@ -751,15 +761,18 @@ void MufluxSpectrometer::ConstructGeometry()
         TString nmview_bot_34="x";
         if (statnb==3) {
           volDriftTube3->SetVisibility(kFALSE);
-	  top->AddNode(volDriftTube3,3,new TGeoTranslation(0,0,4.5*m +86*cm + 2.5 * DimZ + 3.*cm));//with SA and SB
+          if (fMuonFlux) top->AddNode(volDriftTube3,3,new TGeoTranslation(0,0,4.5*m +86*cm + 2.5 * DimZ + 3.*cm));//with SA and SB
+	  else top->AddNode(volDriftTube3,3,new TGeoTranslation(0,0,4.5*m + 2.5 * DimZ + 3.*cm + 30 *cm));//with SA and SB
           nmview_34 = "Station_3_x";
 	  nmview_top_34="Station_3_top_x";
 	  nmview_bot_34="Station_3_bot_x";	 
 	 	 
 	}  
+        //Double_t T3T4_distance = 30 *cm;
         if (statnb==4) {
-          volDriftTube4->SetVisibility(kFALSE);     
-	  top->AddNode(volDriftTube4,4,new TGeoTranslation(0,0,4.5*m +286*cm + 2.5 * DimZ + 3.*cm)); //with SA and SB
+          volDriftTube4->SetVisibility(kFALSE);               
+          if (fMuonFlux) top->AddNode(volDriftTube4,4,new TGeoTranslation(0,0,4.5*m +286*cm + 2.5 * DimZ + 3.*cm)); //with SA and SB
+	  else top->AddNode(volDriftTube4,4,new TGeoTranslation(0,0,4.5*m + 2.5 * DimZ + 3.*cm + 30*cm + 1.5 * DimZ + 6*cm + T3T4_distance)); //with SA and SB
           nmview_34 = "Station_4_x";
 	  nmview_top_34="Station_4_top_x";
 	  nmview_bot_34="Station_4_bot_x";		  	  	  

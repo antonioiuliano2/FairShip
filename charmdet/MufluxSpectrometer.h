@@ -26,6 +26,8 @@ class MufluxSpectrometer:public FairDetector
     void SetZsize(const Double_t MSsize);
     void SetBoxParam(Double_t SX, Double_t SY, Double_t SZ, Double_t zBox);
     
+    void ChooseDetector(Bool_t muflux); //sets experimental configuration (true = muflux, false = charmxsec)
+    
     //methods for drift tubes by Eric
     void SetTubeLength(Double_t tubelength);
     void SetInnerTubeDiameter(Double_t innertubediameter);
@@ -47,6 +49,7 @@ class MufluxSpectrometer:public FairDetector
     void SetMuonFlux(Bool_t muonflux);   
     void TubeDecode(Int_t detID,int &statnb,int &vnb,int &pnb,int &lnb, int &snb);
     void TubeEndPoints(Int_t detID, TVector3 &top, TVector3 &bot);
+    void SetT3T4Distance(Double_t T3T4_dist);
 
 // for the digitizing step
     void SetTubeResolution(Double_t a, Double_t b) {v_drift = a; sigma_spatial=b;}
@@ -176,7 +179,9 @@ protected:
     Double_t DimY =0;
     Double_t DimZ = 0;
     Double_t zSizeMS = 0; //dimension of the Magnetic Spectrometer volume
-    
+
+    Double_t T3T4_distance;    
+
     MufluxSpectrometer(const MufluxSpectrometer&);
     MufluxSpectrometer& operator=(const MufluxSpectrometer&);
     ClassDef(MufluxSpectrometer,1)

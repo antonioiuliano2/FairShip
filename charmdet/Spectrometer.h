@@ -25,6 +25,10 @@ class Spectrometer:public FairDetector
     void ConstructGeometry();
     void SetZsize(const Double_t MSsize);
     void SetBoxParam(Double_t SX, Double_t SY, Double_t SZ, Double_t zBox);
+    void SetTransverseSizes(Double_t D1X, Double_t D1Y, Double_t D2X, Double_t D2Y, Double_t D3X, Double_t D3Y, Double_t D4X, Double_t D4Y);
+    void SetSiliconZ(Double_t SiliconZ);
+    void ChooseGeometry(bool issilicon);
+    void SetMagneticField(Double_t Bvalue);
      //methods for Goliath by Annarita
     void SetGoliathSizes(Double_t H, Double_t TS, Double_t LS, Double_t BasisH);
     void SetCoilParameters(Double_t CoilR, Double_t UpCoilH, Double_t LowCoilH, Double_t CoilD);
@@ -93,6 +97,8 @@ private:
     
     
 protected:
+    //magnetic field intensity
+    Double_t Bfield;
 
     //Goliath by Annarita
     
@@ -121,6 +127,20 @@ protected:
     Double_t DimY =0;
     Double_t DimZ = 0;
     Double_t zSizeMS = 0; //dimension of the Magnetic Spectrometer volume
+
+    Double_t Dim1X = 0;
+    Double_t Dim1Y = 0;
+    Double_t Dim2X = 0;
+    Double_t Dim2Y = 0;
+    Double_t Dim3X = 0;
+    Double_t Dim3Y = 0;
+    Double_t Dim4X = 0;
+    Double_t Dim4Y = 0;
+
+    Double_t DimZSi;
+
+    bool silicongeometry;
+
     
     Spectrometer(const Spectrometer&);
     Spectrometer& operator=(const Spectrometer&);

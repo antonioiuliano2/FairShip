@@ -55,22 +55,7 @@ Bool_t FixedTargetGenerator::InitForCharmOrBeauty(TString fInName, Int_t nev, Do
   fin   = TFile::Open(fInName);
   nTree = (TNtuple*)fin->FindObjectAny("pythia6"); // old format, simple ntuple
   nEvents = nTree->GetEntries();
-  nTree->SetBranchAddress("id",&n_id);
-  nTree->SetBranchAddress("px",&n_px);
-  nTree->SetBranchAddress("py",&n_py);
-  nTree->SetBranchAddress("pz",&n_pz);
-  nTree->SetBranchAddress("M",&n_M);
-  nTree->SetBranchAddress("E",&n_E);
-  nTree->SetBranchAddress("mid",&n_mid);
-  nTree->SetBranchAddress("mpx",&n_mpx);
-  nTree->SetBranchAddress("mpy",&n_mpy);
-  nTree->SetBranchAddress("mpz",&n_mpz);
-  nTree->SetBranchAddress("mE",&n_mE);
-  if (nTree->GetBranch("k")){
-   fLogger->Info(MESSAGE_ORIGIN,"+++has branch+++");
-   nTree->SetBranchAddress("k",&ck);}
 // check if we deal with charm or beauty:
-  nTree->GetEvent(0);
   if (!setByHand and n_M>5){ 
     chicc = chibb;
     fLogger->Info(MESSAGE_ORIGIN,"automatic detection of beauty, configured for beauty");
@@ -85,7 +70,20 @@ Bool_t FixedTargetGenerator::InitForCharmOrBeauty(TString fInName, Int_t nev, Do
   wspill = nrpotspill*chicc/nrcpot*nEvents/nev;
   fLogger->Info(MESSAGE_ORIGIN,"Input file: %s   with %i entries, corresponding to nr-pot=%f",fInName.Data(),nEvents,nrcpot/chicc);
   fLogger->Info(MESSAGE_ORIGIN,"weight %f corresponding to %f p.o.t. per spill for %f events to process",wspill,nrpotspill,nev);
-
+  nTree->SetBranchAddress("id",&n_id);
+  nTree->SetBranchAddress("px",&n_px);
+  nTree->SetBranchAddress("py",&n_py);
+  nTree->SetBranchAddress("pz",&n_pz);
+  nTree->SetBranchAddress("M",&n_M);
+  nTree->SetBranchAddress("E",&n_E);
+  nTree->SetBranchAddress("mid",&n_mid);
+  nTree->SetBranchAddress("mpx",&n_mpx);
+  nTree->SetBranchAddress("mpy",&n_mpy);
+  nTree->SetBranchAddress("mpz",&n_mpz);
+  nTree->SetBranchAddress("mE",&n_mE);
+  if (nTree->GetBranch("k")){
+   fLogger->Info(MESSAGE_ORIGIN,"+++has branch+++");
+   nTree->SetBranchAddress("k",&ck);}
   pot=0.;
   //Determine fDs on this file for primaries
   nDsprim=0;
@@ -204,6 +202,7 @@ Bool_t FixedTargetGenerator::Init()
   }
   if (targetName!=""){
    fMaterialInvestigator = new GenieGenerator();
+   /*
    TGeoNavigator* nav = gGeoManager->GetCurrentNavigator();
    nav->cd(targetName);
    TGeoNode* target = nav->GetCurrentNode(); 
@@ -224,6 +223,23 @@ Bool_t FixedTargetGenerator::Init()
    origin[2] = +dz;
    nav->LocalToMaster(origin,master);
    endZ =  master[2];
+   start[0]=xOff;
+   start[1]=yOff;
+   start[2]=startZ;
+   end[0]=xOff;
+   end[1]=yOff;
+   end[2]=endZ;
+   */
+   //prova per la geometria del charm
+   TGeoVolume* top = gGeoManager->GetTopVolume();
+   TGeoNode* target = top->FindNode(targetName);
+   if (!target){
+       fLogger->Error(MESSAGE_ORIGIN,"target not found, %s, program will crash",targetName.Data());
+   }
+   Double_t z_middle = target->GetMatrix()->GetTranslation()[2];
+   TGeoBBox* sha = (TGeoBBox*)target->GetVolume()->GetShape();
+   startZ =  z_middle - sha->GetDZ();
+   endZ   =  z_middle + sha->GetDZ();
    start[0]=xOff;
    start[1]=yOff;
    start[2]=startZ;

@@ -6,8 +6,7 @@ with ConfigRegistry.register_config("basic") as c:
 
     c.MufluxSpectrometer = AttrDict(z = 0*u.cm)  
     # False = charm cross-section; True = muon flux measurement
-    c.MufluxSpectrometer.muflux  = False 
-    
+    c.MufluxSpectrometer.muflux  = False
     if "targetOpt" not in globals():
        targetOpt = 18 # add extra 20cm of tungsten as per 13/06/2017
     
@@ -20,14 +19,11 @@ with ConfigRegistry.register_config("basic") as c:
     c.Bfield.z   = 3.571*u.m
     #BOX (Brick!)
     c.Box = AttrDict(z=0*u.cm)
-    c.Box.BX = 13*u.cm
-    c.Box.BY = 11*u.cm
-    c.Box.BZ = 20*u.cm
     c.Box.zBox = 0 * u.cm
-    c.Box.EmTh = 0.0045 * u.cm
-    c.Box.EmX = 10 * u.cm #for the moment, replace the previous values for normal simulations
-    c.Box.EmY = 10 * u.cm
-    c.Box.PBTh = 0.0205 * u.cm
+    c.Box.EmTh = 0.0070 * u.cm
+    c.Box.EmX = 12.5 * u.cm
+    c.Box.EmY = 9.9 * u.cm
+    c.Box.PBTh = 0.0175 * u.cm
     c.Box.MolybdenumTh = 0.3 * u.cm
     c.Box.EPlW = 2* c.Box.EmTh + c.Box.PBTh
     c.Box.AllPW = c.Box.MolybdenumTh + c.Box.EPlW
@@ -37,42 +33,63 @@ with ConfigRegistry.register_config("basic") as c:
     c.Box.BrPackX = c.Box.BrX - c.Box.EmX
     c.Box.BrPackY = c.Box.BrY - c.Box.EmY
     c.Box.BrZ = 54 * c.Box.AllPW + c.Box.EPlW +c.Box.BrPackZ
-    c.Box.PX = 0*u.cm	
-    c.Box.PY = 0*u.cm
-    c.Box.PZ = 0*u.cm #(variables for the old brick configuration)
-    c.Box.CoolX = 10 * u.cm #has this to change to adapt it at SHiP target trasversal dimensions?
-    c.Box.CoolY = 10 * u.cm
+    c.Box.CoolX = c.Box.EmX #all the passive layers have the same transverse dimensions of nuclear emulsion films 
+    c.Box.CoolY = c.Box.EmY
     c.Box.CoolZ = 0.5 * u.cm
-    c.Box.CoatX = 10 * u.cm #has this to change to adapt it at SHiP target trasversal dimensions?
-    c.Box.CoatY = 10 * u.cm
-    c.Box.CoatZ = 0.1 * u.cm
-    c.Box.TX = 10 * u.cm
-    c.Box.TY = 10 * u.cm
+    c.Box.CoatX = c.Box.EmX 
+    c.Box.CoatY = c.Box.EmY
+    c.Box.CoatZ = 0.15 * u.cm
+    c.Box.TX = c.Box.EmX
+    c.Box.TY = c.Box.EmY
 
-    #to change the run, uncheck the corresponding TZ and Checkmin 
-    c.Box.TZ = 15.282 * u.cm #Run 1
-    c.Box.Checkmin = -1000 *u.cm
-    #c.Box.TZ = 30.388 *u.cm # Run 2
-    #c.Box.Checkmin = -15.8 *u.cm
-    #c.Box.TZ = 49.01 *u.cm # Run 3
-    #c.Box.Checkmin= -14.6 * u.cm 
-    #c.Box.TZ = 65.752 *u.cm # Run 4
-    #c.Box.Checkmin = -18.2 * u.cm
-    #c.Box.TZ = 79.369 *u.cm # Run 5
-    #c.Box.Checkmin = -14.6 * u.cm 
-    #c.Box.TZ = 90.103 *u.cm # Run 6
-    #c.Box.Checkmin = -11.6 *u.cm
-    #c.Box.TZ = 98.785 *u.cm # Run 7
-    #c.Box.Checkmin = -9.8 *u.cm
-    #c.Box.TZ = 107.335 *u.cm # Run 8
-    #c.Box.Checkmin = -9.5 *u.cm
-    #c.Box.TZ = 116.200 *u.cm # Run 9
-    #c.Box.Checkmin = -9.7 *u.cm 
-    #c.Box.TZ = 124.935 *u.cm # Run 10 
-    #c.Box.Checkmin = -9.7 *u.cm 
-  
-    #c.Box.TZ = 136 *u.cm # All target sensitive 
-    c.Box.Checkmax = 0
+    #passive blocks thicknesses
+    c.Box.Molblock1Z = 7.7 * u.cm 
+    c.Box.Molblock2Z = 2.2 * u.cm 
+    c.Box.Molblock3Z = 4.7 * u.cm
+    c.Box.Molblock4Z = 6.2 * u.cm
+    c.Box.Wblock1Z = 4.7 * u.cm
+    c.Box.Wblock2Z = 7.7 * u.cm
+    c.Box.Wblock3Z = 9.7 * u.cm
+    c.Box.Wblock3_5Z = 19.7 * u.cm
+    c.Box.Wblock4Z = 8.45 * u.cm
+
+    #passive sampling
+    c.Box.Passive3mmZ = 0.3 * u.cm
+    c.Box.Passive2mmZ = 0.2 * u.cm
+    c.Box.Passive1mmZ = 0.1 * u.cm
+
+    #OPTIONS FOR CHARM XSEC DETECTOR
+    c.Box.gausbeam = True
+    c.Box.charmtarget = False
+    #c.Box.Bvalue = 1 *u.tesla
+    c.Box.Bvalue = 0 * u.tesla
+    c.Box.GapInTargetTh = 0 * u.cm 
+    #c.Box.GapPostTargetTh = 5 * u.cm
+    c.Box.GapPostTargetTh = 2 * u.cm     
+    c.Box.GapPostTargetTh = 0*u.cm
+    c.Box.RunNumber =  3 #run configuration for charm
+
+    #TO CHANGE THE RUN (a greater number than 6 will make all target parts passive, number 0 will make the first 11 blocks active)   
+    
+    c.Box.TZ = 100 * u.cm #default value    
+    
+    if c.Box.RunNumber == 1:     
+      c.Box.TZ = 4.55 * u.cm + c.Box.GapInTargeTh
+    elif c.Box.RunNumber == 2:
+      c.Box.TZ = 9.353 * u.cm + 2 * c.Box.GapInTargetTh
+    elif c.Box.RunNumber == 3:
+      c.Box.TZ = 14.7 * u.cm + 3 * c.Box.GapInTargetTh
+    elif c.Box.RunNumber == 4:
+      c.Box.TZ = 20.7 * u.cm + 4 * c.Box.GapInTargetTh
+    elif c.Box.RunNumber == 5:
+      c.Box.TZ = 26.7 * u.cm + 5 * c.Box.GapInTargetTh
+    elif c.Box.RunNumber == 6:
+      c.Box.TZ = 29.3 * u.cm + 6 * c.Box.GapInTargetTh
+    elif c.Box.RunNumber == 0:
+      c.Box.TZ = 211.2 *u.cm #All target (first 11 blocks active, with 10 cm gaps)
+      #c.Box.TZ = 151.2 *u.cm #All target (without gaps, used for z distributions) 
+    elif c.Box.RunNumber > 6:
+      c.Box.TZ = 206.9 *u.cm #All passive target
     
     # target absorber muon shield setup, decayVolume.length = nominal EOI length, only kept to define z=0
     c.decayVolume            =  AttrDict(z=0*u.cm)
@@ -174,6 +191,7 @@ with ConfigRegistry.register_config("basic") as c:
     c.MufluxSpectrometer.VacBox_x           = 205.*u.cm
     c.MufluxSpectrometer.VacBox_y           = 165.*u.cm    
     
+    c.MufluxSpectrometer.T3T4_distance = 100 *u.cm
     if c.MufluxSpectrometer.muflux == True:    
        c.Spectrometer.DX = 2.*u.m
        c.Spectrometer.DY = 1.6*u.m   
@@ -181,35 +199,60 @@ with ConfigRegistry.register_config("basic") as c:
     else:        
        c.Spectrometer.DX = 1*u.m
        c.Spectrometer.DY = 0.5*u.m
-       c.Spectrometer.DZ = 2*u.cm    
-       
+       #c.Spectrometer.DZ = 6*u.cm
+       c.Spectrometer.DZ = 13.5 * u.cm
+    c.MufluxSpectrometer.DX = 2.*u.m
+    c.MufluxSpectrometer.DY = 1.6*u.m
+    c.MufluxSpectrometer.DZ = 16.*u.cm
+    #These parameters are used only by the charm detector ---   
+    c.Spectrometer.D1X = 4 * u.cm;
+    c.Spectrometer.D1Y = 4 * u.cm;
+   # c.Spectrometer.D1X = c.Box.EmX
+   # c.Spectrometer.D1Y = c.Box.EmY
+    c.Spectrometer.D2X = 20 * u.cm;
+    c.Spectrometer.D2Y = 20 * u.cm;
+    c.Spectrometer.D3X = 40 * u.cm;
+    c.Spectrometer.D3Y = 40 * u.cm;
+    c.Spectrometer.D4X = 40 * u.cm;
+    c.Spectrometer.D4Y = 40 * u.cm;                 
     c.Spectrometer.SX = c.Spectrometer.DX
-    c.Spectrometer.SY = c.Spectrometer.DY
-               
+    c.Spectrometer.SY = c.Spectrometer.DY    
+    c.Spectrometer.DimZSi = 0.0400 * u.cm
+    c.Spectrometer.Sidist = 5 * u.cm
+    c.Spectrometer.issilicon = True; #to replace T1 and T2 with silicon trackers
+    c.Spectrometer.Bvalue = 1 * u.tesla;      
+    #-------------------------------------------------------
+         
     if c.MufluxSpectrometer.muflux == True: 
        #these parameters are also used inside the MufluxSpectrometer.cxx
        c.Spectrometer.SZ = c.Spectrometer.DZ*6 + 286 *u.cm + 4.5*u.m + 3*u.cm #4.5 m is the Goliath length; 286=6+80+200 Scint SA, T1,2 & T3,4 dist, 3 for SB
     else: 
-       c.Spectrometer.SZ = c.Spectrometer.DZ*4 + 40 *u.cm + 4.5*u.m #4.5 m is the Goliath length
+       c.Spectrometer.SZ = c.Spectrometer.DZ*2 + c.Spectrometer.DimZSi*3 + 2 * c.Spectrometer.Sidist + 80 *u.cm + 4.5*u.m #4.5 m is the Goliath length
  
-    c.Spectrometer.zBox = c.Box.PZ + c.Spectrometer.SZ/2 + 0.1 * u.cm        
+    c.Spectrometer.zBox = c.Spectrometer.SZ/2
     
     #Muon Filter
     
     c.MuonTagger = AttrDict(z = 0*u.cm)
-    c.MuonTagger.PTh = 34 * u.cm;
+    c.MuonTagger.concreteslabs = False; #if true, set Concrete as material of last three slabs 
+    c.MuonTagger.PTh = 80 * u.cm;
+    c.MuonTagger.PTh1 = 40 * u.cm #last 3 slabs' thickness
     c.MuonTagger.STh = 5.0 * u.cm
-    c.MuonTagger.BX = 2 * u.m
-    c.MuonTagger.BY = 1.5 * u.m
-    c.MuonTagger.BZ = c.MuonTagger.PTh * 5 + c.MuonTagger.STh * 6
+    c.MuonTagger.BX = 2.00 * u.m
+    c.MuonTagger.BY = 1.30 * u.m
+    c.MuonTagger.BZ = c.MuonTagger.PTh * 2 + c.MuonTagger.PTh1 * 3 + c.MuonTagger.STh * 6
     
     if c.MufluxSpectrometer.muflux == True:
        #for the muflux measurement the muontagger has to be moved back
-       c.MuonTagger.zBox = c.Spectrometer.SZ+ c.MuonTagger.BZ*3./2. + c.Box.PZ + 5*u.cm -250*u.cm
+       c.MuonTagger.zBox = c.Spectrometer.SZ+ c.MuonTagger.BZ*1./2.- 45*u.cm #nel file originale era c.MuonTagger.zBox = c.Spectrometer.SZ+ c.MuonTagger.BZ*3./2. + 5*u.cm -250*u.cm, ma muontagger aveva dimensioni differenti
     else:    
-       c.MuonTagger.zBox = c.Spectrometer.SZ+ c.MuonTagger.BZ/2 + c.Box.PZ + 5*u.cm
+       #c.MuonTagger.zBox = c.Spectrometer.SZ+ c.MuonTagger.BZ/2 + 5*u.cm
+       c.mutaggerdistance = 25.
+       charmmudistance = 0 *u.cm + c.mutaggerdistance *u.cm#differenza con la posizione del muontagger nella misura di flusso
+       c.MuonTagger.zBox = c.Spectrometer.SZ - c.Spectrometer.DZ*2 - 80 *u.cm + c.MuonTagger.BZ*1./2. + 224 *u.cm -charmmudistance#starting from 223 cm from Goliath, like in muonflux measurement
 
     c.MuonTagger.PX = c.MuonTagger.BX
     c.MuonTagger.PY = c.MuonTagger.BY
     c.MuonTagger.SX = c.MuonTagger.BX
     c.MuonTagger.SY = c.MuonTagger.BY
+    c.MuonTagger.R = 2.5 * u.cm #radius of central hole
