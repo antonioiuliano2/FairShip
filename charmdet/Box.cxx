@@ -256,17 +256,18 @@ void Box::ConstructGeometry()
       //begin brick part (July testbeam)
       Int_t NPlates = 19; //Number of doublets emulsion + Pb (two interaction lengths for 3 mm lead slabs)
       Int_t NBricks = nrun;
-      if (nrun > 6) NBricks = 6; //maximum number of bricks is 6, Run 0 means all active
-      if (nrun <= 0) cout <<"INVALID VALUE"<<endl;
-      bool activate[nrun];     
-      for (int i = 0; i<nrun; i++) activate[i] = false;
-//      activate[nrun-1]=true;
-      
+      if (nrun > 6 || nrun == 0) NBricks = 6; //maximum number of bricks is 6, Run 0 means all active
+      bool activate[NBricks];
+      if (nrun > 0){
+      for (int i = 0; i<NBricks; i++) activate[i] = false;
+      activate[nrun-1]=true;
+      }
+      else  for (int i = 0; i<NBricks; i++) activate[i] = false;
       Double_t zPasLead = NPlates * MolybdenumThickness; //Parti passive prima del bersaglio    
 
       Double_t zBackLead = 0. * cm; //eventuale parte passiva a valle, per simulazioni su bersaglio spesso
-      TargetZ = (NPlates * AllPlateWidth + EmPlateWidth) + zPasLead*(nrun-1) + zBackLead+ GapInTargetThickness * (nrun-1) + GapPostTargetThickness;  
-
+      if (nrun > 0) TargetZ = (NPlates * AllPlateWidth + EmPlateWidth) + zPasLead*(nrun-1) + zBackLead+ GapInTargetThickness * (nrun-1) + GapPostTargetThickness;  
+      else TargetZ = (NPlates * AllPlateWidth + EmPlateWidth)*NBricks + zBackLead + GapInTargetThickness * (NBricks-1) + GapPostTargetThickness;
       TGeoBBox *Brick = new TGeoBBox("brick", TargetX/2, TargetY/2, TargetZ/2);
       TGeoVolume *volTarget = new TGeoVolume("volTarget",Brick,vacuum);
       volTarget->SetLineColor(kCyan);
@@ -274,24 +275,37 @@ void Box::ConstructGeometry()
       if ((TMath::Abs(MagneticField) > 0.) && (GapInTargetThickness > 0.)) volTarget->SetField(magfield);
       top->AddNode(volTarget,1,new TGeoTranslation(0,0,zBoxPosition-TargetZ/2)); //Box ends at origin
             
+      TGeoVolume *volPasLead = NULL;
+      if (nrun > 1){
       TGeoBBox *PasLead = new TGeoBBox("PasLead", EmulsionX/2, EmulsionY/2, zPasLead/2);
-      TGeoVolume *volPasLead = new TGeoVolume("volPasLead",PasLead,lead);
+      volPasLead = new TGeoVolume("volPasLead",PasLead,lead);
       volPasLead->SetTransparency(1);
-      volPasLead->SetLineColor(kGray); 
+      volPasLead->SetLineColor(kGray);
+      }
+      
 
       TGeoBBox *Leadslab = new TGeoBBox("Leadslab", EmulsionX/2, EmulsionY/2, MolybdenumThickness/2);
       TGeoVolume *volLeadslab = new TGeoVolume("volLeadslab",Leadslab,lead);
+ //     TGeoVolume *volLeadslab = new TGeoVolume("volLeadslab",Leadslab,molybdenum); //I need to see the difference
       volLeadslab->SetTransparency(1);
       volLeadslab->SetLineColor(kGray);    
-      
-      TGeoVolume *volGapInTarget; //just the pointer, not defining the object if it is not used
+/*
+      //try to add plastic at the end of first ECC to increase pot
+      TGeoBBox *Plasticslab = new TGeoBBox("Plasticslab", EmulsionX/2, EmulsionY/2, MolybdenumThickness/2);
+      TGeoVolume *volPlasticslab = new TGeoVolume("volPlasticslab",Leadslab,PBase);
+ //     TGeoVolume *volLeadslab = new TGeoVolume("volLeadslab",Leadslab,molybdenum); 
+      volPlasticslab->SetTransparency(1);
+      volPlasticslab->SetLineColor(kRed);      
+*/
+
+      TGeoVolume *volGapInTarget = NULL; //just the pointer, not defining the object if it is not used
       if (GapInTargetThickness > 0.){
       TGeoBBox *GapInTarget = new TGeoBBox("GapInTarget", TargetX/2, TargetY/2, GapInTargetThickness/2);
       volGapInTarget = new TGeoVolume("volGapInTarget", GapInTarget, air);
       volGapInTarget->SetLineColor(kMagenta);
       volGapInTarget->SetField(magfield);
       }
-      TGeoVolume *volGapPostTarget;
+      TGeoVolume *volGapPostTarget = NULL;
       if (GapPostTargetThickness>0.){
       TGeoBBox *GapPostTarget = new TGeoBBox("GapPostTarget", TargetX/2, TargetY/2, GapPostTargetThickness/2);
       volGapPostTarget = new TGeoVolume("volGapPostTarget", GapPostTarget, air);
@@ -311,20 +325,22 @@ void Box::ConstructGeometry()
 	    }
 	  for(Int_t n=0; n<NPlates; n++)
 	    {
-	      volTarget->AddNode(volLeadslab, n, new TGeoTranslation(0,0,zpoint + EmPlateWidth + MolybdenumThickness/2 + n*AllPlateWidth)); //LEAD
+              volTarget->AddNode(volLeadslab, n, new TGeoTranslation(0,0,zpoint + EmPlateWidth + MolybdenumThickness/2 + n*AllPlateWidth)); //LEAD
+	     // if (n%2 == 0) volTarget->AddNode(volLeadslab, n, new TGeoTranslation(0,0,zpoint + EmPlateWidth + MolybdenumThickness/2 + n*AllPlateWidth)); //LEAD
+             // else volTarget->AddNode(volPlasticslab, n, new TGeoTranslation(0,0,zpoint + EmPlateWidth + MolybdenumThickness/2 + n*AllPlateWidth));
 	    }	
 	  zpoint = zpoint + NPlates *AllPlateWidth + EmPlateWidth;
 	}
-	else{ //only passive layer of lead
+	else if (volPasLead != NULL){ //only passive layer of lead
 	  volTarget->AddNode(volPasLead,1,new TGeoTranslation(0,0,zpoint + zPasLead/2));
 	  zpoint = zpoint + zPasLead;
 	}
 	
-	if ((GapInTargetThickness > 0.) && (((irun + 1) < nrun))){
+	if ((volGapInTarget != NULL) && (((irun + 1) < nrun))){
 	  volTarget->AddNode(volGapInTarget,1,new TGeoTranslation(0,0,zpoint + GapInTargetThickness/2));
 	  zpoint = zpoint + GapInTargetThickness; 
 	}
-	if ((GapPostTargetThickness > 0.) && (((irun + 1) == nrun))){
+	if ((volGapPostTarget != NULL) && (((irun + 1) == nrun))){
 	  volTarget->AddNode(volGapPostTarget,1,new TGeoTranslation(0,0,zpoint + GapPostTargetThickness/2));
 	  zpoint = zpoint + GapPostTargetThickness; 
 	}
@@ -458,22 +474,7 @@ void Box::ConstructGeometry()
      TGeoVolume *volMol4 = new TGeoVolume("volMol4", Mol4, molybdenum);
      volMol4->SetLineColor(kGray);
      volMol4->SetField(magfield);
-     
-     TGeoBBox *W3mm = new TGeoBBox("W3mm", xTarget/2, yTarget/2, Pas3mmZ/2);
-     TGeoVolume *volW3mm = new TGeoVolume("volW3mm", W3mm, tungsten);
-     volW3mm->SetLineColor(kSpring);
-     volW3mm->SetField(magfield);
-     
-     TGeoBBox *W2mm = new TGeoBBox("W2mm", xTarget/2, yTarget/2, Pas2mmZ/2);
-     TGeoVolume *volW2mm = new TGeoVolume("volW2mm", W2mm, tungsten);
-     volW2mm->SetLineColor(kSpring);
-     volW2mm->SetField(magfield);
-
-     TGeoBBox *W4_5mm = new TGeoBBox("W4_5mm", xTarget/2, yTarget/2, (Pas3mmZ+Pas3mmZ/2.)/2);
-     TGeoVolume *volW4_5mm = new TGeoVolume("volW4_5mm", W4_5mm, tungsten);
-     volW4_5mm->SetLineColor(kSpring);
-     volW4_5mm->SetField(magfield);
-
+    
      TGeoBBox *W1 = new TGeoBBox("W1", xTarget/2, yTarget/2, W1Z/2); // 1
      TGeoVolume *volW1 = new TGeoVolume("volW1", W1, tungsten);
      volW1->SetLineColor(kSpring);

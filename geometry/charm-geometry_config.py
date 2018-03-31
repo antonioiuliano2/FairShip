@@ -66,7 +66,7 @@ with ConfigRegistry.register_config("basic") as c:
     c.Box.GapInTargetTh = 0 * u.cm 
     #c.Box.GapPostTargetTh = 5 * u.cm
     c.Box.GapPostTargetTh = 2 * u.cm     
-    c.Box.GapPostTargetTh = 0*u.cm
+    #c.Box.GapPostTargetTh = 0*u.cm
     c.Box.RunNumber =  3 #run configuration for charm
 
     #TO CHANGE THE RUN (a greater number than 6 will make all target parts passive, number 0 will make the first 11 blocks active)   
@@ -74,7 +74,7 @@ with ConfigRegistry.register_config("basic") as c:
     c.Box.TZ = 100 * u.cm #default value    
     
     if c.Box.RunNumber == 1:     
-      c.Box.TZ = 4.55 * u.cm + c.Box.GapInTargeTh
+      c.Box.TZ = 4.55 * u.cm + c.Box.GapInTargetTh
     elif c.Box.RunNumber == 2:
       c.Box.TZ = 9.353 * u.cm + 2 * c.Box.GapInTargetTh
     elif c.Box.RunNumber == 3:

@@ -292,12 +292,21 @@ void MufluxSpectrometer::ConstructGeometry()
   const Double_t MagneticField = 1 * tesla; //magnetic field
   TGeoUniformMagField *magfield = new TGeoUniformMagField(0., MagneticField, 0.); //The magnetic field must be only in the vacuum space between the stations
 
-  TGeoBBox *ProvaBox = new TGeoBBox("ProvaBox", 0. , 0., 0.);  
-  TGeoVolume *volProva = new TGeoVolume("volProva", ProvaBox, vacuum);   
+  //TGeoBBox *ProvaBox = new TGeoBBox("ProvaBox", 0. , 0., 0.);  
+  //TGeoVolume *volProva = new TGeoVolume("volProva", ProvaBox, vacuum);   
   
   Double_t z[4] = {0.,0.,0.,0.}; 
     
- 
+  z[0] = 5.1*cm + 2.*DimZ;
+  z[1] = 85.1*cm + 2.*DimZ;
+  z[2] = 4.5*m +86*cm + 4 * DimZ + 3.*cm;
+  z[3] = 4.5*m + 286*cm + 4 * DimZ + 3.*cm; //with SA and SB    
+  //Double_t z[4] = {5.1*cm + 2.*DimZ, 85.1*cm + 2.*DimZ, 4.5*m +86*cm + 4 * DimZ, 4.5*m + 286*cm + 4 * DimZ }; //with SA
+  //Double_t z[4] = {5.1*cm + 2.*DimZ, 120.1*cm + 2.*DimZ, 4.5*m +121*cm + 4 * DimZ, 4.5*m + 321*cm + 4 * DimZ }; //with SA    
+  //Double_t z[4] = {2.*DimZ, 100*cm + 2.*DimZ, 4.5*m +100*cm + 4 * DimZ, 4.5*m + 300*cm + 4 * DimZ }; 
+  //Double_t z[4] = {2.*DimZ, 50*cm + 2.*DimZ, 4.5*m +50*cm + 4 * DimZ, 4.5*m + 150*cm + 4 * DimZ };    
+  //relative distances (80 cm between T1,T2; 200 cm between T3,T4) (after implementation of Goliath)
+  if (fMuonFlux){
     //***************************************************************************************************************
     //*****************************************   OPERA DRIFT TUBES BY ERIC *****************************************
     //*****************************************   Dimensions from https://www-opera.desy.de/tracker.html*************     
@@ -338,17 +347,7 @@ void MufluxSpectrometer::ConstructGeometry()
     TGeoBBox *DriftTube2 = new TGeoBBox("DriftTube2", DimX/2+ 1*m/2, DimY/2+ 1*m/2, DimZ+eps);  
     TGeoVolume *volDriftTube2 = new TGeoVolume("volDriftTube2",DriftTube2,air);
     volDriftTube2->SetLineColor(kBlue-5);
-        
-    z[0] = 5.1*cm + 2.*DimZ;
-    z[1] = 85.1*cm + 2.*DimZ;
-    z[2] = 4.5*m +86*cm + 4 * DimZ + 3.*cm;
-    z[3] = 4.5*m + 286*cm + 4 * DimZ + 3.*cm; //with SA and SB    
-    //Double_t z[4] = {5.1*cm + 2.*DimZ, 85.1*cm + 2.*DimZ, 4.5*m +86*cm + 4 * DimZ, 4.5*m + 286*cm + 4 * DimZ }; //with SA
-    //Double_t z[4] = {5.1*cm + 2.*DimZ, 120.1*cm + 2.*DimZ, 4.5*m +121*cm + 4 * DimZ, 4.5*m + 321*cm + 4 * DimZ }; //with SA    
-    //Double_t z[4] = {2.*DimZ, 100*cm + 2.*DimZ, 4.5*m +100*cm + 4 * DimZ, 4.5*m + 300*cm + 4 * DimZ }; 
-    //Double_t z[4] = {2.*DimZ, 50*cm + 2.*DimZ, 4.5*m +50*cm + 4 * DimZ, 4.5*m + 150*cm + 4 * DimZ };    
-    //relative distances (80 cm between T1,T2; 200 cm between T3,T4) (after implementation of Goliath)
-		    
+        		    
     for (Int_t statnb=1; statnb<3; statnb++) {
       TString nmview_top_12="x";
       TString nmview_bot_12="x";
@@ -479,7 +478,8 @@ void MufluxSpectrometer::ConstructGeometry()
       //end of view loop		
       }	
     } //end of statnb loop             
-     
+ } 
+  
     TGeoBBox *VacuumBox = new TGeoBBox("VacuumBox", TransversalSize/2, 90*cm/2., (175 * cm)/2.);
     //TGeoVolume *volVacuum = new TGeoVolume("VolVacuum", VacuumBox, vacuum);
     TGeoVolume *volVacuum = new TGeoVolume("VolVacuum", VacuumBox, air);
@@ -501,7 +501,7 @@ void MufluxSpectrometer::ConstructGeometry()
     
     //Goliath raised by 17cm
     if (fMuonFlux) top->AddNode(volGoliath,1,new TGeoTranslation(0,17*cm,zBoxPosition-SBoxZ/2 + z[1] + LongitudinalSize/2)); 
-    //else top->AddNode(volGoliath,1,new TGeoTranslation(0,17*cm,zBoxPosition-SBoxZ/2 + z[1] + LongitudinalSize/2 -77 *cm)); 
+    else top->AddNode(volGoliath,1,new TGeoTranslation(0,17*cm,235.1400*cm)); 
     volGoliath->AddNode(volVacuum, 1, new TGeoTranslation(0,-5 * cm,0)); //commented to insert the new Goliath 
 
     //
@@ -716,8 +716,8 @@ void MufluxSpectrometer::ConstructGeometry()
     TGeoHMatrix *m3_c = new TGeoHMatrix(tr2_c);
     volGoliath->AddNode(volLateralS2_c, 1, m3_c);
 
-    //END GOLIATH PART BY ANNARITA
-    
+    //END GOLIATH PART BY ANNARITA   
+ 
       //detectors for muonflux downstream of Goliath 
       // Volume: tube
       rmin = fInner_Tube_diameter/2.;
@@ -762,7 +762,7 @@ void MufluxSpectrometer::ConstructGeometry()
         if (statnb==3) {
           volDriftTube3->SetVisibility(kFALSE);
           if (fMuonFlux) top->AddNode(volDriftTube3,3,new TGeoTranslation(0,0,4.5*m +86*cm + 2.5 * DimZ + 3.*cm));//with SA and SB
-	  else top->AddNode(volDriftTube3,3,new TGeoTranslation(0,0,4.5*m + 2.5 * DimZ + 3.*cm + 30 *cm));//with SA and SB
+	  else top->AddNode(volDriftTube3,3,new TGeoTranslation(0,0,4.5*m + 2.5 * DimZ + 3.*cm + 25 *cm));//with SA and SB
           nmview_34 = "Station_3_x";
 	  nmview_top_34="Station_3_top_x";
 	  nmview_bot_34="Station_3_bot_x";	 
@@ -772,7 +772,7 @@ void MufluxSpectrometer::ConstructGeometry()
         if (statnb==4) {
           volDriftTube4->SetVisibility(kFALSE);               
           if (fMuonFlux) top->AddNode(volDriftTube4,4,new TGeoTranslation(0,0,4.5*m +286*cm + 2.5 * DimZ + 3.*cm)); //with SA and SB
-	  else top->AddNode(volDriftTube4,4,new TGeoTranslation(0,0,4.5*m + 2.5 * DimZ + 3.*cm + 30*cm + 1.5 * DimZ + 6*cm + T3T4_distance)); //with SA and SB
+	  else top->AddNode(volDriftTube4,4,new TGeoTranslation(0,0,4.5*m + 2.5 * DimZ + 3.*cm + 25*cm + 1.5 * DimZ + 6*cm + T3T4_distance)); //with SA and SB
           nmview_34 = "Station_4_x";
 	  nmview_top_34="Station_4_top_x";
 	  nmview_bot_34="Station_4_bot_x";		  	  	  
