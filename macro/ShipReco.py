@@ -2,6 +2,7 @@
 inputFile = 'ship.conical.Pythia8-TGeant4.root'
 geoFile   = None
 debug = False
+charm = True
 EcalDebugDraw = False
 withNoStrawSmearing = None # True   for debugging purposes
 nEvents    = 999999
@@ -106,7 +107,8 @@ from rootpyPickler import Unpickler
 #load Shipgeo dictionary
 upkl    = Unpickler(fgeo)
 ShipGeo = upkl.load('ShipGeo')
-ecalGeoFile = ShipGeo.ecal.File
+if charm: ecalGeoFile = "None"
+else: ecalGeoFile = ShipGeo.ecal.File
 
 h={}
 log={}
@@ -117,7 +119,8 @@ if withHists:
  ut.bookHist(h,'nmeas','nr measuerements',100,0.,50.)
  ut.bookHist(h,'chi2','Chi2/DOF',100,0.,20.)
 
-import shipDet_conf
+if charm: import charmDet_conf as shipDet_conf
+else: import shipDet_conf
 run = ROOT.FairRunSim()
 run.SetName("TGeant4")  # Transport engine
 run.SetOutputFile("dummy")  # Output file
@@ -144,7 +147,8 @@ iEvent = 0
 builtin.iEvent  = iEvent
 
 # import reco tasks
-import shipDigiReco
+if charm: import charmDigiReco as shipDigiReco
+else: import shipDigiReco
 SHiP = shipDigiReco.ShipDigiReco(outFile,fgeo)
 nEvents   = min(SHiP.sTree.GetEntries(),nEvents)
 # main loop
