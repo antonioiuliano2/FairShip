@@ -207,19 +207,14 @@ with ConfigRegistry.register_config("basic") as c:
     #These parameters are used only by the charm detector ---   
     c.Spectrometer.D1X = 4 * u.cm;
     c.Spectrometer.D1Y = 4 * u.cm;
-   # c.Spectrometer.D1X = c.Box.EmX
-   # c.Spectrometer.D1Y = c.Box.EmY
-    c.Spectrometer.D2X = 20 * u.cm;
-    c.Spectrometer.D2Y = 20 * u.cm;
-    c.Spectrometer.D3X = 40 * u.cm;
-    c.Spectrometer.D3Y = 40 * u.cm;
-    c.Spectrometer.D4X = 40 * u.cm;
-    c.Spectrometer.D4Y = 40 * u.cm;                 
+    c.Spectrometer.DSciFi1X = 40 * u.cm;
+    c.Spectrometer.DSciFi1Y = 40 * u.cm;
+    c.Spectrometer.DSciFi2X = 40 * u.cm;
+    c.Spectrometer.DSciFi2Y = 40 * u.cm;                 
     c.Spectrometer.SX = c.Spectrometer.DX
     c.Spectrometer.SY = c.Spectrometer.DY    
     c.Spectrometer.DimZSi = 0.0400 * u.cm
     c.Spectrometer.Sidist = 5 * u.cm
-    c.Spectrometer.issilicon = True; #to replace T1 and T2 with silicon trackers
     c.Spectrometer.Bvalue = 1 * u.tesla;      
     #-------------------------------------------------------
          

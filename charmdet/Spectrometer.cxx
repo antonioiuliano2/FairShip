@@ -130,21 +130,15 @@ void Spectrometer::SetSiliconZ(Double_t SiliconZ)
   DimZSi = SiliconZ;
 }
 
-void Spectrometer::SetTransverseSizes(Double_t D1X, Double_t D1Y, Double_t D2X, Double_t D2Y, Double_t D3X, Double_t D3Y, Double_t D4X, Double_t D4Y){
+void Spectrometer::SetTransverseSizes(Double_t D1X, Double_t D1Y, Double_t DSciFi1X, Double_t DSciFi1Y, Double_t DSciFi2X, Double_t DSciFi2Y){
   Dim1X = D1X;
   Dim1Y = D1Y;
-  Dim2X = D2X;
-  Dim2Y = D2Y;
-  Dim3X = D3X;
-  Dim3Y = D3Y;
-  Dim4X = D4X;
-  Dim4Y = D4Y;
+  DimSciFi1X = DSciFi1X;
+  DimSciFi1Y = DSciFi1Y;
+  DimSciFi2X = DSciFi2X;
+  DimSciFi2Y = DSciFi2Y;
 }   
 
-void Spectrometer::ChooseGeometry(bool issilicon)
-{
-  silicongeometry = issilicon;
-}
 
 //Methods for Goliath by Annarita
 void Spectrometer::SetGoliathSizes(Double_t H, Double_t TS, Double_t LS, Double_t BasisH)
@@ -191,51 +185,31 @@ void Spectrometer::ConstructGeometry()
   const Double_t MagneticField = Bfield;
   TGeoUniformMagField *magfield = new TGeoUniformMagField(0., MagneticField, 0.); //The magnetic field must be only in the air space between the stations
 
-  TGeoBBox *ProvaBox = new TGeoBBox("ProvaBox", Dim4X/2, Dim4Y/2, SBoxZ/2);
+  TGeoBBox *ProvaBox = new TGeoBBox("ProvaBox", DimSciFi2X/2, DimSciFi2Y/2, SBoxZ/2);
   TGeoVolume *volProva = new TGeoVolume("volProva", ProvaBox, air);
   volProva->SetTransparency(1);
 
  // top->AddNode(volProva,1,new TGeoTranslation(0,0,zBoxPosition));
   
-    TGeoBBox *SciFi1; //first declare, then define inside the if clause
-    TGeoVolume *subvolSciFi1; 
-    TGeoBBox *SciFi2;
-    TGeoVolume *subvolSciFi2; 
   
     TGeoBBox *Pixel;
     TGeoVolume *volPixel;
 
-    if (silicongeometry){
     Pixel = new TGeoBBox("Pixel", (Dim1X)/2, (Dim1Y)/2, DimZSi/2); 
     volPixel = new TGeoVolume("volPixel",Pixel,Silicon); 
     volPixel->SetLineColor(kBlue-5);
-    AddSensitiveVolume(volPixel);
-}
-  else{
-    SciFi1 = new TGeoBBox("SciFi1", (Dim1X)/2, (Dim1Y)/2, (4*DimZSi)/2); //the silicon blocks are united in single blocks
-    subvolSciFi1 = new TGeoVolume("volSciFi1",SciFi1,Silicon);
+    AddSensitiveVolume(volPixel);    
+    TGeoBBox *SciFi1 = new TGeoBBox("SciFi1", DimSciFi1X/2, DimSciFi1Y/2, DimZ/2); 
+    TGeoVolume *subvolSciFi1 = new TGeoVolume("volSciFi1",SciFi1,sttmix8020_2bar);
     subvolSciFi1->SetLineColor(kBlue-5);
     AddSensitiveVolume(subvolSciFi1);
-    
-
-    SciFi2 = new TGeoBBox("SciFi2", (Dim2X)/2, (Dim2Y)/2, (2*DimZSi)/2);	
-    subvolSciFi2 = new TGeoVolume("volSciFi2",SciFi2,Silicon);
-    subvolSciFi2->SetLineColor(kBlue-5);
-    AddSensitiveVolume(subvolSciFi2);
-}  
-    
-    TGeoBBox *SciFi3 = new TGeoBBox("SciFi3", Dim3X/2, Dim3Y/2, DimZ/2); 
-    TGeoVolume *subvolSciFi3 = new TGeoVolume("volSciFi3",SciFi3,sttmix8020_2bar);
-    subvolSciFi3->SetLineColor(kBlue-5);
-    AddSensitiveVolume(subvolSciFi3);
   		
-    TGeoBBox *SciFi4 = new TGeoBBox("SciFi4", Dim4X/2, Dim4Y/2, DimZ/2);
-    TGeoVolume *subvolSciFi4 = new TGeoVolume("volSciFi4",SciFi4,sttmix8020_2bar);
-    subvolSciFi4->SetLineColor(kBlue-5);
-    AddSensitiveVolume(subvolSciFi4);    
+    TGeoBBox *SciFi2 = new TGeoBBox("SciFi2", DimSciFi2X/2, DimSciFi2Y/2, DimZ/2);
+    TGeoVolume *subvolSciFi2 = new TGeoVolume("volSciFi2",SciFi2,sttmix8020_2bar);
+    subvolSciFi2->SetLineColor(kBlue-5);
+    AddSensitiveVolume(subvolSciFi2);    
 
     Double_t z[4];
-   if (silicongeometry){
     Double_t Sidist = 5*cm; //Distance between siliconDetectors
 
     z[0] = (DimZSi)/2.;
@@ -247,20 +221,8 @@ void Spectrometer::ConstructGeometry()
       Double_t zreplica = 0 + k * Sidist * cm + DimZSi/2.;      
       top->AddNode(volPixel, 100 + k+1,  new TGeoTranslation(0,0, zBoxPosition -SBoxZ/2 + z[0] + zreplica)); //101, 102, 103
     }
-}
-   else{ //T1-T4 classical configuration
-    z[0] = (4*DimZSi)/2.; 
-    z[1] = (2*DimZSi)/2. +20*cm + 4*DimZSi;
-    z[2] = DimZ/2. + LongitudinalSize +20*cm + 6 * DimZSi;
-    z[3] = DimZ/2. + LongitudinalSize + 40*cm + 6 * DimZSi;
-    volProva->AddNode(subvolSciFi1,1,new TGeoTranslation(0,0,-SBoxZ/2 + z[0]));
-    volProva->AddNode(subvolSciFi2,2,new TGeoTranslation(0,0,-SBoxZ/2 + z[1])); //I need to recognize them with indexes
-}
- //I am trying to activate only the first two slabs
-    //volProva->AddNode(subvolSciFi3,3,new TGeoTranslation(0,0,-SBoxZ/2 + z[2]));
-    //volProva->AddNode(subvolSciFi4,4,new TGeoTranslation(0,0,-SBoxZ/2 + z[3]));
-    top->AddNode(subvolSciFi3,3,new TGeoTranslation(0,0,zBoxPosition-SBoxZ/2 + z[2]));
-    top->AddNode(subvolSciFi4,4,new TGeoTranslation(0,0,zBoxPosition-SBoxZ/2 + z[3]));
+    top->AddNode(subvolSciFi1,1,new TGeoTranslation(0,0,zBoxPosition-SBoxZ/2 + z[2]));
+    top->AddNode(subvolSciFi2,2,new TGeoTranslation(0,0,zBoxPosition-SBoxZ/2 + z[3]));
 }
 
 Bool_t  Spectrometer::ProcessHits(FairVolume* vol)
