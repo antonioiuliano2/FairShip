@@ -8,6 +8,26 @@ ROOT.gROOT.ProcessLine('#include "Geant4/G4FieldManager.hh"')
 ROOT.gROOT.ProcessLine('#include "Geant4/G4UIterminal.hh"')
 ROOT.gROOT.ProcessLine('#include "Geant4/G4RunManager.hh"')
 ROOT.gROOT.ProcessLine('#include "TG4GeometryServices.h"')
+ROOT.gROOT.ProcessLine('#include "TG4GeometryManager.h"')
+
+def check4OrphanVolumes(fGeo):
+# fill list with volumes from nodes and compare with list of volumes
+ top = fGeo.GetTopVolume()
+ listOfVolumes = [top.GetName()]
+ findNode(top,listOfVolumes)
+ orphan = []
+ gIndex = {}
+ for v in fGeo.GetListOfVolumes():
+   name = v.GetName()
+   if not name in listOfVolumes:
+     orphan.append(name)
+   if not name in gIndex: gIndex[name]=[]
+   gIndex[name].append(v.GetNumber())
+ print "list of orphan volumes:",orphan
+ vSame = {}
+ for x in gIndex:
+   if len(gIndex[x])>1: vSame[x]=len(gIndex[x])
+ print "list of volumes with same name",vSame
 
 def setMagnetField(flag=None):
     print 'setMagnetField() called. Out of date, does not set field for tau neutrino detector!'
@@ -117,8 +137,12 @@ def addVMCFields(controlFile = 'field/BFieldSetup.txt', verbose = False):
     '''
     print 'Calling addVMCFields using input control file {0}'.format(controlFile)
     
-    fieldMaker = ROOT.ShipFieldMaker(verbose)
-    fieldMaker.makeFields(controlFile)
+    fieldMaker = ROOT.ShipFieldMaker(controlFile, verbose)
+
+    # Reset the fields in the VMC to use info from the fieldMaker object
+    geom = ROOT.TG4GeometryManager.Instance()
+    geom.SetUserPostDetConstruction(fieldMaker)
+    geom.ConstructSDandField()
 
     # Return the fieldMaker object, otherwise it will "go out of scope" and its
     # content will be deleted
@@ -137,10 +161,14 @@ def printVMCFields():
     for v in vols:
 
         field =  v.GetField()
-        #print 'Vol is {0}, field is {1}'.format(v.GetName(), field)
+        if field:
+         print 'Vol is {0}, field is {1}'.format(v.GetName(), field)
+        else: 
+         print 'Vol is {0}'.format(v.GetName())
 
         if field:
-            # Get the field value in the local volume centre
+            # Get the field value assuming the global co-ordinate origin.
+            # This needs to be modified to use the local volume centre
             centre = array('d',[0.0, 0.0, 0.0])
             B = array('d',[0.0, 0.0, 0.0])
             field.Field(centre, B)

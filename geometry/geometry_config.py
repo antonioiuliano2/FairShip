@@ -49,8 +49,14 @@ with ConfigRegistry.register_config("basic") as c:
     extraVesselLength = totalLength - 50*u.m
     windowBulge = 1*u.m
     if tankDesign > 5: windowBulge = 25*u.cm
+#
+    magnet_design = 2
+    if tankDesign == 5: magnet_design = 3
+    if tankDesign == 6: magnet_design = 4
+#
     c.strawDesign = strawDesign
     c.tankDesign = tankDesign
+    c.magnetDesign = magnet_design
 # cave parameters
     c.cave = AttrDict(z=0*u.cm)
     c.cave.floorHeightMuonShield = 5*u.m
@@ -165,6 +171,13 @@ with ConfigRegistry.register_config("basic") as c:
     c.Bfield.max = 1.4361*u.kilogauss  # was 1.15 in EOI
     c.Bfield.y   = c.Yheight
     c.Bfield.x   = 3.*u.m
+    if c.magnetDesign>3:                          # MISIS design
+      c.Bfield.YokeWidth=0.85*u.m  # full width       200.*cm; 
+      c.Bfield.YokeDepth=1.75*u.m  # half length      200 *cm;
+      c.Bfield.CoilThick=25.*u.cm  # thickness
+      VesselThick=37.*u.cm;   # full thickness
+      c.Bfield.x = 251.*u.cm+VesselThick; # half apertures
+      c.Bfield.y = 501.*u.cm+VesselThick+c.Bfield.CoilThick
 
 # TimeDet
     c.TimeDet = AttrDict(z=0)
@@ -587,7 +600,7 @@ with ConfigRegistry.register_config("basic") as c:
         c.tauMudet.zMudetC = c.Chamber1.z -c.chambers.Tub1length-10*u.cm - c.tauMudet.Ztot/2
         c.tauMudet.PillarX = 40*u.cm
         c.tauMudet.PillarZ = 50*u.cm
-        c.tauMudet.PillarY = 10*u.m - c.cave.floorHeightMuonShield - c.tauMudet.Ytot/2 -10*u.cm - 0.1*u.mm
+        c.tauMudet.PillarY = 10*u.m - c.cave.floorHeightMuonShield - c.tauMudet.Ytot/2 + c.tauMudet.deltay/2  - 0.1*u.mm
     c.tauMudet.XGas =  c.tauMudet.Xtot
     c.tauMudet.YGas =  c.tauMudet.YRpc
     c.tauMudet.ZGas = 1*u.mm
@@ -605,7 +618,7 @@ with ConfigRegistry.register_config("basic") as c:
        c.EmuMagnet.zC = -c.decayVolume.length/2. - c.tauMudet.GapD - c.tauMudet.Ztot - c.EmuMagnet.GapDown - c.EmuMagnet.Z/2
 
     if nuTauTargetDesign==3:
-       c.EmuMagnet.zC = -c.decayVolume.length/2. - c.tauMudet.Ztot- c.EmuMagnet.Z/2 - c.EmuMagnet.GapDown   
+       c.EmuMagnet.zC = c.tauMudet.zMudetC - c.tauMudet.Ztot/2 - c.EmuMagnet.GapDown - c.EmuMagnet.Z/2   
        
     #tau Bricks
     c.NuTauTarget = AttrDict(z=0*u.cm)
