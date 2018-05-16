@@ -113,7 +113,7 @@ def configure(run,ship_geo):
  MuonTagger.ChooseLastSlabsMaterial(ship_geo.MuonTagger.concreteslabs)
  MuonTagger.SetPassiveParameters(ship_geo.MuonTagger.PX, ship_geo.MuonTagger.PY, ship_geo.MuonTagger.PTh, ship_geo.MuonTagger.PTh1)
  MuonTagger.SetSensitiveParameters(ship_geo.MuonTagger.SX, ship_geo.MuonTagger.SY, ship_geo.MuonTagger.STh)
- MuonTagger.SetHoleRadius(ship_geo.MuonTagger.R)
+ MuonTagger.SetHoleDimensions(ship_geo.MuonTagger.HX, ship_geo.MuonTagger.HY)
  detectorList.append(MuonTagger)
  for x in detectorList:
   run.AddModule(x)

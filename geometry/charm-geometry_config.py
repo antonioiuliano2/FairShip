@@ -250,4 +250,5 @@ with ConfigRegistry.register_config("basic") as c:
     c.MuonTagger.PY = c.MuonTagger.BY
     c.MuonTagger.SX = c.MuonTagger.BX
     c.MuonTagger.SY = c.MuonTagger.BY
-    c.MuonTagger.R = 2.5 * u.cm #radius of central hole
+    c.MuonTagger.HX = 5 * u.cm #dimensions of central hole
+    c.MuonTagger.HY = 5 * u.cm

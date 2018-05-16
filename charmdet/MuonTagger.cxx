@@ -113,9 +113,10 @@ void MuonTagger::SetSensitiveParameters(Double_t SX, Double_t SY, Double_t STh)
   SensThickness = STh;
 }//setting parameters of sensitive layers
 
-void MuonTagger::SetHoleRadius(Double_t R)
+void MuonTagger::SetHoleDimensions(Double_t HX, Double_t HY)
 {
-  radius = R;
+  HoleX = HX;
+  HoleY = HY;
 }
 
 void MuonTagger::ChooseLastSlabsMaterial(bool concreteslabs)
@@ -169,11 +170,11 @@ void MuonTagger::ConstructGeometry()
   top->AddNode(VMuonBox, 1, new TGeoTranslation(0, 0, zBoxPosition));
 
   //begin muon filter part
-  //inserting a cylinder to create an hole for the passive layers.
-  TGeoBBox *inbox = new TGeoBBox("inbox",radius,radius,PasThickness/2 + SensThickness/2); 
+  //hole for the passive layers.
+  TGeoBBox *inbox = new TGeoBBox("inbox",HoleX/2,HoleY/2,PasThickness/2 + SensThickness/2); 
   inbox->SetName("T");
   
-  TGeoBBox *inbox1 = new TGeoBBox("inbox1",radius,radius,PasThickness1/2 + SensThickness/2); 
+  TGeoBBox *inbox1 = new TGeoBBox("inbox1",HoleX/2,HoleY/2,PasThickness1/2 + SensThickness/2); 
   inbox1->SetName("T1");
   
   //passive layers
