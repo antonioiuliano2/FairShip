@@ -3,6 +3,7 @@ import ROOT,os,sys,getopt,time,shipRoot_conf
 import shipunit as u
 from ShipGeoConfig import ConfigRegistry
 
+detectorList = []
 postprocess = False
 mcEngine     = "TGeant4"
 simEngine    = "Pythia8"
@@ -173,23 +174,8 @@ run.SetMaterials("media.geo")
 # -----Create geometry----------------------------------------------
 cave= ROOT.ShipCave("CAVE")
 cave.SetGeometryFileName("caveWithAir.geo")
-run.AddModule(cave)
-
-TargetStation = ROOT.ShipTargetStation("TargetStation",ship_geo.target.length,ship_geo.hadronAbsorber.length,
-                                                        ship_geo.target.z,ship_geo.hadronAbsorber.z,ship_geo.targetOpt,ship_geo.target.sl)
-slices_length   = ROOT.std.vector('float')()
-slices_material = ROOT.std.vector('std::string')()
-for i in range(1,ship_geo.targetOpt+1):
-   slices_length.push_back(  eval("ship_geo.target.L"+str(i)))
-   slices_material.push_back(eval("ship_geo.target.M"+str(i)))
-TargetStation.SetLayerPosMat(ship_geo.target.xy,slices_length,slices_material)
-
-if muflux: run.AddModule(TargetStation)
-
-Scintillator = ROOT.Scintillator("Scintillator",ROOT.kTRUE)
-Scintillator.SetScoring1XY(ship_geo.Scintillator.Scoring1X,ship_geo.Scintillator.Scoring1Y)
-if muflux: run.AddModule(Scintillator)
-
+detectorList.append(cave)
+    
 Box = ROOT.Box("Box",ship_geo.Box.BrX, ship_geo.Box.BrY, ship_geo.Box.BrZ, ship_geo.Box.zBox,ROOT.kTRUE)
 Box.SetEmulsionParam(ship_geo.Box.EmTh, ship_geo.Box.EmX, ship_geo.Box.EmY, ship_geo.Box.PBTh,ship_geo.Box.EPlW, ship_geo.Box.MolybdenumTh, ship_geo.Box.AllPW);
 Box.SetBrickParam(ship_geo.Box.BrX, ship_geo.Box.BrY, ship_geo.Box.BrZ, ship_geo.Box.BrPackX, ship_geo.Box.BrPackY, ship_geo.Box.BrPackZ);
@@ -202,30 +188,29 @@ Box.SetMagneticField(ship_geo.Box.Bvalue)
 Box.SetGapGeometry(ship_geo.Box.GapInTargetTh, ship_geo.Box.GapPostTargetTh)
 Box.SetTargetDesign(ship_geo.Box.charmtarget)
 Box.SetRunNumber(ship_geo.Box.RunNumber)
-if not muflux: run.AddModule(Box)  
 
+if not muflux: 
+   detectorList.append(Box)
+   
 Spectrometer = ROOT.Spectrometer("Spectrometer",ship_geo.Spectrometer.DX, ship_geo.Spectrometer.DY, ship_geo.Spectrometer.DZ,ROOT.kTRUE)
-Spectrometer.SetTransverseSizes(ship_geo.Spectrometer.D1X, ship_geo.Spectrometer.D1Y, ship_geo.Spectrometer.D2X, ship_geo.Spectrometer.D2Y, ship_geo.Spectrometer.D3X, ship_geo.Spectrometer.D3Y, ship_geo.Spectrometer.D4X, ship_geo.Spectrometer.D4Y)   
+Spectrometer.SetTransverseSizes(ship_geo.Spectrometer.D1X, ship_geo.Spectrometer.D1Y, ship_geo.Spectrometer.DSciFi1X, ship_geo.Spectrometer.DSciFi1Y, ship_geo.Spectrometer.DSciFi2X, ship_geo.Spectrometer.DSciFi2Y)   
 Spectrometer.SetMagneticField(ship_geo.Spectrometer.Bvalue)
 Spectrometer.SetSiliconZ(ship_geo.Spectrometer.DimZSi)
-Spectrometer.ChooseGeometry(ship_geo.Spectrometer.issilicon)
 # -----Goliath part by Annarita--------
 Spectrometer.SetGoliathSizes(ship_geo.Spectrometer.H, ship_geo.Spectrometer.TS, ship_geo.Spectrometer.LS, ship_geo.Spectrometer.BasisH);
 Spectrometer.SetCoilParameters(ship_geo.Spectrometer.CoilR, ship_geo.Spectrometer.UpCoilH, ship_geo.Spectrometer.LowCoilH,  ship_geo.Spectrometer.CoilD);
 # --------------------------------------
 Spectrometer.SetBoxParam(ship_geo.Spectrometer.SX,ship_geo.Spectrometer.SY,ship_geo.Spectrometer.SZ,ship_geo.Spectrometer.zBox)
-if not muflux: run.AddModule(Spectrometer)
-#add the parts of the charm cross sec detector
-
-MufluxSpectrometer = ROOT.MufluxSpectrometer("MufluxSpectrometer",ship_geo.Spectrometer.DX, ship_geo.Spectrometer.DY, ship_geo.Spectrometer.DZ,ROOT.kTRUE)
-# -----Drift tube part --------
+if not muflux: detectorList.append(Spectrometer)
+MufluxSpectrometer = ROOT.MufluxSpectrometer("MufluxSpectrometer",ship_geo.MufluxSpectrometer.DX, ship_geo.MufluxSpectrometer.DY, ship_geo.MufluxSpectrometer.DZ,ROOT.kTRUE)
+ # -----Drift tube part --------
  
 MufluxSpectrometer.SetGoliathSizes(ship_geo.Spectrometer.H, ship_geo.Spectrometer.TS, ship_geo.Spectrometer.LS, ship_geo.Spectrometer.BasisH);
 MufluxSpectrometer.SetCoilParameters(ship_geo.Spectrometer.CoilR, ship_geo.Spectrometer.UpCoilH, ship_geo.Spectrometer.LowCoilH,  ship_geo.Spectrometer.CoilD);
 # --------------------------------------
 MufluxSpectrometer.SetBoxParam(ship_geo.Spectrometer.SX,ship_geo.Spectrometer.SY,ship_geo.Spectrometer.SZ,ship_geo.Spectrometer.zBox)
-
-MufluxSpectrometer.ChooseDetector(ship_geo.MufluxSpectrometer.muflux)  
+ 
+MufluxSpectrometer.ChooseDetector(ship_geo.MufluxSpectrometer.muflux)
 MufluxSpectrometer.SetDeltazView(ship_geo.MufluxSpectrometer.DeltazView)
 MufluxSpectrometer.SetInnerTubeDiameter(ship_geo.MufluxSpectrometer.InnerTubeDiameter)
 MufluxSpectrometer.SetOuterTubeDiameter(ship_geo.MufluxSpectrometer.OuterTubeDiameter)
@@ -246,17 +231,34 @@ MufluxSpectrometer.SetTr34XDim(ship_geo.MufluxSpectrometer.tr34xdim)
 #MufluxSpectrometer.SetMuonFlux(ship_geo.MufluxSpectrometer.muflux)            
 # for the digitizing step
 MufluxSpectrometer.SetTubeResolution(ship_geo.MufluxSpectrometer.v_drift,ship_geo.MufluxSpectrometer.sigma_spatial) 
- 
-#if muflux: run.AddModule(MufluxSpectrometer)
-run.AddModule(MufluxSpectrometer)
+MufluxSpectrometer.SetT3T4Distance(ship_geo.MufluxSpectrometer.T3T4_distance)
+detectorList.append(MufluxSpectrometer)
+
+if muflux:
+ TargetStation = ROOT.ShipTargetStation("TargetStation",ship_geo.target.length,ship_geo.hadronAbsorber.length,    ship_geo.target.z,ship_geo.hadronAbsorber.z,ship_geo.targetOpt,ship_geo.target.sl)
+ if ship_geo.targetOpt>10:
+    slices_length=ROOT.std.vector('float')()     
+    slices_material=ROOT.std.vector('string')()
+    for i in range(1,ship_geo.targetOpt+1):
+     slices_length.push_back(eval("ship_geo.target.L"+str(i)))
+     slices_material.push_back(eval("ship_geo.target.M"+str(i)))
+
+    TargetStation.SetLayerPosMat(ship_geo.target.xy,slices_length,slices_material)
+    TargetStation.SetMuFlux(ship_geo.MufluxSpectrometer.muflux)
+    detectorList.append(TargetStation)
+    detectorList.append(MufluxSpectrometer)
+    Scintillator = ROOT.Scintillator("Scintillator",ROOT.kTRUE)
+    Scintillator.SetScoring1XY(ship_geo.Scintillator.Scoring1X,ship_geo.Scintillator.Scoring1Y)
+    detectorList.append(Scintillator)
 
 MuonTagger = ROOT.MuonTagger("MuonTagger", ship_geo.MuonTagger.BX, ship_geo.MuonTagger.BY, ship_geo.MuonTagger.BZ, ship_geo.MuonTagger.zBox, ROOT.kTRUE)
 MuonTagger.ChooseLastSlabsMaterial(ship_geo.MuonTagger.concreteslabs)
 MuonTagger.SetPassiveParameters(ship_geo.MuonTagger.PX, ship_geo.MuonTagger.PY, ship_geo.MuonTagger.PTh, ship_geo.MuonTagger.PTh1)
 MuonTagger.SetSensitiveParameters(ship_geo.MuonTagger.SX, ship_geo.MuonTagger.SY, ship_geo.MuonTagger.STh)
-MuonTagger.SetHoleRadius(ship_geo.MuonTagger.R)
-run.AddModule(MuonTagger)
-  
+MuonTagger.SetHoleDimensions(ship_geo.MuonTagger.HX, ship_geo.MuonTagger.HY)
+detectorList.append(MuonTagger)
+for x in detectorList:
+ run.AddModule(x)  
   
 # -----Create PrimaryGenerator--------------------------------------
 primGen = ROOT.FairPrimaryGenerator()

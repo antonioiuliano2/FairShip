@@ -203,7 +203,7 @@ Bool_t FixedTargetGenerator::Init()
   }
   if (targetName!=""){
    fMaterialInvestigator = new GenieGenerator();
-   /*
+   if (targetName == "/TargetArea_1"){
    TGeoNavigator* nav = gGeoManager->GetCurrentNavigator();
    nav->cd(targetName);
    TGeoNode* target = nav->GetCurrentNode(); 
@@ -230,7 +230,8 @@ Bool_t FixedTargetGenerator::Init()
    end[0]=xOff;
    end[1]=yOff;
    end[2]=endZ;
-   */
+   }
+   else{ 
    //prova per la geometria del charm
    TGeoVolume* top = gGeoManager->GetTopVolume();
    TGeoNode* target = top->FindNode(targetName);
@@ -247,6 +248,7 @@ Bool_t FixedTargetGenerator::Init()
    end[0]=xOff;
    end[1]=yOff;
    end[2]=endZ;
+   }
 //find maximum interaction length
    bparam = fMaterialInvestigator->MeanMaterialBudget(start, end, mparam);
    maxCrossSection =  mparam[9];
