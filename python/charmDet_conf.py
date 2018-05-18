@@ -49,7 +49,9 @@ def configure(run,ship_geo):
  Spectrometer = ROOT.Spectrometer("Spectrometer",ship_geo.Spectrometer.DX, ship_geo.Spectrometer.DY, ship_geo.Spectrometer.DZ,ROOT.kTRUE)
  Spectrometer.SetTransverseSizes(ship_geo.Spectrometer.D1X, ship_geo.Spectrometer.D1Y, ship_geo.Spectrometer.DSciFi1X, ship_geo.Spectrometer.DSciFi1Y, ship_geo.Spectrometer.DSciFi2X, ship_geo.Spectrometer.DSciFi2Y)   
  Spectrometer.SetMagneticField(ship_geo.Spectrometer.Bvalue)
- Spectrometer.SetSiliconZ(ship_geo.Spectrometer.DimZSi)
+ Spectrometer.SetSiliconDZ(ship_geo.Spectrometer.DimZSi)
+ Spectrometer.SetSiliconDetNumber(ship_geo.Spectrometer.nSiDet)
+ Spectrometer.SetDetectorPositions(ship_geo.Spectrometer.zSi1, ship_geo.Spectrometer.zSciFi1, ship_geo.Spectrometer.zSciFi2)
 # -----Goliath part by Annarita--------
  Spectrometer.SetGoliathSizes(ship_geo.Spectrometer.H, ship_geo.Spectrometer.TS, ship_geo.Spectrometer.LS, ship_geo.Spectrometer.BasisH);
  Spectrometer.SetCoilParameters(ship_geo.Spectrometer.CoilR, ship_geo.Spectrometer.UpCoilH, ship_geo.Spectrometer.LowCoilH,  ship_geo.Spectrometer.CoilD);

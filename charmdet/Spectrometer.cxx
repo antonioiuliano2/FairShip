@@ -125,10 +125,23 @@ void Spectrometer::SetMagneticField(Double_t Bvalue)
  Bfield = Bvalue;
 }
 
-void Spectrometer::SetSiliconZ(Double_t SiliconZ)
+void Spectrometer::SetSiliconDZ(Double_t SiliconDZ)
 {
-  DimZSi = SiliconZ;
+  DimZSi = SiliconDZ;
 }
+
+void Spectrometer::SetDetectorPositions(Double_t zSi1, Double_t zSciFi1, Double_t zSciFi2)
+{ 
+ zposSi1 = zSi1;
+ zposSciFi1 = zSciFi1;
+ zposSciFi2 = zSciFi2;
+}
+
+void Spectrometer::SetSiliconDetNumber(Int_t nSilicon)
+{
+ nSi = nSilicon;
+}
+
 
 void Spectrometer::SetTransverseSizes(Double_t D1X, Double_t D1Y, Double_t DSciFi1X, Double_t DSciFi1Y, Double_t DSciFi2X, Double_t DSciFi2Y){
   Dim1X = D1X;
@@ -184,13 +197,6 @@ void Spectrometer::ConstructGeometry()
 
   const Double_t MagneticField = Bfield;
   TGeoUniformMagField *magfield = new TGeoUniformMagField(0., MagneticField, 0.); //The magnetic field must be only in the air space between the stations
-
-  TGeoBBox *ProvaBox = new TGeoBBox("ProvaBox", DimSciFi2X/2, DimSciFi2Y/2, SBoxZ/2);
-  TGeoVolume *volProva = new TGeoVolume("volProva", ProvaBox, air);
-  volProva->SetTransparency(1);
-
- // top->AddNode(volProva,1,new TGeoTranslation(0,0,zBoxPosition));
-  
   
     TGeoBBox *Pixel;
     TGeoVolume *volPixel;
@@ -209,20 +215,14 @@ void Spectrometer::ConstructGeometry()
     subvolSciFi2->SetLineColor(kBlue-5);
     AddSensitiveVolume(subvolSciFi2);    
 
-    Double_t z[4];
     Double_t Sidist = 5*cm; //Distance between siliconDetectors
 
-    z[0] = (DimZSi)/2.;
-    z[1] = z[0] + 3 *DimZSi + 2 * Sidist;
-    z[2] = z[1] + DimZ/2. + LongitudinalSize + 10 *cm;
-    z[3] = z[1] + DimZ/2. + LongitudinalSize + 10* cm + 5*cm + DimZ;   
-
-    for (int k = 0; k < 3; k++){ //3 silicon planes are the new detectors
-      Double_t zreplica = 0 + k * Sidist * cm + DimZSi/2.;      
-      top->AddNode(volPixel, 100 + k+1,  new TGeoTranslation(0,0, zBoxPosition -SBoxZ/2 + z[0] + zreplica)); //101, 102, 103
+    for (int k = 0; k < nSi; k++){ //3 silicon planes are the new detectors
+      Double_t zreplica = 0 + k * (Sidist + DimZSi);      
+      top->AddNode(volPixel, 100 + k+1,  new TGeoTranslation(0,0, zposSi1 + zreplica)); //DetectorIDs are 101, 102, 103
     }
-    top->AddNode(subvolSciFi1,1,new TGeoTranslation(0,0,zBoxPosition-SBoxZ/2 + z[2]));
-    top->AddNode(subvolSciFi2,2,new TGeoTranslation(0,0,zBoxPosition-SBoxZ/2 + z[3]));
+      top->AddNode(subvolSciFi1,1,new TGeoTranslation(0,0,zposSciFi1)); //DetectorIDs are 1 and 2
+      top->AddNode(subvolSciFi2,2,new TGeoTranslation(0,0,zposSciFi2));
 }
 
 Bool_t  Spectrometer::ProcessHits(FairVolume* vol)

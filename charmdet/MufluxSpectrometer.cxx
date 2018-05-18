@@ -292,7 +292,7 @@ void MufluxSpectrometer::ConstructGeometry()
   const Double_t MagneticField = 1 * tesla; //magnetic field
   TGeoUniformMagField *magfield = new TGeoUniformMagField(0., MagneticField, 0.); //The magnetic field must be only in the vacuum space between the stations
 
-  //TGeoBBox *ProvaBox = new TGeoBBox("ProvaBox", 0. , 0., 0.);  
+  //TGeoBBox *ProvaBox = new TGeoBBox("ProvaBox", 0. , 0., 0.); //avoid creating orphaned volume  
   //TGeoVolume *volProva = new TGeoVolume("volProva", ProvaBox, vacuum);   
   
   Double_t z[4] = {0.,0.,0.,0.}; 
@@ -355,12 +355,12 @@ void MufluxSpectrometer::ConstructGeometry()
       TString nmstation="x";
       if (statnb==1) {
          volDriftTube1->SetVisibility(kFALSE);
-	 if (fMuonFlux)top->AddNode(volDriftTube1,1,new TGeoTranslation(0,0,DimZ+5.1*cm));
+	 top->AddNode(volDriftTube1,1,new TGeoTranslation(0,0,DimZ+5.1*cm));
          nmstation = "Station_1"; 
 	 }  
       if (statnb==2) {
          volDriftTube2->SetVisibility(kFALSE);      
-	 if (fMuonFlux)top->AddNode(volDriftTube2,2,new TGeoTranslation(0,0,85.1*cm + DimZ)); //with SA
+	 top->AddNode(volDriftTube2,2,new TGeoTranslation(0,0,85.1*cm + DimZ)); //with SA
          nmstation = "Station_2";	  
 	 }      
   
@@ -501,7 +501,7 @@ void MufluxSpectrometer::ConstructGeometry()
     
     //Goliath raised by 17cm
     if (fMuonFlux) top->AddNode(volGoliath,1,new TGeoTranslation(0,17*cm,zBoxPosition-SBoxZ/2 + z[1] + LongitudinalSize/2)); 
-    else top->AddNode(volGoliath,1,new TGeoTranslation(0,17*cm,235.1400*cm)); 
+    else top->AddNode(volGoliath,1,new TGeoTranslation(0,17*cm,235.1200*cm)); 
     volGoliath->AddNode(volVacuum, 1, new TGeoTranslation(0,-5 * cm,0)); //commented to insert the new Goliath 
 
     //
@@ -716,8 +716,8 @@ void MufluxSpectrometer::ConstructGeometry()
     TGeoHMatrix *m3_c = new TGeoHMatrix(tr2_c);
     volGoliath->AddNode(volLateralS2_c, 1, m3_c);
 
-    //END GOLIATH PART BY ANNARITA   
- 
+    //END GOLIATH PART BY ANNARITA
+    
       //detectors for muonflux downstream of Goliath 
       // Volume: tube
       rmin = fInner_Tube_diameter/2.;

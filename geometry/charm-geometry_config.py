@@ -225,7 +225,16 @@ with ConfigRegistry.register_config("basic") as c:
        c.Spectrometer.SZ = c.Spectrometer.DZ*2 + c.Spectrometer.DimZSi*3 + 2 * c.Spectrometer.Sidist + 80 *u.cm + 4.5*u.m #4.5 m is the Goliath length
  
     c.Spectrometer.zBox = c.Spectrometer.SZ/2
-    
+
+    #position start of PIXEL detectors
+    c.Spectrometer.zSi1 = c.Spectrometer.zBox - c.Spectrometer.SZ/2. + c.Spectrometer.DimZSi/2.
+    c.Spectrometer.nSiDet = 3 #they are equally separated by Sidist    
+
+    #position of SciFis 
+    distGoliathSciFi1 = 10*u.cm
+    c.Spectrometer.zSciFi1 = c.Spectrometer.zSi1 +c.Spectrometer.DimZSi/2. + (c.Spectrometer.nSiDet - 1)*(c.Spectrometer.Sidist +c.Spectrometer.DimZSi) + c.Spectrometer.LS + distGoliathSciFi1 +  c.Spectrometer.DZ/2.
+    c.Spectrometer.zSciFi2 = c.Spectrometer.zSciFi1 + c.Spectrometer.DZ/2. + c.Spectrometer.Sidist + c.Spectrometer.DZ/2.
+
     #Muon Filter
     
     c.MuonTagger = AttrDict(z = 0*u.cm)
