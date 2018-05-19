@@ -65,7 +65,7 @@ with ConfigRegistry.register_config("basic") as c:
     c.Box.Bvalue = 0 * u.tesla
     c.Box.GapInTargetTh = 0 * u.cm 
     #c.Box.GapPostTargetTh = 5 * u.cm
-    c.Box.GapPostTargetTh = 2 * u.cm     
+    c.Box.GapPostTargetTh = 1.2 * u.cm     
     #c.Box.GapPostTargetTh = 0*u.cm
     c.Box.RunNumber =  3 #run configuration for charm
 
@@ -205,19 +205,34 @@ with ConfigRegistry.register_config("basic") as c:
     c.MufluxSpectrometer.DY = 1.6*u.m
     c.MufluxSpectrometer.DZ = 16.*u.cm
     #These parameters are used only by the charm detector ---   
-    c.Spectrometer.D1X = 4 * u.cm;
-    c.Spectrometer.D1Y = 4 * u.cm;
+    c.Spectrometer.D1Short = 3.36 * u.cm;
+    c.Spectrometer.D1Long = 4 * u.cm;   
+    c.Spectrometer.DimZSi = 0.0200 * u.cm
+    c.Spectrometer.PairSiDistance = 6 * u.cm 
+    c.Spectrometer.Sioverlap = 0.3*u.cm            
+
+    c.Spectrometer.SX = c.Spectrometer.DX
+    c.Spectrometer.SY = c.Spectrometer.DY    
+    c.Spectrometer.Sidist = 5 * u.cm      
+    
+    #position of module centres
+    c.Spectrometer.zSi0 = c.Spectrometer.PairSiDistance/2. + c.Spectrometer.DimZSi/2.
+    c.Spectrometer.zSi1 = c.Spectrometer.zSi0 + 0.8 *u.cm
+    c.Spectrometer.zSi2 = c.Spectrometer.zSi0 + 1.8 *u.cm
+    c.Spectrometer.zSi3 = c.Spectrometer.zSi0 + 5.8 *u.cm
+    c.Spectrometer.zSi4 = c.Spectrometer.zSi0 + 6.8 *u.cm
+    c.Spectrometer.zSi5 = c.Spectrometer.zSi0 + 12.8 *u.cm    
+
     c.Spectrometer.DSciFi1X = 40 * u.cm;
     c.Spectrometer.DSciFi1Y = 40 * u.cm;
     c.Spectrometer.DSciFi2X = 40 * u.cm;
-    c.Spectrometer.DSciFi2Y = 40 * u.cm;                 
-    c.Spectrometer.SX = c.Spectrometer.DX
-    c.Spectrometer.SY = c.Spectrometer.DY    
-    c.Spectrometer.DimZSi = 0.0400 * u.cm
-    c.Spectrometer.Sidist = 5 * u.cm
-    c.Spectrometer.Bvalue = 1 * u.tesla;      
+    c.Spectrometer.DSciFi2Y = 40 * u.cm;  
+
+    c.Spectrometer.Bvalue = 1 * u.tesla;
+
     #-------------------------------------------------------
-         
+            
+
     if c.MufluxSpectrometer.muflux == True: 
        #these parameters are also used inside the MufluxSpectrometer.cxx
        c.Spectrometer.SZ = c.Spectrometer.DZ*6 + 286 *u.cm + 4.5*u.m + 3*u.cm #4.5 m is the Goliath length; 286=6+80+200 Scint SA, T1,2 & T3,4 dist, 3 for SB
@@ -226,13 +241,9 @@ with ConfigRegistry.register_config("basic") as c:
  
     c.Spectrometer.zBox = c.Spectrometer.SZ/2
 
-    #position start of PIXEL detectors
-    c.Spectrometer.zSi1 = c.Spectrometer.zBox - c.Spectrometer.SZ/2. + c.Spectrometer.DimZSi/2.
-    c.Spectrometer.nSiDet = 3 #they are equally separated by Sidist    
-
     #position of SciFis 
     distGoliathSciFi1 = 10*u.cm
-    c.Spectrometer.zSciFi1 = c.Spectrometer.zSi1 +c.Spectrometer.DimZSi/2. + (c.Spectrometer.nSiDet - 1)*(c.Spectrometer.Sidist +c.Spectrometer.DimZSi) + c.Spectrometer.LS + distGoliathSciFi1 +  c.Spectrometer.DZ/2.
+    c.Spectrometer.zSciFi1 = c.Spectrometer.zSi5 +c.Spectrometer.PairSiDistance/2.+c.Spectrometer.DimZSi/2. + c.Spectrometer.LS + distGoliathSciFi1 +  c.Spectrometer.DZ/2.
     c.Spectrometer.zSciFi2 = c.Spectrometer.zSciFi1 + c.Spectrometer.DZ/2. + c.Spectrometer.Sidist + c.Spectrometer.DZ/2.
 
     #Muon Filter

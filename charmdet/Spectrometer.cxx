@@ -130,9 +130,19 @@ void Spectrometer::SetSiliconDZ(Double_t SiliconDZ)
   DimZSi = SiliconDZ;
 }
 
-void Spectrometer::SetDetectorPositions(Double_t zSi1, Double_t zSciFi1, Double_t zSciFi2)
+void Spectrometer::SetSiliconDetPositions(Double_t zSi0, Double_t zSi1, Double_t zSi2, Double_t zSi3, Double_t zSi4, Double_t zSi5, Double_t PairSiDistance)
 { 
- zposSi1 = zSi1;
+ zs0 = zSi0;
+ zs1 = zSi1;
+ zs2 = zSi2;
+ zs3 = zSi3;
+ zs4 = zSi4;
+ zs5 = zSi5;
+ pairwisedistance = PairSiDistance;
+}
+
+void Spectrometer::SetSciFiDetPositions(Double_t zSciFi1, Double_t zSciFi2)
+{ 
  zposSciFi1 = zSciFi1;
  zposSciFi2 = zSciFi2;
 }
@@ -143,9 +153,10 @@ void Spectrometer::SetSiliconDetNumber(Int_t nSilicon)
 }
 
 
-void Spectrometer::SetTransverseSizes(Double_t D1X, Double_t D1Y, Double_t DSciFi1X, Double_t DSciFi1Y, Double_t DSciFi2X, Double_t DSciFi2Y){
-  Dim1X = D1X;
-  Dim1Y = D1Y;
+void Spectrometer::SetTransverseSizes(Double_t D1short, Double_t D1long, Double_t Sioverlap, Double_t DSciFi1X, Double_t DSciFi1Y, Double_t DSciFi2X, Double_t DSciFi2Y){
+  Dim1Short = D1short;
+  Dim1Long = D1long;
+  overlap = Sioverlap;
   DimSciFi1X = DSciFi1X;
   DimSciFi1Y = DSciFi1Y;
   DimSciFi2X = DSciFi2X;
@@ -197,14 +208,36 @@ void Spectrometer::ConstructGeometry()
 
   const Double_t MagneticField = Bfield;
   TGeoUniformMagField *magfield = new TGeoUniformMagField(0., MagneticField, 0.); //The magnetic field must be only in the air space between the stations
-  
-    TGeoBBox *Pixel;
-    TGeoVolume *volPixel;
 
-    Pixel = new TGeoBBox("Pixel", (Dim1X)/2, (Dim1Y)/2, DimZSi/2); 
-    volPixel = new TGeoVolume("volPixel",Pixel,Silicon); 
-    volPixel->SetLineColor(kBlue-5);
-    AddSensitiveVolume(volPixel);    
+    Double_t DimZPixelBox = zs5 -zs0 +pairwisedistance + DimZSi;
+    TGeoBBox *PixelBox = new TGeoBBox("PixelBox", Dim1Long/2 + overlap, Dim1Long/2 + overlap, DimZPixelBox/2.);
+    TGeoVolume *volPixelBox = new TGeoVolume("volPixelBox",PixelBox,air);
+
+    top->AddNode(volPixelBox, 1, new TGeoTranslation(0,0,DimZPixelBox/2.));
+
+    TGeoBBox *Pixely = new TGeoBBox("Pixely", Dim1Short/2, Dim1Long/2, DimZSi/2); //long along y
+    TGeoVolume *volPixely = new TGeoVolume("volPixely",Pixely,Silicon); 
+    volPixely->SetLineColor(kBlue-5);
+    AddSensitiveVolume(volPixely);
+
+    TGeoBBox *Pixelx = new TGeoBBox("Pixelx", (Dim1Long)/2, (Dim1Short)/2, DimZSi/2); //long along x
+    TGeoVolume *volPixelx = new TGeoVolume("volPixelx",Pixelx,Silicon); 
+    volPixelx->SetLineColor(kBlue-5);
+    AddSensitiveVolume(volPixelx);
+
+    volPixelBox->AddNode(volPixely, 111, new TGeoTranslation(overlap,0,-DimZPixelBox/2.+ zs0 - pairwisedistance/2));
+    volPixelBox->AddNode(volPixelx, 112, new TGeoTranslation(-overlap,0,-DimZPixelBox/2. + zs0 + pairwisedistance/2));
+    volPixelBox->AddNode(volPixely, 121, new TGeoTranslation(0,overlap,-DimZPixelBox/2.  + zs1 - pairwisedistance/2)); 
+    volPixelBox->AddNode(volPixelx, 122, new TGeoTranslation(0,-overlap,-DimZPixelBox/2.  +  zs1 + pairwisedistance/2)); 
+    volPixelBox->AddNode(volPixely, 131, new TGeoTranslation(overlap,0,-DimZPixelBox/2. + zs2 - pairwisedistance/2));
+    volPixelBox->AddNode(volPixelx, 132, new TGeoTranslation(-overlap,0,-DimZPixelBox/2. +  zs2 + pairwisedistance/2));
+    volPixelBox->AddNode(volPixely, 141, new TGeoTranslation(0,overlap,-DimZPixelBox/2. +  zs3 - pairwisedistance/2)); 
+    volPixelBox->AddNode(volPixelx, 142, new TGeoTranslation(0,-overlap,-DimZPixelBox/2. + zs3 + pairwisedistance/2)); 
+    volPixelBox->AddNode(volPixely, 151, new TGeoTranslation(overlap,0,-DimZPixelBox/2. + zs4 - pairwisedistance/2));
+    volPixelBox->AddNode(volPixelx, 152, new TGeoTranslation(-overlap,0,-DimZPixelBox/2. + zs4 + pairwisedistance/2));
+    volPixelBox->AddNode(volPixely, 161, new TGeoTranslation(0,overlap,-DimZPixelBox/2. + zs5 - pairwisedistance/2)); 
+    volPixelBox->AddNode(volPixelx, 162, new TGeoTranslation(0,-overlap,-DimZPixelBox/2. + zs5 + pairwisedistance/2)); 
+    
     TGeoBBox *SciFi1 = new TGeoBBox("SciFi1", DimSciFi1X/2, DimSciFi1Y/2, DimZ/2); 
     TGeoVolume *subvolSciFi1 = new TGeoVolume("volSciFi1",SciFi1,sttmix8020_2bar);
     subvolSciFi1->SetLineColor(kBlue-5);
@@ -215,14 +248,8 @@ void Spectrometer::ConstructGeometry()
     subvolSciFi2->SetLineColor(kBlue-5);
     AddSensitiveVolume(subvolSciFi2);    
 
-    Double_t Sidist = 5*cm; //Distance between siliconDetectors
-
-    for (int k = 0; k < nSi; k++){ //3 silicon planes are the new detectors
-      Double_t zreplica = 0 + k * (Sidist + DimZSi);      
-      top->AddNode(volPixel, 100 + k+1,  new TGeoTranslation(0,0, zposSi1 + zreplica)); //DetectorIDs are 101, 102, 103
-    }
-      top->AddNode(subvolSciFi1,1,new TGeoTranslation(0,0,zposSciFi1)); //DetectorIDs are 1 and 2
-      top->AddNode(subvolSciFi2,2,new TGeoTranslation(0,0,zposSciFi2));
+    top->AddNode(subvolSciFi1,1,new TGeoTranslation(0,0,zposSciFi1)); //DetectorIDs are 1 and 2
+    top->AddNode(subvolSciFi2,2,new TGeoTranslation(0,0,zposSciFi2));
 }
 
 Bool_t  Spectrometer::ProcessHits(FairVolume* vol)
