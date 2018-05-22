@@ -208,7 +208,7 @@ with ConfigRegistry.register_config("basic") as c:
     c.Spectrometer.D1Short = 3.36 * u.cm;
     c.Spectrometer.D1Long = 4 * u.cm;   
     c.Spectrometer.DimZSi = 0.0200 * u.cm
-    c.Spectrometer.PairSiDistance = 6 * u.cm 
+    c.Spectrometer.PairSiDistance = 0.6 * u.cm +c.Spectrometer.DimZSi 
     c.Spectrometer.Sioverlap = 0.3*u.cm            
 
     c.Spectrometer.SX = c.Spectrometer.DX

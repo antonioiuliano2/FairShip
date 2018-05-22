@@ -226,16 +226,16 @@ void Spectrometer::ConstructGeometry()
     AddSensitiveVolume(volPixelx);
 
     volPixelBox->AddNode(volPixely, 111, new TGeoTranslation(overlap,0,-DimZPixelBox/2.+ zs0 - pairwisedistance/2));
-    volPixelBox->AddNode(volPixelx, 112, new TGeoTranslation(-overlap,0,-DimZPixelBox/2. + zs0 + pairwisedistance/2));
-    volPixelBox->AddNode(volPixely, 121, new TGeoTranslation(0,overlap,-DimZPixelBox/2.  + zs1 - pairwisedistance/2)); 
+    volPixelBox->AddNode(volPixely, 112, new TGeoTranslation(-overlap,0,-DimZPixelBox/2. + zs0 + pairwisedistance/2));
+    volPixelBox->AddNode(volPixelx, 121, new TGeoTranslation(0,overlap,-DimZPixelBox/2.  + zs1 - pairwisedistance/2)); 
     volPixelBox->AddNode(volPixelx, 122, new TGeoTranslation(0,-overlap,-DimZPixelBox/2.  +  zs1 + pairwisedistance/2)); 
     volPixelBox->AddNode(volPixely, 131, new TGeoTranslation(overlap,0,-DimZPixelBox/2. + zs2 - pairwisedistance/2));
-    volPixelBox->AddNode(volPixelx, 132, new TGeoTranslation(-overlap,0,-DimZPixelBox/2. +  zs2 + pairwisedistance/2));
-    volPixelBox->AddNode(volPixely, 141, new TGeoTranslation(0,overlap,-DimZPixelBox/2. +  zs3 - pairwisedistance/2)); 
+    volPixelBox->AddNode(volPixely, 132, new TGeoTranslation(-overlap,0,-DimZPixelBox/2. +  zs2 + pairwisedistance/2));
+    volPixelBox->AddNode(volPixelx, 141, new TGeoTranslation(0,overlap,-DimZPixelBox/2. +  zs3 - pairwisedistance/2)); 
     volPixelBox->AddNode(volPixelx, 142, new TGeoTranslation(0,-overlap,-DimZPixelBox/2. + zs3 + pairwisedistance/2)); 
     volPixelBox->AddNode(volPixely, 151, new TGeoTranslation(overlap,0,-DimZPixelBox/2. + zs4 - pairwisedistance/2));
-    volPixelBox->AddNode(volPixelx, 152, new TGeoTranslation(-overlap,0,-DimZPixelBox/2. + zs4 + pairwisedistance/2));
-    volPixelBox->AddNode(volPixely, 161, new TGeoTranslation(0,overlap,-DimZPixelBox/2. + zs5 - pairwisedistance/2)); 
+    volPixelBox->AddNode(volPixely, 152, new TGeoTranslation(-overlap,0,-DimZPixelBox/2. + zs4 + pairwisedistance/2));
+    volPixelBox->AddNode(volPixelx, 161, new TGeoTranslation(0,overlap,-DimZPixelBox/2. + zs5 - pairwisedistance/2)); 
     volPixelBox->AddNode(volPixelx, 162, new TGeoTranslation(0,-overlap,-DimZPixelBox/2. + zs5 + pairwisedistance/2)); 
     
     TGeoBBox *SciFi1 = new TGeoBBox("SciFi1", DimSciFi1X/2, DimSciFi1Y/2, DimZ/2); 
