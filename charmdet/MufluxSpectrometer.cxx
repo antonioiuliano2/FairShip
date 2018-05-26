@@ -502,7 +502,7 @@ void MufluxSpectrometer::ConstructGeometry()
     //Goliath raised by 17cm
     if (fMuonFlux) top->AddNode(volGoliath,1,new TGeoTranslation(0,17*cm,zBoxPosition-SBoxZ/2 + z[1] + LongitudinalSize/2)); 
     //else top->AddNode(volGoliath,1,new TGeoTranslation(0,17*cm,235.1200*cm));
-    else top->AddNode(volGoliath,1, new TGeoTranslation(0,17 *cm, zBoxPosition - SBoxZ/2 + 14 * cm + 6  * cm - 2 *cm + 0.82 *cm + LongitudinalSize/2));
+    else top->AddNode(volGoliath,1, new TGeoTranslation(0,17 *cm, zBoxPosition - SBoxZ/2 + 2.5 * 5 * cm + 0.62 *cm + 0.02 *cm + LongitudinalSize/2));
     volGoliath->AddNode(volVacuum, 1, new TGeoTranslation(0,-5 * cm,0)); //commented to insert the new Goliath 
 
     //

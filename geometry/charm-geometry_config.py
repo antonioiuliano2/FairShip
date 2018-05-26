@@ -205,11 +205,11 @@ with ConfigRegistry.register_config("basic") as c:
     c.MufluxSpectrometer.DY = 1.6*u.m
     c.MufluxSpectrometer.DZ = 16.*u.cm
     #These parameters are used only by the charm detector ---   
-    c.Spectrometer.D1Short = 3.36 * u.cm;
+    c.Spectrometer.D1Short = 3.36 * u.cm / 2.;
     c.Spectrometer.D1Long = 4 * u.cm;   
     c.Spectrometer.DimZSi = 0.0200 * u.cm
     c.Spectrometer.PairSiDistance = 0.6 * u.cm +c.Spectrometer.DimZSi 
-    c.Spectrometer.Sioverlap = 0.3*u.cm            
+    c.Spectrometer.Sioverlap = 0.2*u.cm            
 
     c.Spectrometer.SX = c.Spectrometer.DX
     c.Spectrometer.SY = c.Spectrometer.DY    
@@ -217,11 +217,11 @@ with ConfigRegistry.register_config("basic") as c:
     
     #position of module centres
     c.Spectrometer.zSi0 = c.Spectrometer.PairSiDistance/2. + c.Spectrometer.DimZSi/2.
-    c.Spectrometer.zSi1 = c.Spectrometer.zSi0 + 0.8 *u.cm
-    c.Spectrometer.zSi2 = c.Spectrometer.zSi0 + 1.8 *u.cm
-    c.Spectrometer.zSi3 = c.Spectrometer.zSi0 + 5.8 *u.cm
-    c.Spectrometer.zSi4 = c.Spectrometer.zSi0 + 6.8 *u.cm
-    c.Spectrometer.zSi5 = c.Spectrometer.zSi0 + 12.8 *u.cm    
+    c.Spectrometer.zSi1 = c.Spectrometer.zSi0 + 2.5 *u.cm
+    c.Spectrometer.zSi2 = c.Spectrometer.zSi1 + 2.5 *u.cm
+    c.Spectrometer.zSi3 = c.Spectrometer.zSi2 + 2.5 *u.cm
+    c.Spectrometer.zSi4 = c.Spectrometer.zSi3 + 2.5 *u.cm
+    c.Spectrometer.zSi5 = c.Spectrometer.zSi4 + 2.5 *u.cm    
 
     c.Spectrometer.DSciFi1X = 40 * u.cm;
     c.Spectrometer.DSciFi1Y = 40 * u.cm;
