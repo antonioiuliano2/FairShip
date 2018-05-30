@@ -262,9 +262,7 @@ with ConfigRegistry.register_config("basic") as c:
        c.MuonTagger.zBox = c.Spectrometer.SZ+ c.MuonTagger.BZ*1./2.- 45*u.cm #nel file originale era c.MuonTagger.zBox = c.Spectrometer.SZ+ c.MuonTagger.BZ*3./2. + 5*u.cm -250*u.cm, ma muontagger aveva dimensioni differenti
     else:    
        #c.MuonTagger.zBox = c.Spectrometer.SZ+ c.MuonTagger.BZ/2 + 5*u.cm
-       c.mutaggerdistance = 25.
-       charmmudistance = 0 *u.cm + c.mutaggerdistance *u.cm#differenza con la posizione del muontagger nella misura di flusso
-       c.MuonTagger.zBox = c.Spectrometer.SZ - c.Spectrometer.DZ*2 - 80 *u.cm + c.MuonTagger.BZ*1./2. + 224 *u.cm -charmmudistance#starting from 223 cm from Goliath, like in muonflux measurement
+       c.MuonTagger.zBox = c.Spectrometer.zSi5 +c.Spectrometer.PairSiDistance/2.+c.Spectrometer.DimZSi/2. + c.Spectrometer.LS +           c.MuonTagger.BZ/2. + 200*u.cm#starting from 223 cm from Goliath, like in muonflux measurement
 
     c.MuonTagger.PX = c.MuonTagger.BX
     c.MuonTagger.PY = c.MuonTagger.BY

@@ -19,8 +19,6 @@
 #include "TGeoBBox.h"
 #include "TGeoMaterial.h"
 #include "TGeoMedium.h"
-
-#include "TGeoTube.h" //for a cylinder
 #include "TGeoCompositeShape.h" //for boolean operations
 
 #include "TParticle.h"
