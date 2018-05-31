@@ -3,13 +3,11 @@ import ROOT,os,sys,getopt,time,shipRoot_conf
 import shipunit as u
 from ShipGeoConfig import ConfigRegistry
 
-detectorList = []
-postprocess = False
 mcEngine     = "TGeant4"
 simEngine    = "Pythia8"
-runnr        = 1
-nev          = 1000
-checkOverlap = True
+runnr        = 1000
+nev          = 500
+checkOverlap = False
 G4only       = False
 storeOnlyMuons = False
 withEvtGen     = True
@@ -22,12 +20,11 @@ chibb = 1.6e-7
 npot  = 5E13
 nStart = 0
 
-muflux = False #True for muflux measurement, False for charm
-
-charmInputFile = "sim_charm/forCharm.root"
+charmInputFile = "root://eoslhcb.cern.ch//eos/ship/data/Charm/Cascade-parp16-MSTP82-1-MSEL4-76Mpot_1.root"
 nStart = 0
 
 outputDir    = "."
+theSeed      = int(10000 * time.time() % 10000000)
 work_dir  = "./"
 ecut      = 0.5 # GeV   with 1 : ~1sec / event, with 2: 0.4sec / event, 10: 0.13sec
                  
@@ -86,10 +83,9 @@ def init():
   ap.add_argument('-cc','--chicc',action='store_true',  dest='chicc',  default=chicc, help="ccbar over mbias cross section")
   ap.add_argument('-bb','--chibb',action='store_true',  dest='chibb',  default=chibb, help="bbbar over mbias cross section")
   ap.add_argument('-p','--pot',action='store_true',  dest='npot',  default=npot, help="number of protons on target per spill to normalize on")
-  ap.add_argument('-S', '--nStart', type=int, help="first event of input file to start", dest='nStart', default=nStart)
+  ap.add_argument('-S','--nStart',action='store_true',  dest='nStart',  default=nStart, help="first event of input file to start")
   ap.add_argument('-I', '--InputFile', type=str, dest='charmInputFile',  default=charmInputFile, help="input file for charm/beauty decays")
   ap.add_argument('-o','--output'    , type=str, help="output directory", dest='work_dir', default=None)
-  ap.add_argument('-rs','--seed', type=int, help="random seed; default value is 0, see TRrandom::SetSeed documentation", dest='seed', default=0)
   args = ap.parse_args()
   if args.debug:
       logger.setLevel(logging.DEBUG)
@@ -148,9 +144,9 @@ def init():
 args = init()
 os.chdir(work_dir)
 # -------------------------------------------------------------------
-ROOT.gRandom.SetSeed(args.seed)  # this should be propagated via ROOT to Pythia8 and Geant4VMC
+ROOT.gRandom.SetSeed(theSeed)  # this should be propagated via ROOT to Pythia8 and Geant4VMC
 shipRoot_conf.configure()      # load basic libraries, prepare atexit for python
-#ship_geo = ConfigRegistry.loadpy("$FAIRSHIP/geometry/geometry_config.py", Yheight = dy, tankDesign = dv, muShieldDesign = ds, nuTauTargetDesign=nud)
+#this is for the muon flux geometry
 ship_geo = ConfigRegistry.loadpy("$FAIRSHIP/geometry/charm-geometry_config.py")
 
 txt = 'pythia8_Geant4_'
@@ -174,46 +170,18 @@ run.SetMaterials("media.geo")
 # -----Create geometry----------------------------------------------
 cave= ROOT.ShipCave("CAVE")
 cave.SetGeometryFileName("caveWithAir.geo")
-detectorList.append(cave)
-    
-Box = ROOT.Box("Box",ship_geo.Box.BrX, ship_geo.Box.BrY, ship_geo.Box.BrZ, ship_geo.Box.zBox,ROOT.kTRUE)
-Box.SetEmulsionParam(ship_geo.Box.EmTh, ship_geo.Box.EmX, ship_geo.Box.EmY, ship_geo.Box.PBTh,ship_geo.Box.EPlW, ship_geo.Box.MolybdenumTh, ship_geo.Box.AllPW);
-Box.SetBrickParam(ship_geo.Box.BrX, ship_geo.Box.BrY, ship_geo.Box.BrZ, ship_geo.Box.BrPackX, ship_geo.Box.BrPackY, ship_geo.Box.BrPackZ);
-Box.SetTargetParam(ship_geo.Box.TX, ship_geo.Box.TY, ship_geo.Box.TZ);
-Box.SetPassiveComposition(ship_geo.Box.Molblock1Z, ship_geo.Box.Molblock2Z, ship_geo.Box.Molblock3Z, ship_geo.Box.Molblock4Z, ship_geo.Box.Wblock1Z, ship_geo.Box.Wblock2Z, ship_geo.Box.Wblock3Z, ship_geo.Box.Wblock3_5Z, ship_geo.Box.Wblock4Z)
-Box.SetPassiveSampling(ship_geo.Box.Passive3mmZ, ship_geo.Box.Passive2mmZ, ship_geo.Box.Passive1mmZ)
-Box.SetCoolingParam(ship_geo.Box.CoolX, ship_geo.Box.CoolY, ship_geo.Box.CoolZ)
-Box.SetCoatingParam(ship_geo.Box.CoatX, ship_geo.Box.CoatY, ship_geo.Box.CoatZ)
-Box.SetMagneticField(ship_geo.Box.Bvalue)
-Box.SetGapGeometry(ship_geo.Box.GapInTargetTh, ship_geo.Box.GapPostTargetTh)
-Box.SetTargetDesign(ship_geo.Box.charmtarget)
-Box.SetRunNumber(ship_geo.Box.RunNumber)
+run.AddModule(cave)
 
-if not muflux: 
-   detectorList.append(Box)
-   
-Spectrometer = ROOT.Spectrometer("Spectrometer",ship_geo.Spectrometer.DX, ship_geo.Spectrometer.DY, ship_geo.Spectrometer.DZ,ROOT.kTRUE)
-Spectrometer.SetTransverseSizes(ship_geo.Spectrometer.D1Short, ship_geo.Spectrometer.D1Long, ship_geo.Spectrometer.Sioverlap, ship_geo.Spectrometer.DSciFi1X, ship_geo.Spectrometer.DSciFi1Y, ship_geo.Spectrometer.DSciFi2X, ship_geo.Spectrometer.DSciFi2Y)
-Spectrometer.SetMagneticField(ship_geo.Spectrometer.Bvalue)
-Spectrometer.SetSiliconDZ(ship_geo.Spectrometer.DimZSi)
-#Spectrometer.SetSiliconDetNumber(ship_geo.Spectrometer.nSiDet)
-Spectrometer.SetSiliconDetPositions(ship_geo.Spectrometer.zSi0,ship_geo.Spectrometer.zSi1, ship_geo.Spectrometer.zSi2,ship_geo.Spectrometer.zSi3,ship_geo.Spectrometer.zSi4, ship_geo.Spectrometer.zSi5, ship_geo.Spectrometer.PairSiDistance)
-Spectrometer.SetSciFiDetPositions(ship_geo.Spectrometer.zSciFi1, ship_geo.Spectrometer.zSciFi2)
-# -----Goliath part by Annarita--------
-Spectrometer.SetGoliathSizes(ship_geo.Spectrometer.H, ship_geo.Spectrometer.TS, ship_geo.Spectrometer.LS, ship_geo.Spectrometer.BasisH);
-Spectrometer.SetCoilParameters(ship_geo.Spectrometer.CoilR, ship_geo.Spectrometer.UpCoilH, ship_geo.Spectrometer.LowCoilH,  ship_geo.Spectrometer.CoilD);
-# --------------------------------------
-Spectrometer.SetBoxParam(ship_geo.Spectrometer.SX,ship_geo.Spectrometer.SY,ship_geo.Spectrometer.SZ,ship_geo.Spectrometer.zBox)
-if not muflux: detectorList.append(Spectrometer)
-MufluxSpectrometer = ROOT.MufluxSpectrometer("MufluxSpectrometer",ship_geo.MufluxSpectrometer.DX, ship_geo.MufluxSpectrometer.DY, ship_geo.MufluxSpectrometer.DZ,ROOT.kTRUE)
- # -----Drift tube part --------
+#add the parts of the muon flux detector
+
+MufluxSpectrometer = ROOT.MufluxSpectrometer("MufluxSpectrometer",ship_geo.Spectrometer.DX, ship_geo.Spectrometer.DY, ship_geo.Spectrometer.DZ,ROOT.kTRUE)
+# -----Drift tube part --------
  
 MufluxSpectrometer.SetGoliathSizes(ship_geo.Spectrometer.H, ship_geo.Spectrometer.TS, ship_geo.Spectrometer.LS, ship_geo.Spectrometer.BasisH);
 MufluxSpectrometer.SetCoilParameters(ship_geo.Spectrometer.CoilR, ship_geo.Spectrometer.UpCoilH, ship_geo.Spectrometer.LowCoilH,  ship_geo.Spectrometer.CoilD);
 # --------------------------------------
 MufluxSpectrometer.SetBoxParam(ship_geo.Spectrometer.SX,ship_geo.Spectrometer.SY,ship_geo.Spectrometer.SZ,ship_geo.Spectrometer.zBox)
- 
-MufluxSpectrometer.ChooseDetector(ship_geo.MufluxSpectrometer.muflux)
+  
 MufluxSpectrometer.SetDeltazView(ship_geo.MufluxSpectrometer.DeltazView)
 MufluxSpectrometer.SetInnerTubeDiameter(ship_geo.MufluxSpectrometer.InnerTubeDiameter)
 MufluxSpectrometer.SetOuterTubeDiameter(ship_geo.MufluxSpectrometer.OuterTubeDiameter)
@@ -223,77 +191,67 @@ MufluxSpectrometer.SetDeltazPlane(ship_geo.MufluxSpectrometer.DeltazPlane)
 MufluxSpectrometer.SetTubesPerLayer(ship_geo.MufluxSpectrometer.TubesPerLayer)
 MufluxSpectrometer.SetStereoAngle(ship_geo.MufluxSpectrometer.ViewAngle)
 MufluxSpectrometer.SetWireThickness(ship_geo.MufluxSpectrometer.WireThickness)
-MufluxSpectrometer.SetVacBox_x(ship_geo.MufluxSpectrometer.VacBox_x)
-MufluxSpectrometer.SetVacBox_y(ship_geo.MufluxSpectrometer.VacBox_y)
 MufluxSpectrometer.SetTubeLength(ship_geo.MufluxSpectrometer.TubeLength)
 MufluxSpectrometer.SetTubeLength12(ship_geo.MufluxSpectrometer.TubeLength12) 
 MufluxSpectrometer.SetTr12YDim(ship_geo.MufluxSpectrometer.tr12ydim)
 MufluxSpectrometer.SetTr34YDim(ship_geo.MufluxSpectrometer.tr34ydim)
 MufluxSpectrometer.SetTr12XDim(ship_geo.MufluxSpectrometer.tr12xdim)
 MufluxSpectrometer.SetTr34XDim(ship_geo.MufluxSpectrometer.tr34xdim) 
-#MufluxSpectrometer.SetMuonFlux(ship_geo.MufluxSpectrometer.muflux)            
+MufluxSpectrometer.SetDistStereo(ship_geo.MufluxSpectrometer.diststereo)
+MufluxSpectrometer.SetDistT1T2(ship_geo.MufluxSpectrometer.distT1T2)
+MufluxSpectrometer.SetDistT3T4(ship_geo.MufluxSpectrometer.distT3T4) 
+     
 # for the digitizing step
 MufluxSpectrometer.SetTubeResolution(ship_geo.MufluxSpectrometer.v_drift,ship_geo.MufluxSpectrometer.sigma_spatial) 
-MufluxSpectrometer.SetT3T4Distance(ship_geo.MufluxSpectrometer.T3T4_distance)
-detectorList.append(MufluxSpectrometer)
+ 
+Scintillator = ROOT.Scintillator("Scintillator",ROOT.kTRUE)
+Scintillator.SetScoring1XY(ship_geo.MufluxSpectrometer.tr12xdim,ship_geo.MufluxSpectrometer.tr12ydim)
+Scintillator.SetDistT1(ship_geo.MufluxSpectrometer.DeltazView/2+ship_geo.MufluxSpectrometer.OuterTubeDiameter/2-ship_geo.Scintillator.DistT1)
+Scintillator.SetDistT2(ship_geo.Scintillator.DistT2)
 
-if muflux:
- TargetStation = ROOT.ShipTargetStation("TargetStation",ship_geo.target.length,ship_geo.hadronAbsorber.length,    ship_geo.target.z,ship_geo.hadronAbsorber.z,ship_geo.targetOpt,ship_geo.target.sl)
- if ship_geo.targetOpt>10:
-    slices_length=ROOT.std.vector('float')()     
-    slices_material=ROOT.std.vector('string')()
-    for i in range(1,ship_geo.targetOpt+1):
-     slices_length.push_back(eval("ship_geo.target.L"+str(i)))
-     slices_material.push_back(eval("ship_geo.target.M"+str(i)))
+TargetStation = ROOT.MufluxTargetStation("TargetStation",ship_geo.target.length,ship_geo.hadronAbsorber.length,
+                                                        ship_geo.target.z,ship_geo.hadronAbsorber.z,ship_geo.targetOpt,ship_geo.target.sl)
+slices_length   = ROOT.std.vector('float')()
+slices_material = ROOT.std.vector('std::string')()
+for i in range(1,ship_geo.targetOpt+1):
+   slices_length.push_back(  eval("ship_geo.target.L"+str(i)))
+   slices_material.push_back(eval("ship_geo.target.M"+str(i)))
+TargetStation.SetLayerPosMat(ship_geo.target.xy,slices_length,slices_material)
 
-    TargetStation.SetLayerPosMat(ship_geo.target.xy,slices_length,slices_material)
-    TargetStation.SetMuFlux(ship_geo.MufluxSpectrometer.muflux)
-    detectorList.append(TargetStation)
-    detectorList.append(MufluxSpectrometer)
-    Scintillator = ROOT.Scintillator("Scintillator",ROOT.kTRUE)
-    Scintillator.SetScoring1XY(ship_geo.Scintillator.Scoring1X,ship_geo.Scintillator.Scoring1Y)
-    detectorList.append(Scintillator)
+run.AddModule(TargetStation)
 
-MuonTagger = ROOT.MuonTagger("MuonTagger", ship_geo.MuonTagger.BX, ship_geo.MuonTagger.BY, ship_geo.MuonTagger.BZ, ship_geo.MuonTagger.zBox, ROOT.kTRUE)
-MuonTagger.ChooseLastSlabsMaterial(ship_geo.MuonTagger.concreteslabs)
-MuonTagger.SetPassiveParameters(ship_geo.MuonTagger.PX, ship_geo.MuonTagger.PY, ship_geo.MuonTagger.PTh, ship_geo.MuonTagger.PTh1)
-MuonTagger.SetSensitiveParameters(ship_geo.MuonTagger.SX, ship_geo.MuonTagger.SY, ship_geo.MuonTagger.STh)
-MuonTagger.SetHoleDimensions(ship_geo.MuonTagger.HX, ship_geo.MuonTagger.HY)
-detectorList.append(MuonTagger)
-for x in detectorList:
- run.AddModule(x)  
+run.AddModule(Scintillator) 
   
+run.AddModule(MufluxSpectrometer)
+   
+MuonTagger = ROOT.MuonTagger("MuonTagger", ship_geo.MuonTagger.BX, ship_geo.MuonTagger.BY, ship_geo.MuonTagger.BZ, ship_geo.MuonTagger.zBox, ROOT.kTRUE)
+MuonTagger.SetPassiveParameters(ship_geo.MuonTagger.PX, ship_geo.MuonTagger.PY, ship_geo.MuonTagger.PTh)
+MuonTagger.SetSensitiveParameters(ship_geo.MuonTagger.SX, ship_geo.MuonTagger.SY, ship_geo.MuonTagger.STh)
+run.AddModule(MuonTagger)
+  
+fMagField = ROOT.ShipGoliathField()
+fieldfile = os.environ["FAIRSHIP"]+"/field/GoliathFieldMap.root"
+fMagField.Init(fieldfile)
+run.SetField(fMagField)   
+
 # -----Create PrimaryGenerator--------------------------------------
 primGen = ROOT.FairPrimaryGenerator()
 P8gen = ROOT.FixedTargetGenerator()
-#P8gen.SetTarget("/TargetArea_1",0.,0.) # will distribute PV inside target, beam offset x=y=0.
-P8gen.SetTarget("volTarget_1",0.,0.) # will distribute PV inside target, beam offset x=y=0.
+P8gen.SetTarget("/TargetArea_1",0.,0.) # will distribute PV inside target, beam offset x=y=0.
 P8gen.SetMom(400.*u.GeV)
 P8gen.SetEnergyCut(ecut*u.GeV)
 P8gen.SetDebug(Debug)
-
-if ship_geo.Box.gausbeam:
- primGen.SetBeam(0.,0., 0.2, 0.2) #more central beam, for hits in downstream detectors    
- primGen.SmearGausVertexXY(True) #sigma = x
-else:
- primGen.SetBeam(0.,0., ship_geo.Box.TX-1., ship_geo.Box.TY-1.) #Uniform distribution in x/y on the target (0.5 cm of margin at both sides)
- primGen.SmearVertexXY(True)
-
-P8gen.SetHeartBeat(100000)
 if G4only: P8gen.SetG4only()
-if JpsiMainly: P8gen.SetJpsiMainly()
-if tauOnly:    P8gen.SetTauOnly()
 if withEvtGen: P8gen.WithEvtGen()
 if boostDiMuon > 1:
  P8gen.SetBoost(boostDiMuon) # will increase BR for rare eta,omega,rho ... mesons decaying to 2 muons in Pythia8
                             # and later copied to Geant4
-P8gen.SetSeed(args.seed)
+P8gen.SetSeed(theSeed)
 # for charm/beauty
 #        print ' for experts: p pot= number of protons on target per spill to normalize on'
 #        print '            : c chicc= ccbar over mbias cross section'
 if charm or beauty:
- print "--- process heavy flavours ---"
- P8gen.InitForCharmOrBeauty(charmInputFile,nev,npot,nStart)
+ P8gen.InitForCharmOrBeauty("root://eoslhcb.cern.ch//eos/ship/data/Charm/Cascade-parp16-MSTP82-1-MSEL4-76Mpot_1.root",nev,npot,nStart)
 primGen.AddGenerator(P8gen)
 #
 run.SetGenerator(primGen)
@@ -303,13 +261,9 @@ run.Init()
 
 gMC = ROOT.TVirtualMC.GetMC()
 fStack = gMC.GetStack()
-
 fStack.SetMinPoints(1)
-#fStack.SetEnergyCut(-1.)
-
-#fStack.SetMinPoints(0)
-#fStack.SetEnergyCut(100. *u.MeV)
-fStack.SetEnergyCut(0.1 *u.MeV) #deep copy
+fStack.SetEnergyCut(-1.)
+#
 import AddDiMuonDecayChannelsToG4
 AddDiMuonDecayChannelsToG4.Initialize(P8gen.GetPythia())
 
@@ -324,6 +278,7 @@ if boostFactor > 1:
  procGMuPair.SetCrossSecFactor(boostFactor)
  procAnnihil.SetCrossSecFactor(boostFactor)
 
+
 # -----Start run----------------------------------------------------
 run.Run(nev)
 
@@ -336,66 +291,46 @@ print "Macro finished succesfully."
 print "Output file is ",  outFile 
 print "Real time ",rtime, " s, CPU time ",ctime,"s"
 
-if postprocess:
 # ---post processing--- remove empty events --- save histograms
- tmpFile = outFile+"tmp"
- fin   = ROOT.gROOT.GetListOfFiles()[0]
- fHeader = fin.FileHeader
- fHeader.SetRunId(runnr)
- if charm or beauty:
- # normalization for charm
-  poteq = P8gen.GetPotForCharm()
-  info = "POT equivalent = %7.3G"%(poteq)
- else: 
-  info = "POT = "+str(nev)
+tmpFile = outFile+"tmp"
+fin   = ROOT.gROOT.GetListOfFiles()[0]
 
- conditions = " with ecut="+str(ecut)
- if JpsiMainly: conditions+=" J"
- if tauOnly:    conditions+=" T"
- if withEvtGen: conditions+=" V"
- if boostDiMuon > 1: conditions+=" diMu"+str(boostDiMuon)
- if boostFactor > 1: conditions+=" X"+str(boostFactor)
-
- info += conditions
- fHeader.SetTitle(info)
- print "Data generated ", fHeader.GetTitle()
- t     = fin.cbmsim
- fout  = ROOT.TFile(tmpFile,'recreate' )
- #sTree = t.CloneTree(0)
- sTree = t.CloneTree()
- nEvents = 0
- for n in range(t.GetEntries()):
+fHeader = fin.FileHeader
+fHeader.SetRunId(runnr)
+if charm or beauty:
+# normalization for charm
+ poteq = P8gen.GetPotForCharm()
+ fHeader.SetTitle("POT equivalent = %7.3G"%(poteq))
+else: 
+ fHeader.SetTitle("POT = "+str(nev))
+print "Data generated ", fHeader.GetTitle()
+t     = fin.cbmsim
+fout  = ROOT.TFile(tmpFile,'recreate' )
+sTree = t.CloneTree(0)
+nEvents = 0
+for n in range(t.GetEntries()):
      rc = t.GetEvent(n)
-     #if (t.ScintillatorPoint.GetEntries()>0 or t.MufluxSpectrometerPoint.GetEntries()>0 or t.MuonTaggerPoint.GetEntries()>0): 
-     if (t.ScintillatorPoint.GetEntries()>0):
-     #if True:  
+     if (t.ScintillatorPoint.GetEntries()>0): 
           rc = sTree.Fill()
           nEvents+=1  
-     t.Clear()
- fout.cd()
- for x in fin.GetList():
-  if not x.Class().GetName().find('TH')<0: 
-    xcopy = x.Clone()
-    rc = xcopy.Write()
- sTree.AutoSave()
- ff   = fin.FileHeader.Clone(fout.GetName())
- fout.cd()
- ff.Write("FileHeader", ROOT.TObject.kSingleKey)
- sTree.Write()
- fout.Close()
+     #t.Clear()
+fout.cd()
+for x in fin.GetList():
+ if not x.Class().GetName().find('TH')<0: 
+   xcopy = x.Clone()
+   rc = xcopy.Write()
+sTree.AutoSave()
+ff   = fin.FileHeader.Clone(fout.GetName())
+fout.cd()
+ff.Write("FileHeader", ROOT.TObject.kSingleKey)
+sTree.Write()
+fout.Close()
+os.system("mv "+tmpFile+" "+outFile)
 
- rc1 = os.system("rm  "+outFile)
- rc2 = os.system("mv "+tmpFile+" "+outFile)
- print "removed out file, moved tmpFile to out file",rc1,rc2
- fin.SetWritable(False) # bpyass flush error
- print "Number of events produced with activity after hadron absorber:",nEvents
-
-else:
- print "Not remove out file, I do not want to do any cuts (Antonio)"
-
-
-time.sleep(60)
-
+print "Number of events produced with activity after hadron absorber:",nEvents 
+sGeo = ROOT.gGeoManager
+run.CreateGeometryFile("%s/geofile_full.root" % (outputDir))
+ 
 if checkOverlap:
  sGeo = ROOT.gGeoManager
  sGeo.CheckOverlaps()

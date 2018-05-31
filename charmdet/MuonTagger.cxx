@@ -164,8 +164,9 @@ void MuonTagger::ConstructGeometry()
   TGeoBBox *MuonBox = new TGeoBBox(BoxX/2,BoxY/2,BoxZ/2);
   TGeoVolume *VMuonBox = new TGeoVolume("VMuonBox", MuonBox,air);
   VMuonBox->SetTransparency(1);
-    
-  top->AddNode(VMuonBox, 1, new TGeoTranslation(0, 0, zBoxPosition));
+  Double_t goliathcentre_to_beam = 178.6; //mm    
+  
+  top->AddNode(VMuonBox, 1, new TGeoTranslation(0, goliathcentre_to_beam*mm, zBoxPosition));
 
   //begin muon filter part
   //hole for the passive layers.
