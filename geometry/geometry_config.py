@@ -105,12 +105,13 @@ with ConfigRegistry.register_config("basic") as c:
      if tankDesign > 5: 
       c.Veto.outerSupport = 5.*u.mm
       c.Veto.outerSupportMed = "steel"
+      c.Veto.lidThickness = 16.*u.mm
      else:
       c.Veto.outerSupport = 8.*u.mm
       c.Veto.outerSupportMed = "Aluminum"
+      c.Veto.lidThickness = 80.*u.mm
      c.Veto.sensitiveThickness = 0.3*u.m
      c.Veto.sensitiveMed = "Scintillator"
-     c.Veto.lidThickness = 80.*u.mm
      c.Veto.decayMed = "vacuums"
      c.Veto.rib = 3.*u.cm
      c.Veto.ribMed = "steel"
@@ -266,6 +267,7 @@ with ConfigRegistry.register_config("basic") as c:
     c.ecal  =  AttrDict(z = c.TimeDet.z + c.TimeDet.DZ  + 5*u.cm + presShowerDeltaZ)  #
     c.ecal.File = EcalGeoFile
     hcalThickness = 232*u.cm
+    if  c.HcalOption == 2: hcalThickness = 110*u.cm  # to have same interaction length as before
     if not c.HcalOption < 0:
      c.hcal =  AttrDict(z=c.ecal.z + hcalThickness/2. + 45.*u.cm  )
      c.hcal.hcalSpace = hcalThickness + 5.5*u.cm
