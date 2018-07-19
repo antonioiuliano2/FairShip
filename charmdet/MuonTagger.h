@@ -28,7 +28,6 @@ public:
     void SetPassiveParameters(Double_t PX, Double_t PY, Double_t PTh, Double_t PTh1);
     void SetSensitiveParameters(Double_t SX, Double_t SY, Double_t STh);
     void SetHoleDimensions(Double_t HX, Double_t HY);
-    void ChooseLastSlabsMaterial(bool concreteslabs);
     /**      Initialization of the detector is done here    */
     virtual void Initialize();
     

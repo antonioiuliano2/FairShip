@@ -46,7 +46,6 @@ class MufluxSpectrometer:public FairDetector
     void SetMuonFlux(Bool_t muonflux);   
     void TubeDecode(Int_t detID,int &statnb,int &vnb,int &pnb,int &lnb, int &snb);
     void TubeEndPoints(Int_t detID, TVector3 &top, TVector3 &bot);
-    void SetT3T4Distance(Double_t T3T4_dist);
     void SetDistStereo(Double_t diststereo);
     void SetDistT1T2(Double_t distT1T2);
     void SetDistT3T4(Double_t distT3T4);
@@ -184,9 +183,7 @@ protected:
     Double_t DimY =0;
     Double_t DimZ = 0;
     Double_t zSizeMS = 0; //dimension of the Magnetic Spectrometer volume
-
-    Double_t T3T4_distance;    
-
+    
     MufluxSpectrometer(const MufluxSpectrometer&);
     MufluxSpectrometer& operator=(const MufluxSpectrometer&);
     ClassDef(MufluxSpectrometer,1)

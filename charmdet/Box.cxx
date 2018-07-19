@@ -46,7 +46,6 @@
 #include "ShipUnit.h"
 #include "ShipStack.h"
 
-#include "TGeoUniformMagField.h"
 #include <stddef.h>                     // for NULL
 #include <iostream>                     // for operator<<, basic_ostream,etc
 #include <string.h>
@@ -98,25 +97,18 @@ void Box::Initialize()
     FairDetector::Initialize();
 }
 
-void Box::SetMagneticField(Double_t Bvalue)
-{
-  Bfield =Bvalue;
-}
-
-void Box::SetGapGeometry(Double_t GapInTargetTh, Double_t GapPostTargetTh){
-
-  GapInTargetThickness = GapInTargetTh;
+void Box::SetGapGeometry(Double_t GapPostTargetTh){ 
   GapPostTargetThickness = GapPostTargetTh;
 }
 
-void Box::SetEmulsionParam(Double_t EmTh, Double_t EmX, Double_t EmY, Double_t PBTh, Double_t EPlW,Double_t MolybdenumTh, Double_t AllPW)
+void Box::SetEmulsionParam(Double_t EmTh, Double_t EmX, Double_t EmY, Double_t PBTh, Double_t EPlW,Double_t PasSlabTh, Double_t AllPW)
 {
     EmulsionThickness = EmTh;
     EmulsionX = EmX;
     EmulsionY = EmY;
     PlasticBaseThickness = PBTh;
     EmPlateWidth = EPlW;
-    MolybdenumThickness = MolybdenumTh;
+    PassiveSlabThickness = PasSlabTh;
     AllPlateWidth = AllPW;
 }
 
@@ -167,8 +159,8 @@ void Box::SetCoatingParam(Double_t CoatX, Double_t CoatY, Double_t CoatZ){
   CoatingZ = CoatZ;
 }
 
-void Box::SetTargetDesign(Bool_t charmtarget){
-  fcharmtarget = charmtarget;
+void Box::SetTargetDesign(Bool_t Julytarget){
+  fJulytarget = Julytarget;
 }
 
 void Box::SetRunNumber(Int_t RunNumber){		
@@ -207,7 +199,7 @@ void Box::ConstructGeometry()
 {
     InitMedium("tantalum");
     TGeoMedium *tantalum = gGeoManager->GetMedium("tantalum");
-    
+       
     InitMedium("vacuum");
     TGeoMedium *vacuum = gGeoManager->GetMedium("vacuum");
    
@@ -250,31 +242,30 @@ void Box::ConstructGeometry()
     volPlBase->SetLineColor(kYellow-4);
 
     
-    if (fcharmtarget == false){   
-      const Double_t MagneticField = Bfield;     
-      TGeoUniformMagField *magfield = new TGeoUniformMagField(0., MagneticField, 0.);
+    if (fJulytarget == false){   
       //begin brick part (July testbeam)
-      Int_t NPlates = 19; //Number of doublets emulsion + Pb (two interaction lengths for 3 mm lead slabs)
+      //Int_t NPlates = 19; //Number of doublets emulsion + Pb (two interaction lengths for 3 mm lead slabs)
+      Int_t NPlates = 56; //when we consider 1 mm lead slabs
       Int_t NBricks = nrun;
       if (nrun > 6 || nrun == 0) NBricks = 6; //maximum number of bricks is 6, Run 0 means all active
       bool activate[NBricks];
       if (nrun > 0){
-      for (int i = 0; i<NBricks; i++) activate[i] = false;
+      for (int i = 0; i<NBricks; i++) activate[i] = false; //JUST FOR NOW
       activate[nrun-1]=true;
       }
-      else  for (int i = 0; i<NBricks; i++) activate[i] = false;
-      Double_t zPasLead = NPlates * MolybdenumThickness; //Parti passive prima del bersaglio    
+      else  for (int i = 0; i<NBricks; i++) activate[i] = true;      
+      Double_t zPasLead = NPlates * PassiveSlabThickness; //Parti passive prima del bersaglio    
+      if (nrun > 0) TargetZ = (NPlates * AllPlateWidth + EmPlateWidth) + zPasLead*(nrun-1);  
+      else TargetZ = (NPlates * AllPlateWidth + EmPlateWidth)*NBricks;
+      if (nrun > 6) TargetZ = zPasLead * NBricks; //all passive      
 
-      Double_t zBackLead = 0. * cm; //eventuale parte passiva a valle, per simulazioni su bersaglio spesso
-      if (nrun > 0) TargetZ = (NPlates * AllPlateWidth + EmPlateWidth) + zPasLead*(nrun-1) + zBackLead+ GapInTargetThickness * (nrun-1) + GapPostTargetThickness;  
-      else TargetZ = (NPlates * AllPlateWidth + EmPlateWidth)*NBricks + zBackLead + GapInTargetThickness * (NBricks-1) + GapPostTargetThickness;
       TGeoBBox *Brick = new TGeoBBox("brick", TargetX/2, TargetY/2, TargetZ/2);
       TGeoVolume *volTarget = new TGeoVolume("volTarget",Brick,vacuum);
       volTarget->SetLineColor(kCyan);
       volTarget->SetTransparency(1);
-      if ((TMath::Abs(MagneticField) > 0.) && (GapInTargetThickness > 0.)) volTarget->SetField(magfield);
-      top->AddNode(volTarget,1,new TGeoTranslation(0,0,zBoxPosition-TargetZ/2)); //Box ends at origin
-            
+      
+      top->AddNode(volTarget,1,new TGeoTranslation(0,0,zBoxPosition-TargetZ/2)); //Box ends at origin           
+ 
       TGeoVolume *volPasLead = NULL;
       if (nrun > 1){
       TGeoBBox *PasLead = new TGeoBBox("PasLead", EmulsionX/2, EmulsionY/2, zPasLead/2);
@@ -282,40 +273,14 @@ void Box::ConstructGeometry()
       volPasLead->SetTransparency(1);
       volPasLead->SetLineColor(kGray);
       }
-      
-
-      TGeoBBox *Leadslab = new TGeoBBox("Leadslab", EmulsionX/2, EmulsionY/2, MolybdenumThickness/2);
+      TGeoBBox *Leadslab = new TGeoBBox("Leadslab", EmulsionX/2, EmulsionY/2, PassiveSlabThickness/2);
       TGeoVolume *volLeadslab = new TGeoVolume("volLeadslab",Leadslab,lead);
  //     TGeoVolume *volLeadslab = new TGeoVolume("volLeadslab",Leadslab,molybdenum); //I need to see the difference
       volLeadslab->SetTransparency(1);
-      volLeadslab->SetLineColor(kGray);    
-/*
-      //try to add plastic at the end of first ECC to increase pot
-      TGeoBBox *Plasticslab = new TGeoBBox("Plasticslab", EmulsionX/2, EmulsionY/2, MolybdenumThickness/2);
-      TGeoVolume *volPlasticslab = new TGeoVolume("volPlasticslab",Leadslab,PBase);
- //     TGeoVolume *volLeadslab = new TGeoVolume("volLeadslab",Leadslab,molybdenum); 
-      volPlasticslab->SetTransparency(1);
-      volPlasticslab->SetLineColor(kRed);      
-*/
-
-      TGeoVolume *volGapInTarget = NULL; //just the pointer, not defining the object if it is not used
-      if (GapInTargetThickness > 0.){
-      TGeoBBox *GapInTarget = new TGeoBBox("GapInTarget", TargetX/2, TargetY/2, GapInTargetThickness/2);
-      volGapInTarget = new TGeoVolume("volGapInTarget", GapInTarget, air);
-      volGapInTarget->SetLineColor(kMagenta);
-      volGapInTarget->SetField(magfield);
-      }
-      TGeoVolume *volGapPostTarget = NULL;
-      if (GapPostTargetThickness>0.){
-      TGeoBBox *GapPostTarget = new TGeoBBox("GapPostTarget", TargetX/2, TargetY/2, GapPostTargetThickness/2);
-      volGapPostTarget = new TGeoVolume("volGapPostTarget", GapPostTarget, air);
-      if (TMath::Abs(MagneticField) > 0.) volGapPostTarget->SetLineColor(kMagenta); //I use magenta to indicate field presence
-      if ((TMath::Abs(MagneticField) > 0.) && (GapPostTargetThickness > 0.)) volGapPostTarget->SetField(magfield); //magnetic field may be only in the gap after the target
-      }
-
-      Int_t nfilm = 1;
+      volLeadslab->SetLineColor(kGray);
+      
+      Int_t nfilm = 1, nlead = 1;
       Double_t zpoint = -TargetZ/2;
-      cout<<activate[0]<<" "<<activate[1]<<endl;
       for (Int_t irun = 0; irun < NBricks; irun++){
         if (activate[irun]){	  
 	  for(Int_t n=0; n<NPlates+1; n++)
@@ -325,33 +290,17 @@ void Box::ConstructGeometry()
 	    }
 	  for(Int_t n=0; n<NPlates; n++)
 	    {
-              volTarget->AddNode(volLeadslab, n, new TGeoTranslation(0,0,zpoint + EmPlateWidth + MolybdenumThickness/2 + n*AllPlateWidth)); //LEAD
-	     // if (n%2 == 0) volTarget->AddNode(volLeadslab, n, new TGeoTranslation(0,0,zpoint + EmPlateWidth + MolybdenumThickness/2 + n*AllPlateWidth)); //LEAD
-             // else volTarget->AddNode(volPlasticslab, n, new TGeoTranslation(0,0,zpoint + EmPlateWidth + MolybdenumThickness/2 + n*AllPlateWidth));
+              volTarget->AddNode(volLeadslab, n, new TGeoTranslation(0,0,zpoint + EmPlateWidth + PassiveSlabThickness/2 + n*AllPlateWidth));
 	    }	
 	  zpoint = zpoint + NPlates *AllPlateWidth + EmPlateWidth;
 	}
 	else if (volPasLead != NULL){ //only passive layer of lead
-	  volTarget->AddNode(volPasLead,1,new TGeoTranslation(0,0,zpoint + zPasLead/2));
+	  volTarget->AddNode(volPasLead,nlead,new TGeoTranslation(0,0,zpoint + zPasLead/2));
 	  zpoint = zpoint + zPasLead;
+          nlead++;
 	}
 	
-	if ((volGapInTarget != NULL) && (((irun + 1) < nrun))){
-	  volTarget->AddNode(volGapInTarget,1,new TGeoTranslation(0,0,zpoint + GapInTargetThickness/2));
-	  zpoint = zpoint + GapInTargetThickness; 
-	}
-	if ((volGapPostTarget != NULL) && (((irun + 1) == nrun))){
-	  volTarget->AddNode(volGapPostTarget,1,new TGeoTranslation(0,0,zpoint + GapPostTargetThickness/2));
-	  zpoint = zpoint + GapPostTargetThickness; 
-	}
       }    
-      if (zBackLead > 0.){ //Thomas note: avoid orphaned volumes since they can cause issues to list of volumes (I hope they did not before)
-      TGeoBBox *BackLead = new TGeoBBox("BackLead", EmulsionX/2, EmulsionY/2, zBackLead/2);
-      TGeoVolume *volBackLead = new TGeoVolume("volBackLead",BackLead,lead);
-      volBackLead->SetTransparency(1);
-      volBackLead->SetLineColor(kGray);
-      volTarget->AddNode(volBackLead,1,new TGeoTranslation(0,0,zpoint + zBackLead/2));
-  } 
    
     }
     else{
@@ -377,13 +326,7 @@ void Box::ConstructGeometry()
       Int_t nmegaw3_5 = 0;
     
       Int_t nair = 0;    
-      
-      const Double_t MagneticField = Bfield;     
-      TGeoUniformMagField *magfield = new TGeoUniformMagField(0., MagneticField, 0.);
-      
-      volEmulsionFilm->SetField(magfield);
-      volEmulsionFilm2->SetField(magfield);
-      volPlBase->SetField(magfield);
+     
       //volPlBase->SetLineColor(kBlue);	
       //starting to simulate SHiP target
       Double_t xTarget = TargetX;
@@ -428,82 +371,63 @@ void Box::ConstructGeometry()
       TGeoBBox *Target = new TGeoBBox("Target", TargetX/2, TargetY/2, TargetZ/2); //for the moment I will use numbers instead of variables.
       TGeoVolume *volTarget = new TGeoVolume("volTarget", Target, air);
       volTarget->SetTransparency(1);
-      // volTarget->SetField(magfield);
+
       top->AddNode(volTarget,1,new TGeoTranslation(0,0,zBoxPosition-TargetZ/2));
       TGeoBBox *Cooling = new TGeoBBox("Cooling", CoolingX/2, CoolingY/2, CoolingZ/4); //water slips to cool the target (i split in half, to put an other emulsion in the middle
       TGeoVolume *volCooling = new TGeoVolume("volCooling", Cooling, PBase);
-      volCooling->SetLineColor(kCyan);
-      volCooling->SetField(magfield);
+      volCooling->SetLineColor(kCyan);      
       
       TGeoBBox *Coating = new TGeoBBox("Coating", CoatingX/2, CoatingY/2, CoatingZ/2);
       TGeoVolume *volCoating = new TGeoVolume("volCoating", Coating, tantalum);
-      volCoating->SetLineColor(kRed);
-      volCoating->SetField(magfield);
+      volCoating->SetLineColor(kRed);      
       
-      TGeoBBox *Mol3mm = new TGeoBBox("Mol3mm", xTarget/2, yTarget/2, MolybdenumThickness/2);
+      TGeoBBox *Mol3mm = new TGeoBBox("Mol3mm", xTarget/2, yTarget/2, PassiveSlabThickness/2);
       TGeoVolume *volMol3mm = new TGeoVolume("volMol3mm", Mol3mm, molybdenum);
-      volMol3mm->SetLineColor(kGray);
-      volMol3mm->SetField(magfield);
+      volMol3mm->SetLineColor(kGray);      
       
       TGeoBBox *Mol2mm = new TGeoBBox("Mol2mm", xTarget/2, yTarget/2, Pas2mmZ/2);
       TGeoVolume *volMol2mm = new TGeoVolume("volMol2mm", Mol2mm, molybdenum);
-      volMol2mm->SetLineColor(kGray);
-      volMol2mm->SetField(magfield);
+      volMol2mm->SetLineColor(kGray);     
       
       TGeoBBox *Mol1mm = new TGeoBBox("Mol1mm", xTarget/2, yTarget/2, Pas1mmZ/2);
       TGeoVolume *volMol1mm = new TGeoVolume("volMol1mm", Mol1mm, molybdenum);
       volMol1mm->SetLineColor(kGray);
-      volMol1mm->SetField(magfield);
       
       TGeoBBox *Mol1 = new TGeoBBox("Mol1", xTarget/2, yTarget/2, Mol1Z/2);
       TGeoVolume *volMol1 = new TGeoVolume("volMol1", Mol1, molybdenum); //1, then 2 at the end of the molybdenum row
-      volMol1->SetLineColor(kGray);
-      volMol1->SetField(magfield);
+      volMol1->SetLineColor(kGray);      
 
      TGeoBBox *Mol2 = new TGeoBBox("Mol2", xTarget/2, yTarget/2, Mol2Z/2); // 7
      TGeoVolume *volMol2 = new TGeoVolume("volMol2", Mol2, molybdenum);
      volMol2->SetLineColor(kGray);
-     volMol2->SetField(magfield);
      
      TGeoBBox *Mol3 = new TGeoBBox("Mol3", xTarget/2, yTarget/2, Mol3Z/2); // 2
      TGeoVolume *volMol3 = new TGeoVolume("volMol3", Mol3, molybdenum);
      volMol3->SetLineColor(kGray);
-     volMol3->SetField(magfield);
      
      TGeoBBox *Mol4 = new TGeoBBox("Mol4", xTarget/2, yTarget/2, Mol4Z/2); // 1
      TGeoVolume *volMol4 = new TGeoVolume("volMol4", Mol4, molybdenum);
-     volMol4->SetLineColor(kGray);
-     volMol4->SetField(magfield);
+     volMol4->SetLineColor(kGray);     
     
      TGeoBBox *W1 = new TGeoBBox("W1", xTarget/2, yTarget/2, W1Z/2); // 1
      TGeoVolume *volW1 = new TGeoVolume("volW1", W1, tungsten);
-     volW1->SetLineColor(kSpring);
-     volW1->SetField(magfield);
+     volW1->SetLineColor(kSpring);     
 
      TGeoBBox *W2 = new TGeoBBox("W2", xTarget/2, yTarget/2, W2Z/2); // 1
      TGeoVolume *volW2 = new TGeoVolume("volW2", W2, tungsten);
-     volW2->SetLineColor(kSpring);
-     volW2->SetField(magfield);
+     volW2->SetLineColor(kSpring);    
 
      TGeoBBox *W3 = new TGeoBBox("W3", xTarget/2, yTarget/2, W3Z/2); // 1
      TGeoVolume *volW3 = new TGeoVolume("volW3", W3, tungsten);
-     volW3->SetLineColor(kSpring);
-     volW3->SetField(magfield);
+     volW3->SetLineColor(kSpring);   
 
      TGeoBBox *W4 = new TGeoBBox("W4", xTarget/2, yTarget/2, W4Z/2); // 1
      TGeoVolume *volW4 = new TGeoVolume("volW4", W4, tungsten);
-     volW4->SetLineColor(kSpring);
-     volW4->SetField(magfield);
+     volW4->SetLineColor(kSpring);    
      
      TGeoBBox *W3_5 = new TGeoBBox("W3_5", xTarget/2, yTarget/2, W3_5Z/2); // recently added slab, I call it 3_5
      TGeoVolume *volW3_5 = new TGeoVolume("volW3_5", W3_5, tungsten);
      volW3_5->SetLineColor(kSpring);
-     volW3_5->SetField(magfield);
-
-     TGeoBBox *airbox = new TGeoBBox("airbox", xTarget/2, yTarget/2, GapInTargetThickness/2);
-     TGeoVolume *volairbox = new TGeoVolume("volairbox", airbox, air);
-     volairbox->SetLineColor(kMagenta);
-     volairbox->SetField(magfield);
      
      Double_t myPlateWidth = AllPlateWidth;
      Int_t NPlates;
@@ -530,7 +454,7 @@ void Box::ConstructGeometry()
 	 for(Int_t n=0; n<NPlates; n++)
 	   {
 	     
-	     if (add[index]) volTarget->AddNode(volMol3mm, nmol3, new TGeoTranslation(0,0,zposition + EmPlateWidth + CoatingZ + EmPlateWidth + MolybdenumThickness/2 + n*AllPlateWidth));
+	     if (add[index]) volTarget->AddNode(volMol3mm, nmol3, new TGeoTranslation(0,0,zposition + EmPlateWidth + CoatingZ + EmPlateWidth + PassiveSlabThickness/2 + n*AllPlateWidth));
 	     nmol3++;
 	     
 	   }
@@ -542,15 +466,12 @@ void Box::ConstructGeometry()
 	 NPlates = 13;
 	 for(Int_t n=0; n<NPlates; n++)
 	   {	     
-	     if (add[index]) volTarget->AddNode(volMol3mm, nmol3, new TGeoTranslation(0,0,zposition + CoatingZ + n*MolybdenumThickness + MolybdenumThickness/2.));
+	     if (add[index]) volTarget->AddNode(volMol3mm, nmol3, new TGeoTranslation(0,0,zposition + CoatingZ + n*PassiveSlabThickness + PassiveSlabThickness/2.));
 	     nmol3++;	     
 	   }
-	 zposition = zposition + CoatingZ + NPlates *MolybdenumThickness;
-       }
-       if (add[index]) volTarget->AddNode(volairbox, nair, new TGeoTranslation(0,0,zposition + GapInTargetThickness/2));
-       nair++;
+	 zposition = zposition + CoatingZ + NPlates *PassiveSlabThickness;
+       }             
        index++;
-       zposition = zposition + GapInTargetThickness;
        //FINE RUN 1A//////////////////////////////////////////////////////////////////////
       
 
@@ -573,7 +494,7 @@ void Box::ConstructGeometry()
        
 	for(Int_t n=0; n<NPlates; n++)
 	  {            
-	    if (add[index]) volTarget->AddNode(volMol3mm, nmol3, new TGeoTranslation(0,0,zposition + EmPlateWidth + MolybdenumThickness/2 + n*AllPlateWidth));
+	    if (add[index]) volTarget->AddNode(volMol3mm, nmol3, new TGeoTranslation(0,0,zposition + EmPlateWidth + PassiveSlabThickness/2 + n*AllPlateWidth));
             nmol3++;
 	  }
 
@@ -609,28 +530,25 @@ void Box::ConstructGeometry()
 	  NPlates = 12;
 	  for(Int_t n=0; n<NPlates; n++)
 	    {	     
-	      if (add[index]) volTarget->AddNode(volMol3mm, nmol3, new TGeoTranslation(0,0,zposition + n*MolybdenumThickness + MolybdenumThickness/2.));
+	      if (add[index]) volTarget->AddNode(volMol3mm, nmol3, new TGeoTranslation(0,0,zposition + n*PassiveSlabThickness + PassiveSlabThickness/2.));
 	      nmol3++;	     
 	    }
 
 	  //another of 2mm
-          if (add[index]) volTarget->AddNode(volMol2mm, nmol2, new TGeoTranslation(0,0,zposition + NPlates*MolybdenumThickness + Pas2mmZ/2));
+          if (add[index]) volTarget->AddNode(volMol2mm, nmol2, new TGeoTranslation(0,0,zposition + NPlates*PassiveSlabThickness + Pas2mmZ/2));
 	  zposition = zposition + Pas2mmZ;
 
-	  if (add[index]) volTarget->AddNode(volCoating, ncoating, new TGeoTranslation(0, 0, zposition + NPlates *MolybdenumThickness + CoatingZ/2));
+	  if (add[index]) volTarget->AddNode(volCoating, ncoating, new TGeoTranslation(0, 0, zposition + NPlates *PassiveSlabThickness + CoatingZ/2));
 	  ncoating++;
-	  if (add[index]) volTarget->AddNode(volCooling, ncooling, new TGeoTranslation(0, 0, zposition + CoatingZ  +  NPlates *MolybdenumThickness + CoolingZ/4));
+	  if (add[index]) volTarget->AddNode(volCooling, ncooling, new TGeoTranslation(0, 0, zposition + CoatingZ  +  NPlates *PassiveSlabThickness + CoolingZ/4));
 	  ncooling++;
-	  if (add[index]) volTarget->AddNode(volCooling, ncooling, new TGeoTranslation(0, 0, zposition + CoatingZ  + NPlates *MolybdenumThickness + CoolingZ/2 + CoolingZ/4));
+	  if (add[index]) volTarget->AddNode(volCooling, ncooling, new TGeoTranslation(0, 0, zposition + CoatingZ  + NPlates *PassiveSlabThickness + CoolingZ/2 + CoolingZ/4));
 	  ncooling++;
-	  if (add[index]) volTarget->AddNode(volCoating, ncoating, new TGeoTranslation(0, 0, zposition + NPlates *MolybdenumThickness + CoatingZ + CoolingZ + CoatingZ/2));
+	  if (add[index]) volTarget->AddNode(volCoating, ncoating, new TGeoTranslation(0, 0, zposition + NPlates *PassiveSlabThickness + CoatingZ + CoolingZ + CoatingZ/2));
 	  ncoating++;
 
-	  zposition = zposition + 2 * CoatingZ + NPlates *MolybdenumThickness + CoolingZ;
-	}	
-        if (add[index]) volTarget->AddNode(volairbox, nair, new TGeoTranslation(0,0,zposition + GapInTargetThickness/2));
-        nair++;
-	zposition = zposition + GapInTargetThickness;
+	  zposition = zposition + 2 * CoatingZ + NPlates *PassiveSlabThickness + CoolingZ;
+	}	             
         index++;
         //Fine RUN 1B
 
@@ -646,7 +564,7 @@ void Box::ConstructGeometry()
 	    }
 	  for(Int_t n=0; n<NPlates; n++)
 	    {
-	      if (add[index]) volTarget->AddNode(volMol3mm, nmol3, new TGeoTranslation(0,0,zposition + EmPlateWidth + MolybdenumThickness/2 + n*AllPlateWidth)); //LEAD
+	      if (add[index]) volTarget->AddNode(volMol3mm, nmol3, new TGeoTranslation(0,0,zposition + EmPlateWidth + PassiveSlabThickness/2 + n*AllPlateWidth)); //LEAD
 	      nmol3++;
 	    }
 	  //una in più da 1 mm
@@ -695,7 +613,7 @@ void Box::ConstructGeometry()
     ncoating++;
     for(Int_t n=0; n<NPlates; n++)
       {
-	if (add[index]) volTarget->AddNode(volMol3mm, nmol3, new TGeoTranslation(0,0,zposition + CoatingZ + EmPlateWidth + MolybdenumThickness/2 + n*AllPlateWidth)); //LEAD
+	if (add[index]) volTarget->AddNode(volMol3mm, nmol3, new TGeoTranslation(0,0,zposition + CoatingZ + EmPlateWidth + PassiveSlabThickness/2 + n*AllPlateWidth)); //LEAD
 	    nmol3++;
       }
     //una in più da 1 mm
@@ -756,9 +674,6 @@ void Box::ConstructGeometry()
 	 zposition = zposition + (3 * CoatingZ + Mol2Z + CoolingZ);        
 	}
 	
-        if (add[index]) volTarget->AddNode(volairbox, nair, new TGeoTranslation(0,0,zposition + GapInTargetThickness/2));
-        nair++;	
-	zposition = zposition + GapInTargetThickness;
 	index++;
         //FINE RUN 1C
 
@@ -775,7 +690,7 @@ void Box::ConstructGeometry()
 	      }
 	    for(Int_t n=0; n<NPlates; n++)
 	      {
-		if (add[index]) volTarget->AddNode(volMol3mm, nmol3, new TGeoTranslation(0,0,zposition + EmPlateWidth + MolybdenumThickness/2 + n*AllPlateWidth)); //LEAD
+		if (add[index]) volTarget->AddNode(volMol3mm, nmol3, new TGeoTranslation(0,0,zposition + EmPlateWidth + PassiveSlabThickness/2 + n*AllPlateWidth)); //LEAD
 	    nmol3++;
 	      }
 
@@ -826,7 +741,7 @@ void Box::ConstructGeometry()
 	      }
 	    for(Int_t n=0; n<NPlates; n++)
 	      {
-		if (add[index]) volTarget->AddNode(volMol3mm, nmol3, new TGeoTranslation(0,0,zposition + EmPlateWidth + MolybdenumThickness/2 + n*AllPlateWidth)); //LEAD
+		if (add[index]) volTarget->AddNode(volMol3mm, nmol3, new TGeoTranslation(0,0,zposition + EmPlateWidth + PassiveSlabThickness/2 + n*AllPlateWidth)); //LEAD
 	    nmol3++;
 	      }
 
@@ -883,9 +798,6 @@ void Box::ConstructGeometry()
                 ncoating++;
 		zposition = zposition + (2 * CoatingZ + Mol2Z + CoolingZ);
 	    }	   
-            if (add[index]) volTarget->AddNode(volairbox, nair, new TGeoTranslation(0,0,zposition + GapInTargetThickness/2));
-            nair++;
-	    zposition = zposition + GapInTargetThickness;
 	    index++;
 	    
 	  }    
@@ -903,7 +815,7 @@ void Box::ConstructGeometry()
 	    for(Int_t n=0; n<NPlates; n++)
 	      {
 		//volTarget->AddNode(volCoating, 2*n , new TGeoTranslation(0,0,-zTarget/2+BrickPackageZ/2+ EmPlateWidth + CoatingZ/2 + n*AllPlateWidth));
-		if (add[index]) volTarget->AddNode(volMol3mm, nmol3, new TGeoTranslation(0,0,zposition + EmPlateWidth + MolybdenumThickness/2 + n*AllPlateWidth)); //LEAD
+		if (add[index]) volTarget->AddNode(volMol3mm, nmol3, new TGeoTranslation(0,0,zposition + EmPlateWidth + PassiveSlabThickness/2 + n*AllPlateWidth)); //LEAD
 		nmol3++;
 	      }
 	    //una in più da 1 mm
@@ -948,9 +860,6 @@ void Box::ConstructGeometry()
 	    ncoating++;
 	    zposition = zposition + (2 * CoatingZ + Mol2Z + CoolingZ);
 	}       
-       if (add[index]) volTarget->AddNode(volairbox, nair, new TGeoTranslation(0,0,zposition + GapInTargetThickness/2));
-           nair++;
-	   zposition = zposition + GapInTargetThickness;
 	   index++;	   
    
       //Run 3 (16+16+20)
@@ -967,7 +876,7 @@ void Box::ConstructGeometry()
 	for(Int_t n=0; n<NPlates; n++)
 	  {
             //volTarget->AddNode(volCoating, 2*n , new TGeoTranslation(0,0,-zTarget/2+BrickPackageZ/2+ EmPlateWidth + CoatingZ/2 + n*AllPlateWidth));
-	    if (add[index]) volTarget->AddNode(volMol3mm, nmol3, new TGeoTranslation(0,0,zposition + EmPlateWidth + MolybdenumThickness/2 + n*AllPlateWidth)); //LEAD
+	    if (add[index]) volTarget->AddNode(volMol3mm, nmol3, new TGeoTranslation(0,0,zposition + EmPlateWidth + PassiveSlabThickness/2 + n*AllPlateWidth)); //LEAD
 	    nmol3++;
 	  }
 	if (add[index]) volTarget->AddNode(volCoating, ncoating, new TGeoTranslation(0,0, zposition + EmPlateWidth + CoatingZ/2 + NPlates*AllPlateWidth));
@@ -1008,7 +917,7 @@ void Box::ConstructGeometry()
 	ncoating++;
 	for(Int_t n=0; n<NPlates; n++)
 	  {            
-	    if (add[index]) volTarget->AddNode(volMol3mm, nmol3, new TGeoTranslation(0,0,zposition + CoatingZ + EmPlateWidth + MolybdenumThickness/2 + n*AllPlateWidth)); //LEAD
+	    if (add[index]) volTarget->AddNode(volMol3mm, nmol3, new TGeoTranslation(0,0,zposition + CoatingZ + EmPlateWidth + PassiveSlabThickness/2 + n*AllPlateWidth)); //LEAD
 	    nmol3++;
 	  }
 	if (add[index]) volTarget->AddNode(volCoating, ncoating, new TGeoTranslation(0,0, zposition + CoatingZ + EmPlateWidth + CoatingZ/2 + NPlates*AllPlateWidth));
@@ -1049,7 +958,7 @@ void Box::ConstructGeometry()
 	ncoating++;
 	for(Int_t n=0; n<NPlates; n++)
 	  {            
-	    if (add[index]) volTarget->AddNode(volMol3mm, nmol3, new TGeoTranslation(0,0,zposition + CoatingZ + EmPlateWidth + MolybdenumThickness/2 + n*AllPlateWidth)); //LEAD
+	    if (add[index]) volTarget->AddNode(volMol3mm, nmol3, new TGeoTranslation(0,0,zposition + CoatingZ + EmPlateWidth + PassiveSlabThickness/2 + n*AllPlateWidth)); //LEAD
 	    nmol3++;
 	  }
 	if (add[index]) volTarget->AddNode(volCoating, ncoating, new TGeoTranslation(0,0, zposition + CoatingZ + EmPlateWidth + CoatingZ/2 + NPlates*AllPlateWidth));
@@ -1227,13 +1136,7 @@ Bool_t  Box::ProcessHits(FairVolume* vol)
         gMC->IsTrackStop()       ||
         gMC->IsTrackDisappeared()   ) {
         fTrackID  = gMC->GetStack()->GetCurrentTrackNumber();
-        fVolumeID = vol->getMCid();
-	Int_t detID=0;
-	gMC->CurrentVolID(detID);
-
-	if (fVolumeID == detID) {
-	  return kTRUE; }
-	fVolumeID = detID;
+        gMC->CurrentVolID(fVolumeID);
 
 	//gGeoManager->PrintOverlaps();		
 	
@@ -1246,7 +1149,6 @@ Bool_t  Box::ProcessHits(FairVolume* vol)
         Double_t xmean = (fPos.X()+Pos.X())/2. ;      
         Double_t ymean = (fPos.Y()+Pos.Y())/2. ;      
         Double_t zmean = (fPos.Z()+Pos.Z())/2. ;     
-        
 	
 	AddHit(fTrackID,fVolumeID, TVector3(xmean, ymean,  zmean),
                TVector3(fMom.Px(), fMom.Py(), fMom.Pz()), fTime, fLength,

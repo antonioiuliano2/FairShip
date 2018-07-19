@@ -36,6 +36,7 @@ MuonTaggerHit.cxx
 PIXELHit.cxx
 Scintillator.cxx
 ScintillatorPoint.cxx
+ScintillatorHit.cxx
 SciFiHit.cxx;
 )
 

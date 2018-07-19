@@ -22,14 +22,17 @@ Double_t speedOfLight = TMath::C() *100./1000000000.0 ; // from m/sec to cm/ns
 MufluxSpectrometerHit::MufluxSpectrometerHit() 
   : ShipHit() 
 { 
-  flag = true; 
+  flags &= DriftTubes::Valid; 
 } 
 // -----   Standard constructor   ------------------------------------------ 
 MufluxSpectrometerHit::MufluxSpectrometerHit(Int_t detID, Float_t ftdc) 
   : ShipHit(detID,ftdc) 
 { 
-  flag = true; 
+  flags &= DriftTubes::Valid; 
 } 
+//
+MufluxSpectrometerHit::MufluxSpectrometerHit(Int_t detID, Float_t ftdc, uint16_t flag) 
+  : ShipHit(detID,ftdc), flags(flag) {}
 // -----   constructor from SpectrometerPoint   ------------------------------------------ 
 MufluxSpectrometerHit::MufluxSpectrometerHit(MufluxSpectrometerPoint* p, Double_t t0) 
   : ShipHit() 
@@ -43,7 +46,7 @@ MufluxSpectrometerHit::MufluxSpectrometerHit(MufluxSpectrometerPoint* p, Double_
      module->TubeEndPoints(fDetectorID,start,stop); 
      Double_t t_drift = fabs( gRandom->Gaus( p->dist2Wire(), sigma_spatial ) )/v_drift; 
      fdigi = t0 + p->GetTime() + t_drift + ( stop[0]-p->GetX() )/ speedOfLight; 
-     flag = true; 
+     flags &= DriftTubes::Valid; 
 } 
 
 void MufluxSpectrometerHit::MufluxSpectrometerEndPoints(TVector3 &vbot, TVector3 &vtop) 
@@ -53,18 +56,18 @@ void MufluxSpectrometerHit::MufluxSpectrometerEndPoints(TVector3 &vbot, TVector3
      Int_t pnb =  (fDetectorID- statnb*10000000 - vnb*1000000)/100000; 
      Int_t lnb =  (fDetectorID - statnb*10000000 - vnb*1000000 - pnb*100000)/10000; 
      TString stat = "volDriftTube";stat+=+statnb;stat+="_";stat+=statnb; 
-     TString view; 
+     TString view = "_x"; 
      switch (vnb) {
       case 0:
        if (statnb==1) {view = "_x";}
-       if (statnb==2) {view = "_v";}        
+       else if (statnb==2) {view = "_v";}        
        break;
       case 1:
        if (statnb==1) { view = "_u";}
-       if (statnb==2) { view = "_x";}       
+       else if (statnb==2) { view = "_x";}       
        break;         
       default:
-         view = "_x";
+       break;
      }  
      TGeoNavigator* nav = gGeoManager->GetCurrentNavigator(); 
      TString prefix = "Station_"; 
@@ -79,10 +82,9 @@ void MufluxSpectrometerHit::MufluxSpectrometerEndPoints(TVector3 &vbot, TVector3
      TString path = "";path+="/";path+=stat;path+="/";path+=plane;path+="/";path+=layer;path+="/";path+=wire; 
      Bool_t rc = nav->cd(path); 
      if (not rc){ 
-        cout << "MufluxSpectrometer::TubeDecode, TGeoNavigator failed "<<path<<endl;  
+        cout << "MufluxSpectrometer::TubeDecode, TGeoNavigator failed "<<path<<endl;
         return; 
      }   
-     cout << "MufluxSpectrometer::TubeDecode path "<<path<<endl;       
      TGeoNode* W = nav->GetCurrentNode(); 
      TGeoTube* S = dynamic_cast<TGeoTube*>(W->GetVolume()->GetShape()); 
      Double_t top[3] = {0,0,S->GetDZ()}; 

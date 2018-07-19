@@ -45,6 +45,7 @@ exitHadronAbsorber::exitHadronAbsorber()
     fTime(-1.),
     fLength(-1.),
     fOnlyMuons(kFALSE),
+    fSkipNeutrinos(kFALSE),
     fzPos(3E8),
     fexitHadronAbsorberPointCollection(new TClonesArray("vetoPoint"))
 {}
@@ -118,9 +119,8 @@ void exitHadronAbsorber::PreTrack(){
          h2 = (TH2D*)fout->Get(key);
          if (h2){h2->Fill(l10ptot,l10pt,wspill);}
        }
-    if  ( (fMom.E()-fMom.M() )<EMax){
-        gMC->StopTrack();
-    }
+    if (fSkipNeutrinos && (idabs==12 or idabs==14 or idabs == 16 )){gMC->StopTrack();}
+    if  ( (fMom.E()-fMom.M() )<EMax){gMC->StopTrack();}
 }
 
 void exitHadronAbsorber::ConstructGeometry()
@@ -136,17 +136,24 @@ void exitHadronAbsorber::ConstructGeometry()
      geoBuild->createMedium(ShipMedium);
    vac =gGeoManager->GetMedium("vacuums");
    TGeoVolume *top=gGeoManager->GetTopVolume();
+   TGeoNavigator* nav = gGeoManager->GetCurrentNavigator();
    Double_t zLoc;
    if (fzPos>1E8){
    //Add thin sensitive plane after hadron absorber
-    TGeoVolume *muonShield = top->GetNode("MuonShieldArea_1")->GetVolume();
-    Double_t z   = muonShield->GetNode("MagnAbsorb2_MagCRB_1")->GetMatrix()->GetTranslation()[2]; // this piece is bigger than AbsorberVol!
-    TGeoBBox* tmp =  (TGeoBBox*)muonShield->GetNode("MagnAbsorb2_MagCRB_1")->GetVolume()->GetShape();
-    Double_t dz  = tmp->GetDZ();
-    zLoc = z+dz;
+    Float_t distance = 1.;
+    Double_t local[3]= {0,0,0};
+    if (not nav->cd("/MuonShieldArea_1/CoatWall_1")) {
+      nav->cd("/MuonShieldArea_1/MagnAbsorb2_MagRetL_1");
+      distance = -1.;}
+    TGeoBBox* tmp =  (TGeoBBox*)(nav->GetCurrentNode()->GetVolume()->GetShape());
+    local[2] = distance * tmp->GetDZ();
+    Double_t global[3] = {0,0,0};
+    nav->LocalToMaster(local,global);
+    zLoc = global[2] + distance * 1.*cm;
    }else{zLoc = fzPos;} // use external input
    TGeoVolume *sensPlane = gGeoManager->MakeBox("sensPlane",vac,10.*m-1.*mm,10.*m-1.*mm,1.*mm);
-   top->AddNode(sensPlane, 1, new TGeoTranslation(0, 0, zLoc+1*cm));
+   nav->cd("/MuonShieldArea_1/");
+   nav->GetCurrentNode()->GetVolume()->AddNode(sensPlane, 1, new TGeoTranslation(0, 0, zLoc));
    AddSensitiveVolume(sensPlane);
 }
 

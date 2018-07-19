@@ -9,6 +9,7 @@
 #include "TMath.h"
 #include "Pythia8Generator.h"
 #include "HNLPythia8Generator.h"
+#include "FairMCEventHeader.h"
 const Double_t cm = 10.; // pythia units are mm
 const Double_t c_light = 2.99792458e+10; // speed of light in cm/sec (c_light   = 2.99792458e+8 * m/s)
 Int_t counter = 0;
@@ -140,6 +141,9 @@ Pythia8Generator::~Pythia8Generator()
 // -----   Passing the event   ---------------------------------------------
 Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
 {
+  //Int_t nevents = 1E+04;
+  //for (int i ; i < nevents; i++){
+  FairMCEventHeader* header = cpg->GetEvent();
   Double_t x,y,z,px,py,pz,dl,e,tof;
   Int_t im,id,key;
   fnRetries =0;
@@ -177,6 +181,8 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
    Double_t zinterStart = start[2];
 // simulate more downstream interaction points for interactions down in the cascade
    Int_t nInter = ck[0]; if (nInter>16){nInter=16;}
+   if (ck[0] > 1) header->SetRunID(2);
+   else header->SetRunID(1);
    for( Int_t nI=0; nI<nInter; nI++){
     // if (!subprocCodes[nI]<90){continue;}  //if process is not inelastic, go to next. Changed by taking now collision length
     prob2int = -1.;   
@@ -188,8 +194,13 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
     while (prob2int<rndm) {
  //place x,y,z uniform along path
       zinter = gRandom->Uniform(zinterStart,end[2]);
+    //  zinter = gRandom->Uniform(zinterStart, 200.);
       Double_t point[3]={xOff,yOff,zinter};
       bparam = fMaterialInvestigator->MeanMaterialBudget(start, point, mparam);
+      /* if (zinter > end[2]){
+       mparam[8] = mparam[8] + ((zinter - end[2])/17.59); //17.59 cm interaction length of lead
+       point[2] = end[2] - 4.2;
+      }*/
       Double_t interLength = mparam[8]  * intLengthFactor * 1.7; // 1.7 = interaction length / collision length from PDG Tables 
       TGeoNode *node = gGeoManager->FindNode(point[0],point[1],point[2]);
       TGeoMaterial *mat = 0;
@@ -256,6 +267,8 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
      im = fPythia->event[ii].mother1()+key;
 
      if (ii==1){im = 0;}
+    // if (zinter < end[2]) cpg->AddTrack(id,px,py,pz,x/cm,y/cm,z/cm,im,wanttracking,e,tof,1.);
+    // else cpg->AddTrack(id,px,py,pz,x/cm,y/cm,z/cm,im,wanttracking,e,tof,-1.);
      cpg->AddTrack(id,px,py,pz,x/cm,y/cm,z/cm,im,wanttracking,e,tof,1.);
      addedParticles+=1;
     } 
@@ -276,7 +289,7 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
      // mpx,mpy,mpz are the vertex coordinates with respect to charm hadron, first particle in Pythia is (system) 
    }
   } 
-   
+   //}
   return kTRUE;
 }
 // -------------------------------------------------------------------------

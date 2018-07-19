@@ -1,4 +1,4 @@
-//MuonTagger.cxx 
+//MuonTagger.cxx
 //Muon Filter, sensitive layers interleaved with iron blocks
 
 #include "MuonTagger.h"
@@ -117,11 +117,6 @@ void MuonTagger::SetHoleDimensions(Double_t HX, Double_t HY)
   HoleY = HY;
 }
 
-void MuonTagger::ChooseLastSlabsMaterial(bool concreteslabs)
-{
-  lastslabsconcrete = concreteslabs;
-}
-
 // -----   Private method InitMedium
 Int_t MuonTagger::InitMedium(const char* name)
 {
@@ -152,9 +147,6 @@ void MuonTagger::ConstructGeometry()
   
   InitMedium("iron");
   TGeoMedium *Iron = gGeoManager->GetMedium("iron");
-
-  InitMedium("Concrete");
-  TGeoMedium *Concrete = gGeoManager->GetMedium("Concrete");
 
   InitMedium("RPCgas");
   TGeoMedium *RPCmat = gGeoManager->GetMedium("RPCgas");
@@ -190,14 +182,9 @@ void MuonTagger::ConstructGeometry()
 
   TGeoVolume * VPassive1; 
 
-  if (lastslabsconcrete) {
-  VPassive1= new TGeoVolume("VPassive1", SubtractionPassive1, Concrete);  
-  VPassive1->SetLineColor(kGray);
-  }  
-  else{
-   VPassive1= new TGeoVolume("VPassive1", SubtractionPassive1, Iron);     
-   VPassive1->SetLineColor(kGreen+1);
-  }
+  VPassive1= new TGeoVolume("VPassive1", SubtractionPassive1, Iron);     
+  VPassive1->SetLineColor(kGreen+1);
+ 
   
   //sensitive layers
   TGeoBBox * Sensitive = new TGeoBBox(SensX/2, SensY/2, SensThickness/2);
@@ -216,22 +203,22 @@ void MuonTagger::ConstructGeometry()
   const Int_t nsensitive2 = 4;
   
   for (int n = 0; n < npassive; n++){
-    zpassive = n * PasThickness + PasThickness/2. + n* SensThickness + SensThickness;
+    zpassive = n * PasThickness + PasThickness/2. + n* SensThickness;
     VMuonBox->AddNode(VPassive, n, new TGeoTranslation(0,0,-BoxZ/2 + zpassive));
 }
 
   for (int n = 0; n < nsensitive1; n++){
-    zsensitive = n * PasThickness + n * SensThickness + SensThickness/2;
+    zsensitive = n * PasThickness + n * SensThickness + SensThickness/2 + PasThickness;
     VMuonBox->AddNode(VSensitive, n+1, new TGeoTranslation(0,0,-BoxZ/2 + zsensitive));
 }
 
   for (int n = 0; n < npassiveshort; n++){
-    zpassive = 2 * PasThickness + 2*SensThickness + n * PasThickness1 + (n+1) * SensThickness + PasThickness1/2;
+    zpassive = 2 * PasThickness + 2*SensThickness + n * PasThickness1 + n * SensThickness + PasThickness1/2;
     VMuonBox->AddNode(VPassive1, n, new TGeoTranslation(0,0,-BoxZ/2 + zpassive));
 }
 
   for (int n = 0; n < nsensitive2; n++){ 
-     zsensitive = 2 * PasThickness + n * PasThickness1 + (n+1) * SensThickness + SensThickness/2 + SensThickness; 
+     zsensitive = 2 * PasThickness + n * PasThickness1 + n * SensThickness + SensThickness/2 + SensThickness; 
      VMuonBox->AddNode(VSensitive, nsensitive1+n+1, new TGeoTranslation(0,0,-BoxZ/2 + zsensitive));//to recognize rpc according to DetectorId  
   }
 }
@@ -257,14 +244,8 @@ Bool_t  MuonTagger::ProcessHits(FairVolume* vol)
         gMC->IsTrackStop()       ||
         gMC->IsTrackDisappeared()   ) {
         fTrackID  = gMC->GetStack()->GetCurrentTrackNumber();
-        fVolumeID = vol->getMCid();
-	Int_t detID=0;
-	gMC->CurrentVolID(detID);
-
-	if (fVolumeID == detID) {
-	  return kTRUE; }
-	fVolumeID = detID;
-
+       
+	gMC->CurrentVolID(fVolumeID);
 	//gGeoManager->PrintOverlaps();		
 	
 	if (fELoss == 0. ) { return kFALSE; }

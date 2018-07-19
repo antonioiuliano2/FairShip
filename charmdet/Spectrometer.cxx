@@ -112,17 +112,13 @@ Int_t Spectrometer::InitMedium(const char* name)
    return geoBuild->createMedium(ShipMedium);
 }
 
-void Spectrometer::SetBoxParam(Double_t SX, Double_t SY, Double_t SZ, Double_t zBox)
+void Spectrometer::SetBoxParam(Double_t SX, Double_t SY, Double_t SZ, Double_t zBox, Double_t SZPixel)
 {
   SBoxX = SX;
   SBoxY = SY;
   SBoxZ = SZ;
   zBoxPosition = zBox;
-}
-
-void Spectrometer::SetMagneticField(Double_t Bvalue)
-{
- Bfield = Bvalue;
+  DimZPixelBox = SZPixel;
 }
 
 void Spectrometer::SetSiliconDZ(Double_t SiliconDZ)
@@ -206,14 +202,12 @@ void Spectrometer::ConstructGeometry()
   
   TGeoVolume *top = gGeoManager->GetTopVolume();
 
-  const Double_t MagneticField = Bfield;
-  TGeoUniformMagField *magfield = new TGeoUniformMagField(0., MagneticField, 0.); //The magnetic field must be only in the air space between the stations
 
-    Double_t DimZPixelBox = zs5 -zs0 +pairwisedistance + DimZSi;
+    //Double_t DimZPixelBox = zs5 -zs0 +pairwisedistance + DimZSi;
     TGeoBBox *PixelBox = new TGeoBBox("PixelBox", Dim1Long/2 + overlap, Dim1Long/2 + overlap, DimZPixelBox/2.);
     TGeoVolume *volPixelBox = new TGeoVolume("volPixelBox",PixelBox,air);
 
-    top->AddNode(volPixelBox, 1, new TGeoTranslation(0,0,DimZPixelBox/2.));
+    top->AddNode(volPixelBox, 1, new TGeoTranslation(0,0,zBoxPosition));
 
     TGeoBBox *Pixely = new TGeoBBox("Pixely", Dim1Short/2, Dim1Long/2, DimZSi/2); //long along y
     TGeoVolume *volPixely = new TGeoVolume("volPixely",Pixely,Silicon); 
@@ -271,17 +265,12 @@ Bool_t  Spectrometer::ProcessHits(FairVolume* vol)
         gMC->IsTrackStop()       ||
         gMC->IsTrackDisappeared()   ) {
         fTrackID  = gMC->GetStack()->GetCurrentTrackNumber();
-	fVolumeID = vol->getMCid();
+
         if (fELoss == 0. ) { return kFALSE; }
         TParticle* p=gMC->GetStack()->GetCurrentTrack();
         Int_t pdgCode = p->GetPdgCode();
 	//Int_t fMotherID =p->GetFirstMother();
-	Int_t detID=0;
-	gMC->CurrentVolID(detID);
-
-	if (fVolumeID == detID) {
-	  return kTRUE; }
-	fVolumeID = detID;
+        gMC->CurrentVolID(fVolumeID);	
 
         TLorentzVector Pos; 
         gMC->TrackPosition(Pos); 

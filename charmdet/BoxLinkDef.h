@@ -19,6 +19,7 @@
 #pragma link C++ class SciFiHit+;
 #pragma link C++ class Scintillator+;
 #pragma link C++ class ScintillatorPoint+;
+#pragma link C++ class ScintillatorHit+;
 
 #endif
 

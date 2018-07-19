@@ -5,24 +5,32 @@ from ShipGeoConfig import AttrDict, ConfigRegistry
 with ConfigRegistry.register_config("basic") as c:
 
     c.MufluxSpectrometer = AttrDict(z = 0*u.cm)  
-    # False = charm cross-section; True = muon flux measurement
-    c.MufluxSpectrometer.muflux  = False
-
+    # False = charm cross-section; True = muon flux measurement 
+    
     if "targetOpt" not in globals():
        targetOpt = 18 # add extra 20cm of tungsten as per 13/06/2017
-    
+
+    if "Setup" not in globals(): #muon flux or charm xsec measurement
+      Setup = 0    
+
+    if Setup == 0: 
+     c.MufluxSpectrometer.muflux = True
+    else: 
+     c.MufluxSpectrometer.muflux = False
+   
+
     c.target = AttrDict(z0=0*u.cm)
 
     #BOX (Brick!)
     c.Box = AttrDict(z=0*u.cm)
-    c.Box.zBox = 0 * u.cm
+    c.Box.zBox = 106.66 * u.cm
     c.Box.EmTh = 0.0070 * u.cm
     c.Box.EmX = 12.5 * u.cm
     c.Box.EmY = 9.9 * u.cm
     c.Box.PBTh = 0.0175 * u.cm
-    c.Box.MolybdenumTh = 0.3 * u.cm
+    c.Box.PasSlabTh = 0.1 * u.cm #passive slab in ECC (lead for July measurement, molybdenum/tungsten for SHiP target replica
     c.Box.EPlW = 2* c.Box.EmTh + c.Box.PBTh
-    c.Box.AllPW = c.Box.MolybdenumTh + c.Box.EPlW
+    c.Box.AllPW = c.Box.PasSlabTh + c.Box.EPlW
     c.Box.BrX = 12.9 *u.cm
     c.Box.BrY = 10.5 *u.cm
     c.Box.BrPackZ = 0.1 * u.cm
@@ -37,7 +45,7 @@ with ConfigRegistry.register_config("basic") as c:
     c.Box.CoatZ = 0.15 * u.cm
     c.Box.TX = c.Box.EmX
     c.Box.TY = c.Box.EmY
-
+    c.Box.TZ = 5.7 *u.cm #not used for July testbeam geometry
     #passive blocks thicknesses
     c.Box.Molblock1Z = 7.7 * u.cm 
     c.Box.Molblock2Z = 2.2 * u.cm 
@@ -56,37 +64,11 @@ with ConfigRegistry.register_config("basic") as c:
 
     #OPTIONS FOR CHARM XSEC DETECTOR
     c.Box.gausbeam = True
-    c.Box.charmtarget = False
-    #c.Box.Bvalue = 1 *u.tesla
-    c.Box.Bvalue = 0 * u.tesla
-    c.Box.GapInTargetTh = 0 * u.cm 
-    #c.Box.GapPostTargetTh = 5 * u.cm
+    c.Box.Julytarget = False
+    #c.Box.GapPostTargetTh = 5 * u.cm #gap between charm target and T1 station
     c.Box.GapPostTargetTh = 1.2 * u.cm     
     #c.Box.GapPostTargetTh = 0*u.cm
     c.Box.RunNumber =  3 #run configuration for charm
-
-    #TO CHANGE THE RUN (a greater number than 6 will make all target parts passive, number 0 will make the first 11 blocks active)   
-    
-    c.Box.TZ = 100 * u.cm #default value    
-    
-    if c.Box.RunNumber == 1:     
-      c.Box.TZ = 4.55 * u.cm + c.Box.GapInTargetTh
-    elif c.Box.RunNumber == 2:
-      c.Box.TZ = 9.353 * u.cm + 2 * c.Box.GapInTargetTh
-    elif c.Box.RunNumber == 3:
-      c.Box.TZ = 14.7 * u.cm + 3 * c.Box.GapInTargetTh
-    elif c.Box.RunNumber == 4:
-      c.Box.TZ = 20.7 * u.cm + 4 * c.Box.GapInTargetTh
-    elif c.Box.RunNumber == 5:
-      c.Box.TZ = 26.7 * u.cm + 5 * c.Box.GapInTargetTh
-    elif c.Box.RunNumber == 6:
-      c.Box.TZ = 29.3 * u.cm + 6 * c.Box.GapInTargetTh
-    elif c.Box.RunNumber == 0:
-      c.Box.TZ = 211.2 *u.cm #All target (first 11 blocks active, with 10 cm gaps)
-      #c.Box.TZ = 151.2 *u.cm #All target (without gaps, used for z distributions) 
-    elif c.Box.RunNumber > 6:
-      c.Box.TZ = 206.9 *u.cm #All passive target
-    
     # target absorber muon shield setup, decayVolume.length = nominal EOI length, only kept to define z=0
     c.decayVolume            =  AttrDict(z=0*u.cm)
     c.decayVolume.length     =   50*u.m
@@ -135,12 +117,13 @@ with ConfigRegistry.register_config("basic") as c:
     c.target.L17 = 20.82*u.cm
     c.target.M18 = "tungstenmisis"
     c.target.L18 = 36.47*u.cm
-    c.target.sl  =  0.5*u.cm  # H20 slit *17 times
+    c.target.sl  =  0.54459*u.cm  # H20 slit *17 times; to get to the measured length by survey 
     #c.target.xy  = 15.*u.cm   # diameter of muflux target
     c.target.xy  = 10.*u.cm   # new diameter of muflux target    
     # 5.0 cm is for front and endcaps
-    c.target.length = 17*c.target.sl + c.target.L1 + 7*c.target.L2 + 3*c.target.L9 + c.target.L11 + 3*c.target.L12 + c.target.L16 + c.target.L17 + c.target.L18 + 5.0*u.cm
+    #c.target.length = 17*c.target.sl + c.target.L1 + 7*c.target.L2 + 3*c.target.L9 + c.target.L11 + 3*c.target.L12 + c.target.L16 + c.target.L17 + c.target.L18 + 5.0*u.cm
     
+    c.target.length = 154.328*u.cm    
     # interaction point, start of target
     c.target.z   =  c.hadronAbsorber.z - c.hadronAbsorber.length/2. - c.target.length/2.
     c.target.z0  =  c.target.z - c.target.length/2.
@@ -181,13 +164,15 @@ with ConfigRegistry.register_config("basic") as c:
     c.MufluxSpectrometer.TubesPerLayer      = 12
     c.MufluxSpectrometer.ViewAngle          = 60
     c.MufluxSpectrometer.WireThickness      = 0.0045*u.cm
-    c.MufluxSpectrometer.DeltazView         = 16.*u.cm
+    c.MufluxSpectrometer.DeltazView         = 15.*u.cm
     
-    c.MufluxSpectrometer.T3T4_distance = 100 *u.cm
-    c.MufluxSpectrometer.diststereo         = 16.*u.cm  
+    c.MufluxSpectrometer.diststereo         = 16.25*u.cm  
     c.MufluxSpectrometer.distT1T2           = 11.*u.cm   
-    c.MufluxSpectrometer.distT3T4           = 1.6*u.m       
-        
+    if c.MufluxSpectrometer.muflux == True:
+       c.MufluxSpectrometer.distT3T4           = 1.6*u.m       
+    else:
+       c.MufluxSpectrometer.distT3T4 = 1.0*u.m    
+   
     if c.MufluxSpectrometer.muflux == True:    
        c.Spectrometer.DX = 2.*u.m
        c.Spectrometer.DY = 1.6*u.m   
@@ -195,7 +180,6 @@ with ConfigRegistry.register_config("basic") as c:
     else:        
        c.Spectrometer.DX = 1*u.m
        c.Spectrometer.DY = 0.5*u.m
-       #c.Spectrometer.DZ = 6*u.cm
        c.Spectrometer.DZ = 13.5 * u.cm
     c.MufluxSpectrometer.DX = 2.*u.m
     c.MufluxSpectrometer.DY = 1.6*u.m
@@ -205,14 +189,14 @@ with ConfigRegistry.register_config("basic") as c:
     c.Spectrometer.D1Long = 4 * u.cm;   
     c.Spectrometer.DimZSi = 0.0200 * u.cm
     c.Spectrometer.PairSiDistance = 0.6 * u.cm +c.Spectrometer.DimZSi 
-    c.Spectrometer.Sioverlap = 0.2*u.cm            
-
+    c.Spectrometer.Sioverlap = 0.2*u.cm   
+         
     c.Spectrometer.SX = c.Spectrometer.DX
     c.Spectrometer.SY = c.Spectrometer.DY    
-    c.Spectrometer.Sidist = 5 * u.cm      
+   
     
     #position of module centres
-    c.Spectrometer.zSi0 = c.Spectrometer.PairSiDistance/2. + c.Spectrometer.DimZSi/2.
+    c.Spectrometer.zSi0 = c.Spectrometer.PairSiDistance/2. + c.Spectrometer.DimZSi/2. + c.Box.GapPostTargetTh
     c.Spectrometer.zSi1 = c.Spectrometer.zSi0 + 2.5 *u.cm
     c.Spectrometer.zSi2 = c.Spectrometer.zSi1 + 2.5 *u.cm
     c.Spectrometer.zSi3 = c.Spectrometer.zSi2 + 2.5 *u.cm
@@ -233,40 +217,47 @@ with ConfigRegistry.register_config("basic") as c:
     c.Scintillator = AttrDict(z = 0*u.cm)
     c.Scintillator.Scoring1X           = 55.*u.cm
     c.Scintillator.Scoring1Y           = 110.*u.cm    
-    c.Scintillator.DistT1               = 3.7*u.cm       
-    c.Scintillator.DistT2               = 2*(2*c.Spectrometer.DZ +c.MufluxSpectrometer.diststereo) + c.MufluxSpectrometer.distT1T2 + 10*u.cm
+    c.Scintillator.DistT1               = 11.5*u.cm   
+    #c.Scintillator.DistT1               = 3.7*u.cm       
+    c.Scintillator.DistT2               = 135.25*u.cm
+    #c.Scintillator.DistT2               = 2*(2*c.Spectrometer.DZ +c.MufluxSpectrometer.diststereo) + c.MufluxSpectrometer.distT1T2 + 10*u.cm
                    
     if c.MufluxSpectrometer.muflux == True: 
        #these parameters are also used inside the MufluxSpectrometer.cxx
        c.Spectrometer.SZ = 2*(2*c.Spectrometer.DZ +c.MufluxSpectrometer.diststereo) + c.MufluxSpectrometer.distT1T2 +4.5*u.m + c.MufluxSpectrometer.distT3T4 + 2*(2*c.Spectrometer.DZ) + 2.5*u.cm
     else: 
-       c.Spectrometer.SZ = c.Spectrometer.DZ*2 + c.Spectrometer.DimZSi*3 + 2 * c.Spectrometer.Sidist + 80 *u.cm + 4.5*u.m #4.5 m is the Goliath length
- 
-    c.Spectrometer.zBox = c.Spectrometer.SZ/2
+       c.Spectrometer.SZ = c.Spectrometer.DZ*2 + c.Spectrometer.zSi5 - c.Spectrometer.zSi0 + c.Spectrometer.PairSiDistance + c.Spectrometer.DimZSi + 80 *u.cm + 4.5*u.m #4.5 m is the Goliath length + 80 *u.cm + 4.5*u.m #4.5 m is the Goliath length
+   
+    c.Spectrometer.DimZpixelbox = c.Box.GapPostTargetTh + c.Spectrometer.zSi5 - c.Spectrometer.zSi0 + c.Spectrometer.PairSiDistance + c.Spectrometer.DimZSi
+    
+    PixeltoGoliath = 40 *u.cm
+    c.Spectrometer.zBox = 350.75 - c.Spectrometer.TS/2 - PixeltoGoliath - c.Spectrometer.DimZpixelbox/2.
+    c.Box.zBox = c.Spectrometer.zBox - c.Spectrometer.DimZpixelbox/2. 
 
     #position of SciFis 
     distGoliathSciFi1 = 10*u.cm
-    c.Spectrometer.zSciFi1 = c.Spectrometer.zSi5 +c.Spectrometer.PairSiDistance/2.+c.Spectrometer.DimZSi/2. + c.Spectrometer.LS + distGoliathSciFi1 +  c.Spectrometer.DZ/2.
-    c.Spectrometer.zSciFi2 = c.Spectrometer.zSciFi1 + c.Spectrometer.DZ/2. + c.Spectrometer.Sidist + c.Spectrometer.DZ/2.
+    c.Spectrometer.Scifidist = 5 * u.cm   
+    c.Spectrometer.zSciFi1 = c.Spectrometer.zBox + c.Spectrometer.DimZpixelbox/2. + PixeltoGoliath + c.Spectrometer.TS + distGoliathSciFi1 +  c.Spectrometer.DZ/2.
+    c.Spectrometer.zSciFi2 = c.Spectrometer.zSciFi1 + c.Spectrometer.DZ/2. + c.Spectrometer.Scifidist + c.Spectrometer.DZ/2.
 
     #Muon Filter
     
     c.MuonTagger = AttrDict(z = 0*u.cm)
-    c.MuonTagger.concreteslabs = False; #if true, set Concrete as material of last three slabs 
     c.MuonTagger.PTh = 80 * u.cm;
     c.MuonTagger.PTh1 = 40 * u.cm #last 3 slabs' thickness
     c.MuonTagger.STh = 5.0 * u.cm
     c.MuonTagger.BX = 2.00 * u.m
     c.MuonTagger.BY = 1.30 * u.m
-    c.MuonTagger.BZ = c.MuonTagger.PTh * 2 + c.MuonTagger.PTh1 * 3 + c.MuonTagger.STh * 6
+    c.MuonTagger.BZ = c.MuonTagger.PTh * 2 + c.MuonTagger.PTh1 * 3 + c.MuonTagger.STh * 5
     
     if c.MufluxSpectrometer.muflux == True:
        #for the muflux measurement the muontagger has to be moved back
-       #c.MuonTagger.zBox = c.Spectrometer.SZ+ c.MuonTagger.BZ*1./2.- 45*u.cm
-       c.MuonTagger.zBox = c.Spectrometer.SZ+ c.MuonTagger.BZ*3./2. + 5*u.cm -310*u.cm
+       c.MuonTagger.zBox = 791.75*u.cm  + 152.5*u.cm
+       #c.MuonTagger.zBox = c.Spectrometer.zSi5 +c.Spectrometer.PairSiDistance/2.+c.Spectrometer.DimZSi/2. + c.Spectrometer.LS +           c.MuonTagger.BZ/2. + 199.5*u.cm#starting from 223 cm from Goliath, like in muonflux measurement
+
     else:    
        #c.MuonTagger.zBox = c.Spectrometer.SZ+ c.MuonTagger.BZ/2 + 5*u.cm
-       c.MuonTagger.zBox = c.Spectrometer.zSi5 +c.Spectrometer.PairSiDistance/2.+c.Spectrometer.DimZSi/2. + c.Spectrometer.LS +           c.MuonTagger.BZ/2. + 199.5*u.cm#starting from 223 cm from Goliath, like in muonflux measurement
+       c.MuonTagger.zBox = c.Spectrometer.zBox + c.Spectrometer.DimZpixelbox/2. + PixeltoGoliath + c.Spectrometer.TS + 261*u.cm + c.MuonTagger.BZ/2. #real position of MuonTagger
 
     c.MuonTagger.PX = c.MuonTagger.BX
     c.MuonTagger.PY = c.MuonTagger.BY
@@ -274,3 +265,7 @@ with ConfigRegistry.register_config("basic") as c:
     c.MuonTagger.SY = c.MuonTagger.BY
     c.MuonTagger.HX = 5 * u.cm #dimensions of central hole
     c.MuonTagger.HY = 5 * u.cm
+
+
+
+
