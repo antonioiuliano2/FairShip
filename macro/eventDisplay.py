@@ -1055,7 +1055,6 @@ mcHits = {}
 if hasattr(ShipGeo,"MuonTagger"): 
   mcHits['BoxPoints']  = ROOT.FairMCPointDraw("BoxPoint", ROOT.kBlue, ROOT.kFullDiamond)
   mcHits['SpectrometerPoints']  = ROOT.FairMCPointDraw("SpectrometerPoint", ROOT.kRed, ROOT.kFullSquare)
-  mcHits['MufluxSpectrometerPoints']  = ROOT.FairMCPointDraw("MufluxSpectrometerPoint", ROOT.kYellow, ROOT.kFullCircle)
   mcHits['MuonTaggerPoints']  = ROOT.FairMCPointDraw("MuonTaggerPoint", ROOT.kGreen, ROOT.kFullCircle)
 else:
  mcHits['VetoPoints']  = ROOT.FairMCPointDraw("vetoPoint", ROOT.kBlue, ROOT.kFullDiamond)
