@@ -241,6 +241,8 @@ void MufluxSpectrometer::SetDistT3T4(Double_t distT3T4)
       fdistT3T4 = distT3T4;                                       //! distance between T3&T4
 }
 
+
+
 void MufluxSpectrometer::SetGoliathCentre(Double_t goliathcentre_to_beam)
 {
       fgoliathcentre_to_beam=goliathcentre_to_beam;
@@ -253,6 +255,28 @@ void MufluxSpectrometer::SetTStationsZ(Double_t T1z, Double_t T2z, Double_t T3z,
       fT3z=T3z;
       fT4z=T4z;
 }
+
+void MufluxSpectrometer::SetTStationsX(Double_t T1x_x, Double_t T1u_x, Double_t T2x_x, Double_t T2v_x, Double_t T3x, Double_t T4x)
+{
+      fT1x_x=T1x_x;
+      fT1u_x=T1u_x;
+      fT2x_x=T2x_x;
+      fT2v_x=T2v_x;
+      fT3x=T3x;
+      fT4x=T4x;
+}
+
+void MufluxSpectrometer::SetTStationsY(Double_t T1x_y, Double_t T1u_y, Double_t T2x_y, Double_t T2v_y, Double_t T3y, Double_t T4y)
+{
+      fT1x_y=T1x_y;
+      fT1u_y=T1u_y;
+      fT2x_y=T2x_y;
+      fT2v_y=T2v_y;
+      fT3y=T3y;
+      fT4y=T4y;
+}
+
+
 
 void MufluxSpectrometer::ConstructGeometry()
 { 
@@ -311,12 +335,12 @@ void MufluxSpectrometer::ConstructGeometry()
   if (fMuonFlux){
     //***************************************************************************************************************
     //*****************************************   OPERA DRIFT TUBES BY ERIC *****************************************
-    //*****************************************   Dimensions from https://www-opera.desy.de/tracker.html*************     
+    //*****************************************   Dimensions from http://www-opera.desy.de/tracker.html*************     
     //*******************************************************************************************************************  
     
     // Volume: plate
 
-    TGeoBBox *platebox_12 = new TGeoBBox("platebox_12", ftr12xdim/2.+fTubes_pitch/2.,  plate_thickness/2. , fDeltaz_view/2.-0.1);         
+    TGeoBBox *platebox_12 = new TGeoBBox("platebox_12", ftr12xdim/2.+fTubes_pitch,  plate_thickness/2. , fDeltaz_view/2.+fTubes_pitch/2.-0.1);         
     // Volume: tube
     rmin = fInner_Tube_diameter/2.;
     rmax = fOuter_Tube_diameter/2.;
@@ -341,11 +365,11 @@ void MufluxSpectrometer::ConstructGeometry()
     TGeoVolume *wire_12 = new TGeoVolume("wire_12",wire_tube_12, tungsten);
     wire_12->SetLineColor(6);             
 
-    TGeoBBox *DriftTube1 = new TGeoBBox("DriftTube1", DimX/2+ 1*m/2, DimY/2+ 0.5*m/2, DimZ+fdiststereo/2+eps); 
+    TGeoBBox *DriftTube1 = new TGeoBBox("DriftTube1", DimX/2+ 1.*m/2, DimY/2+ 0.6*m/2, DimZ+2*cm+fdiststereo/2+eps); 
     TGeoVolume *volDriftTube1 = new TGeoVolume("volDriftTube1",DriftTube1,air);
     volDriftTube1->SetLineColor(kBlue-5);
   
-    TGeoBBox *DriftTube2 = new TGeoBBox("DriftTube2", DimX/2+ 1*m/2, DimY/2+ 0.9*m/2, DimZ+fdiststereo/2+eps);  
+    TGeoBBox *DriftTube2 = new TGeoBBox("DriftTube2", DimX/2+ 1.*m/2, DimY/2+ 1.*m/2, DimZ+2*cm+fdiststereo/2+eps);  
     TGeoVolume *volDriftTube2 = new TGeoVolume("volDriftTube2",DriftTube2,air);
     volDriftTube2->SetLineColor(kBlue-5);
             
@@ -377,7 +401,11 @@ void MufluxSpectrometer::ConstructGeometry()
         TGeoTranslation t5;
 	TGeoTranslation t6;	
 	TGeoTranslation t5b;
-	TGeoTranslation t6b;		
+	TGeoTranslation t6b;
+	TGeoTranslation st5;
+	TGeoTranslation st6;	
+	TGeoTranslation st5b;
+	TGeoTranslation st6b;			
         switch (vnb) {
 	   case 0:
 	      if (statnb==1) { 
@@ -417,61 +445,47 @@ void MufluxSpectrometer::ConstructGeometry()
 	plate_top_12->SetVisibility(kTRUE);	
 	plate_bot_12->SetVisibility(kTRUE);	
         plate_top_12->SetLineColor(kGreen); 	
-        plate_bot_12->SetLineColor(kGreen); 	
+        plate_bot_12->SetLineColor(kGreen); 
 		
+        r5.SetAngles(angle,0,0);
+				
 	//z-translate the viewframe from station z pos
 	if (angle==0.) {
-	    t5.SetTranslation(fTubes_pitch/4., ftr12ydim/2.+eps+plate_thickness/2.+0.5*cm,(vnb-1)*fDeltaz_view);
-	    t6.SetTranslation(fTubes_pitch/4., -ftr12ydim/2.-eps-plate_thickness/2.-0.5*cm,(vnb-1)*fDeltaz_view);
-	    t5b.SetTranslation(fTubes_pitch/4., ftr12ydim/2.+eps+plate_thickness/2.+0.5*cm,(vnb-1)*fDeltaz_view+fdiststereo);
-	    t6b.SetTranslation(fTubes_pitch/4., -ftr12ydim/2.-eps-plate_thickness/2.-0.5*cm,(vnb-1)*fDeltaz_view+fdiststereo);
+	    t5.SetTranslation(fT1x_x-fTubes_pitch/2.,fT1x_y+ftr12ydim/2.+eps+plate_thickness/2.+0.5*cm,(vnb-1)*fDeltaz_view);
+	    t6.SetTranslation(fT1x_x-fTubes_pitch/2., fT1x_y-ftr12ydim/2.-eps-plate_thickness/2.-0.5*cm,(vnb-1)*fDeltaz_view);
+	    t5b.SetTranslation(fT2x_x-fTubes_pitch/2., fT2x_y+ftr12ydim/2.+eps+plate_thickness/2.+0.5*cm,(vnb-1)*fDeltaz_view+fdiststereo);
+	    t6b.SetTranslation(fT2x_x-fTubes_pitch/2., fT2x_y-ftr12ydim/2.-eps-plate_thickness/2.-0.5*cm,(vnb-1)*fDeltaz_view+fdiststereo);   
 	}
-	else {  if (abs(angle)==5.) {
-	       t5.SetTranslation(fTubes_pitch/4., ftr12ydim/2.+eps+plate_thickness/2.+0.5*cm,(vnb-1)*fDeltaz_view+fdiststereo);
-	       t6.SetTranslation(fTubes_pitch/4., -ftr12ydim/2.-eps-plate_thickness/2.-0.5*cm,(vnb-1)*fDeltaz_view+fdiststereo);
-	       t5b.SetTranslation(fTubes_pitch/4., ftr12ydim/2.+eps+plate_thickness/2.+0.5*cm,(vnb-1)*fDeltaz_view);
-	       t6b.SetTranslation(fTubes_pitch/4., -ftr12ydim/2.-eps-plate_thickness/2.-0.5*cm,(vnb-1)*fDeltaz_view);
-	       }
-	       else { if (abs(angle)==60.) {
-                 
-t5.SetTranslation(-(ftr12ydim/2+eps-1.*cm)*cos(angle),(ftr12ydim/2+eps+plate_thickness/2)*sin(angle)+10.*cm+fTubes_pitch/4.*cos(angle),(vnb-1)*fDeltaz_view+fdiststereo);
-	          t6.SetTranslation((ftr12ydim/2+eps-2.*cm)*cos(angle), (-ftr12ydim/2-eps-plate_thickness/2)*sin(angle)-13.*cm-fTubes_pitch/4.*cos(angle),(vnb-1)*fDeltaz_view+fdiststereo);	
-	          t5b.SetTranslation(-(ftr12ydim/2+eps-1.*cm)*cos(angle),(ftr12ydim/2+eps+plate_thickness/2)*sin(angle)-8.*cm+fTubes_pitch/4.*cos(angle),(vnb-1)*fDeltaz_view);
-	          t6b.SetTranslation((ftr12ydim/2+eps-2.*cm)*cos(angle), (-ftr12ydim/2-eps-plate_thickness/2)*sin(angle)+10.*cm-fTubes_pitch/4.*cos(angle),(vnb-1)*fDeltaz_view);	      
- 	          }
-		  else { if (abs(angle)==90.) {
-                  t5.SetTranslation((ftr12ydim+plate_thickness)/2+eps,-0.5*cm,(vnb-1)*fDeltaz_view+fdiststereo);
-	          t6.SetTranslation(-(ftr12ydim+plate_thickness)/2+eps, +0.5*cm,(vnb-1)*fDeltaz_view+fdiststereo);	
-	          t5b.SetTranslation((ftr12ydim+plate_thickness)/2+eps,-0.5*cm,(vnb-1)*fDeltaz_view);
-	          t6b.SetTranslation(-(ftr12ydim+plate_thickness)/2+eps, +0.5*cm,(vnb-1)*fDeltaz_view);	      
-		  }	       
-        }}}
-	
-	//rotate the frame box by angle degrees around the z axis (0 if it isn't a stereo view)	
-        r5.SetAngles(angle,0,0);
-        TGeoCombiTrans c5(t5, r5);
+        else {
+            t5.SetTranslation(fT1u_x-(ftr12ydim/2.+eps+plate_thickness/2+fTubes_pitch)*sin(TMath::Pi()*abs(angle)/180.),fT1u_y+(ftr12ydim/2.+eps+plate_thickness/2)*cos(TMath::Pi()*abs(angle)/180.),fDeltaz_view+fTubes_pitch/4.);
+	    t6.SetTranslation(fT1u_x+(ftr12ydim/2.+eps+plate_thickness/2)*sin(TMath::Pi()*abs(angle)/180.),fT1u_y-(ftr12ydim/2.+eps+plate_thickness/2)*cos(TMath::Pi()*abs(angle)/180.),fDeltaz_view+fTubes_pitch/4.);
+	    t5b.SetTranslation(fT2v_x+(ftr12ydim/2.+eps+plate_thickness/2)*sin(TMath::Pi()*abs(angle)/180.),fT2v_y+(ftr12ydim/2.+eps+plate_thickness/2)*cos(TMath::Pi()*abs(angle)/180.),(vnb-1)*fDeltaz_view);
+	    t6b.SetTranslation(fT2v_x-(ftr12ydim/2.+eps+plate_thickness/2)*sin(TMath::Pi()*abs(angle)/180.),fT2v_y-(ftr12ydim/2.+eps+plate_thickness/2)*cos(TMath::Pi()*abs(angle)/180.),(vnb-1)*fDeltaz_view);	     	    	    	    	    
+	}
+	TGeoCombiTrans c5(t5, r5);
         TGeoHMatrix *h5 = new TGeoHMatrix(c5);	
 	TGeoCombiTrans c5b(t5b, r5);
         TGeoHMatrix *h5b = new TGeoHMatrix(c5b);	
         TGeoCombiTrans c6(t6, r5);
         TGeoHMatrix *h6 = new TGeoHMatrix(c6);		
         TGeoCombiTrans c6b(t6b, r5);
-        TGeoHMatrix *h6b = new TGeoHMatrix(c6b);	
-			
+        TGeoHMatrix *h6b = new TGeoHMatrix(c6b);
 	if (statnb==1) {
-	    volDriftTube1->AddNode(plate_top_12, statnb*10+vnb,h5);
-	    volDriftTube1->AddNode(plate_bot_12, statnb*10+vnb+2,h6);	   
-	    }
+	       volDriftTube1->AddNode(plate_top_12, statnb*10+vnb,h5);
+	       volDriftTube1->AddNode(plate_bot_12, statnb*10+vnb+2,h6);	   
+	}
 	if (statnb==2) {
-	    volDriftTube2->AddNode(plate_top_12, statnb*10+vnb,h6b);
-	    volDriftTube2->AddNode(plate_bot_12, statnb*10+vnb+2,h5b);	    
-	    }
+	       volDriftTube2->AddNode(plate_top_12, statnb*10+vnb,h6b);
+	       volDriftTube2->AddNode(plate_bot_12, statnb*10+vnb+2,h5b);	    
+	 }	 
+	
+	//rotate the frame box by angle degrees around the z axis (0 if it isn't a stereo view)	
 			     
         for (Int_t pnb=0; pnb<2; pnb++) {
           //plane loop	   
           TString nmplane_12 = nmview_12+"_plane_"; 
           nmplane_12 += pnb;
-          TGeoBBox *plane_12 = new TGeoBBox("plane box_12", ftr12xdim/2.+eps/2.+fTubes_pitch, ftr12ydim/2.+eps/2., planewidth/2.+eps/2);	   	   
+          TGeoBBox *plane_12 = new TGeoBBox("plane box_12", ftr12xdim/2.+eps/2.+2*fTubes_pitch, ftr12ydim/2.+eps/2., planewidth/2.+eps/2);	   	   
           TGeoVolume *planebox_12 = new TGeoVolume(nmplane_12, plane_12, air) ;          
 	   
           //the planebox sits in the viewframe
@@ -479,18 +493,18 @@ t5.SetTranslation(-(ftr12ydim/2+eps-1.*cm)*cos(angle),(ftr12ydim/2+eps+plate_thi
           TGeoTranslation t3;
 	  if (statnb==1){
 	    if (angle==0.){
-               t3.SetTranslation(0, 0,(vnb-1.)*(fDeltaz_view)+(pnb-1./2.)*fDeltaz_plane12);	
+               t3.SetTranslation(fT1x_x, fT1x_y,(vnb-1.)*(fDeltaz_view)+(pnb-1./2.)*fDeltaz_plane12);	
 	    }
 	    else {
-	       t3.SetTranslation(0, 0,(vnb-1.)*(fDeltaz_view)+(pnb-1./2.)*fDeltaz_plane12+fdiststereo);	
+	       t3.SetTranslation(fT1u_x, fT1u_y,(vnb-1.)*(fDeltaz_view)+(pnb-1./2.)*fDeltaz_plane12+fdiststereo);	
 	    }  
 	  }
 	  if (statnb==2){   
 	    if (angle==0.){
-               t3.SetTranslation(0, 0,(vnb-1.)*(fDeltaz_view)+(pnb-1./2.)*fDeltaz_plane12+fdiststereo);	
+               t3.SetTranslation(fT2x_x, fT2x_y,(vnb-1.)*(fDeltaz_view)+(pnb-1./2.)*fDeltaz_plane12+fdiststereo);	
 	    }
 	    else {
-	       t3.SetTranslation(0, 0,(vnb-1.)*(fDeltaz_view)+(pnb-1./2.)*fDeltaz_plane12);	
+	       t3.SetTranslation(fT2v_x, fT2v_y,(vnb-1.)*(fDeltaz_view)+(pnb-1./2.)*fDeltaz_plane12);	
 	    } 	  	  	  
 	  }
 	    
@@ -505,7 +519,7 @@ t5.SetTranslation(-(ftr12ydim/2+eps-1.*cm)*cos(angle),(ftr12ydim/2+eps+plate_thi
             //z translate the layerbox wrt the plane box (which is already rotated)
             TString nmlayer_12 = nmplane_12+"_layer_"; nmlayer_12 += lnb;
             //TGeoBBox *layer_12 = new TGeoBBox("layer box_12", ftr12xdim/2.+eps/4+fTubes_pitch, ftr12ydim/2.+eps/4, layerwidth/2.+eps/4);
-	    TGeoBBox *layer_12 = new TGeoBBox("layer box_12", ftr12xdim/2.+fTubes_pitch, ftr12ydim/2., layerwidth/2.);
+	    TGeoBBox *layer_12 = new TGeoBBox("layer box_12", ftr12xdim/2.+2*fTubes_pitch, ftr12ydim/2., layerwidth/2.);
             TGeoVolume *layerbox_12 = new TGeoVolume(nmlayer_12, layer_12, air);	
 	    layerbox_12->SetVisibility(kFALSE);	        
             planebox_12->AddNode(layerbox_12, statnb*10000000+vnb*1000000+pnb*100000+lnb*10000,new TGeoTranslation(0,0,(lnb-1./2.)*fDeltaz_layer12)); 	  
@@ -516,12 +530,16 @@ t5.SetTranslation(-(ftr12ydim/2+eps-1.*cm)*cos(angle),(ftr12ydim/2+eps+plate_thi
             for (Int_t snb=1; snb<fTubes_per_layer_tr12+1; snb++) {
               //tubes loop
 	      if ((statnb==1)&&(angle==0.)) {      	        
-                 t6s.SetTranslation(xT1[lnb*1+pnb*2]+ftr12xdim/2.-fTubes_pitch*(snb-1)+(fOffset_plane12-fTubes_pitch*(1-lnb))*pnb-lnb*fOffset_layer12,0,0);} 	      	      
+		 t6s.SetTranslation(xT1[lnb*1+pnb*2]-ftr12xdim/2.+fTubes_pitch*(snb-1)-fOffset_plane12*(pnb-1)-fOffset_layer12*(pnb*lnb+(pnb-1)*(lnb-1)),0,0);}     	      
 	      if ((statnb==2)&&(angle==0.)) {		     
-                 t6s.SetTranslation(xT2[lnb*1+pnb*2]+ftr12xdim/2.-fTubes_pitch*(snb-1)+(fOffset_plane12-fTubes_pitch*(1-lnb))*pnb-lnb*fOffset_layer12,0,0);} 
-	      if (angle!=0.){
-                 t6s.SetTranslation(ftr12xdim/2.-fTubes_pitch*(snb-1)+(fOffset_plane12-fTubes_pitch*(1-lnb))*pnb-lnb*fOffset_layer12,0,0);} 
-	      
+                 t6s.SetTranslation(xT2[lnb*1+pnb*2]-ftr12xdim/2.+fTubes_pitch*(snb-1)-fOffset_plane12*pnb+fOffset_layer12*(pnb*lnb+(pnb-1)*(lnb-1)),0,0);} 
+	      if (angle!=0.) {
+	      	 if (statnb==2) {
+                    t6s.SetTranslation(-ftr12xdim/2.+fTubes_pitch*(snb-1)-fOffset_plane12*pnb+fOffset_layer12*(pnb*lnb+(pnb-1)*(lnb-1)),0,0);}
+	         if (statnb==1) {
+                    t6s.SetTranslation(-ftr12xdim/2.+fTubes_pitch*(snb-1)-fOffset_plane12*(pnb-1)-fOffset_layer12*(pnb*lnb+(pnb-1)*(lnb-1)),0,0);} 
+	      }	 
+		 	      
 	      r6s.SetAngles(0,90,90);
               TGeoCombiTrans c6s(t6s, r6s);
               TGeoHMatrix *h6s = new TGeoHMatrix(c6s);
@@ -829,7 +847,7 @@ t5.SetTranslation(-(ftr12ydim/2+eps-1.*cm)*cos(angle),(ftr12ydim/2+eps+plate_thi
         if (statnb==3) {
           volDriftTube3->SetVisibility(kFALSE);
 	  //move drifttubes up so they cover the Goliath aperture, not centered on the beam
-	  top->AddNode(volDriftTube3,3,new TGeoTranslation(0,fgoliathcentre_to_beam,fT3z));
+	  top->AddNode(volDriftTube3,3,new TGeoTranslation(fT3x,fT3y+fgoliathcentre_to_beam,fT3z));
           nmview_34 = "Station_3_x";
 	  nmview_top_34="Station_3_top_x";
 	  nmview_bot_34="Station_3_bot_x";	 
@@ -838,7 +856,7 @@ t5.SetTranslation(-(ftr12ydim/2+eps-1.*cm)*cos(angle),(ftr12ydim/2+eps+plate_thi
         if (statnb==4) {
           volDriftTube4->SetVisibility(kFALSE);     
 	  //move drifttubes up so they cover the Goliath aperture, not centered on the beam
-	  top->AddNode(volDriftTube4,4,new TGeoTranslation(0,fgoliathcentre_to_beam,fT4z));
+	  top->AddNode(volDriftTube4,4,new TGeoTranslation(fT4x,fT4y+fgoliathcentre_to_beam,fT4z));
           nmview_34 = "Station_4_x";
 	  nmview_top_34="Station_4_top_x";
 	  nmview_bot_34="Station_4_bot_x";		  	  	  
@@ -881,7 +899,7 @@ t5.SetTranslation(-(ftr12ydim/2+eps-1.*cm)*cos(angle),(ftr12ydim/2+eps+plate_thi
           //plane loop	   
           TString nmplane_34 = nmview_34+"_plane_"; 
           nmplane_34 += pnb;
-          TGeoBBox *plane_34 = new TGeoBBox("plane box_34", ftr34xdim/2.+eps/2.+fTubes_pitch, ftr34ydim/2+eps/2., planewidth/2.+eps/2);	   	   
+          TGeoBBox *plane_34 = new TGeoBBox("plane box_34", ftr34xdim/2.+eps/2.+2*fTubes_pitch, ftr34ydim/2+eps/2., planewidth/2.+eps/2);	   	   
           TGeoVolume *planebox_34 = new TGeoVolume(nmplane_34, plane_34, air) ;          
 	   
           //the planebox sits in the viewframe
@@ -900,7 +918,7 @@ t5.SetTranslation(-(ftr12ydim/2+eps-1.*cm)*cos(angle),(ftr12ydim/2+eps+plate_thi
 	      
            //z translate the layerbox wrt the plane box (which is already rotated)
            TString nmlayer_34 = nmplane_34+"_layer_"; nmlayer_34 += lnb;
-           TGeoBBox *layer_34 = new TGeoBBox("layer box_34", ftr34xdim/2.+fTubes_pitch, ftr34ydim/2., layerwidth/2.);
+           TGeoBBox *layer_34 = new TGeoBBox("layer box_34", ftr34xdim/2.+2*fTubes_pitch, ftr34ydim/2., layerwidth/2.);
            TGeoVolume *layerbox_34 = new TGeoVolume(nmlayer_34, layer_34, air);	
 	   layerbox_34->SetVisibility(kFALSE);	        
            planebox_34->AddNode(layerbox_34, statnb*10000000+vnb*1000000+pnb*100000+lnb*10000,new TGeoTranslation(0,0,(lnb-1./2.)*fDeltaz_layer12)); 	  
@@ -910,10 +928,10 @@ t5.SetTranslation(-(ftr12ydim/2+eps-1.*cm)*cos(angle),(ftr12ydim/2+eps+plate_thi
            TGeoTranslation t6s;
            for (Int_t snb=1; snb<fTubes_per_layer_tr34+1; snb++) {
               //tubes loop
-	      if (statnb==3){	
-                   t6s.SetTranslation(xT3[pnb*2+lnb*1]+ftr34xdim/2.-fTubes_pitch*(snb-1)+(fOffset_plane12-fTubes_pitch*(1-lnb))*pnb-lnb*fOffset_layer12,0,0); }
-	      if (statnb==4){	       
-                   t6s.SetTranslation(xT4[pnb*2+lnb*1]+ftr34xdim/2.-fTubes_pitch*(snb-1)+(fOffset_plane12-fTubes_pitch*(1-lnb))*pnb-lnb*fOffset_layer12,0,0); }
+	      if (statnb==3){		      	      
+                   t6s.SetTranslation(xT3[pnb*2+lnb*1]-ftr34xdim/2.+fTubes_pitch*(snb-1)-fOffset_plane12*(pnb-1)-fOffset_layer12*(pnb*lnb+(pnb-1)*(lnb-1)),0,0); }
+	      if (statnb==4){	       	      	                
+		   t6s.SetTranslation(xT4[pnb*2+lnb*1]-ftr34xdim/2.+fTubes_pitch*(snb-1)-fOffset_plane12*(pnb-1)-fOffset_layer12*(pnb*lnb+(pnb-1)*(lnb-1)),0,0); }
 
 	      r6s.SetAngles(0,90,90);
               TGeoCombiTrans c6s(t6s, r6s);
