@@ -22,8 +22,8 @@ chibb = 1.6e-7
 npot  = 5E13
 nStart = 0
 
-muflux = False #True for muflux measurement, False for charm
-charmInputFile = "sim_charm/forCharm.root"
+CharmdetSetup = 0 # 1 charm cross section setup, 0 muonflux setup
+charmInputFile = "root://eoslhcb.cern.ch//eos/ship/data/Charm/Cascade-parp16-MSTP82-1-MSEL4-76Mpot_1.root"
 nStart = 0
 
 outputDir    = "."
@@ -69,6 +69,7 @@ def init():
       description='Run SHiP "pot" simulation')
   ap.add_argument('-d', '--debug', action='store_true', dest='debug')
   ap.add_argument('-f', '--force', action='store_true', help="force overwriting output directory")
+  ap.add_argument('-cs', '--CharmdetSetup', type=int, dest='CharmdetSetup',help="setting detector setup")
   ap.add_argument('-r', '--run-number', type=int, dest='runnr', default=runnr)
   ap.add_argument('-e', '--ecut', type=float, help="energy cut", dest='ecut', default=ecut)
   ap.add_argument('-n', '--num-events', type=int, help="number of events to generate", dest='nev', default=nev)
@@ -115,6 +116,7 @@ def init():
     logger.info("use EvtGen as primary decayer")
   withEvtGen     = args.withEvtGen
   charm  = args.charm
+  CharmDetSetup = args.CharmDetSetup
   beauty = args.beauty
   if charm and beauty: 
     logger.warn("charm and beauty decays are set! Beauty gets priority")
@@ -150,7 +152,7 @@ os.chdir(work_dir)
 ROOT.gRandom.SetSeed(theSeed)  # this should be propagated via ROOT to Pythia8 and Geant4VMC
 shipRoot_conf.configure()      # load basic libraries, prepare atexit for python
 #this is for the muon flux geometry
-ship_geo = ConfigRegistry.loadpy("$FAIRSHIP/geometry/charm-geometry_config.py", Setup = 1)
+ship_geo = ConfigRegistry.loadpy("$FAIRSHIP/geometry/charm-geometry_config.py", Setup = CharmdetSetup)
 
 txt = 'pythia8_Geant4_'
 if withEvtGen: txt = 'pythia8_evtgen_Geant4_'
@@ -187,7 +189,8 @@ Box.SetGapGeometry(ship_geo.Box.distancePassive2ECC)
 Box.SetTargetDesign(ship_geo.Box.Julytarget)
 Box.SetRunNumber(ship_geo.Box.RunNumber)
 
-detectorList.append(Box)
+if (ship_geo.MufluxSpectrometer.muflux==False): 
+ detectorList.append(Box)
    
 Spectrometer = ROOT.Spectrometer("Spectrometer",ship_geo.Spectrometer.DX, ship_geo.Spectrometer.DY, ship_geo.Spectrometer.DZ,ROOT.kTRUE)
 Spectrometer.SetTransverseSizes(ship_geo.Spectrometer.D1Short, ship_geo.Spectrometer.D1Long, ship_geo.Spectrometer.Sioverlap, ship_geo.Spectrometer.DSciFi1X, ship_geo.Spectrometer.DSciFi1Y, ship_geo.Spectrometer.DSciFi2X, ship_geo.Spectrometer.DSciFi2Y)
@@ -226,10 +229,10 @@ MufluxSpectrometer.SetTr12XDim(ship_geo.MufluxSpectrometer.tr12xdim)
 MufluxSpectrometer.SetTr34XDim(ship_geo.MufluxSpectrometer.tr34xdim) 
 MufluxSpectrometer.SetDistStereo(ship_geo.MufluxSpectrometer.diststereo)
 MufluxSpectrometer.SetDistT1T2(ship_geo.MufluxSpectrometer.distT1T2)
-MufluxSpectrometer.SetDistT3T4(ship_geo.MufluxSpectrometer.distT3T4)      
+MufluxSpectrometer.SetDistT3T4(ship_geo.MufluxSpectrometer.distT3T4) 
 MufluxSpectrometer.SetGoliathCentre(ship_geo.MufluxSpectrometer.goliathcentre_to_beam)
-MufluxSpectrometer.SetTStationsZ(ship_geo.MufluxSpectrometer.T1z,ship_geo.MufluxSpectrometer.T2z,ship_geo.MufluxSpectrometer.T3z,ship_geo.MufluxSpectrometer.T4z)
-
+MufluxSpectrometer.SetTStationsZ(ship_geo.MufluxSpectrometer.T1z,ship_geo.MufluxSpectrometer.T2z,ship_geo.MufluxSpectrometer.T3z,ship_geo.MufluxSpectrometer.T4z) 
+      
 # for the digitizing step
 MufluxSpectrometer.SetTubeResolution(ship_geo.MufluxSpectrometer.v_drift,ship_geo.MufluxSpectrometer.sigma_spatial) 
 
@@ -241,8 +244,8 @@ MuonTagger.SetSensitiveParameters(ship_geo.MuonTagger.SX, ship_geo.MuonTagger.SY
 MuonTagger.SetHoleDimensions(ship_geo.MuonTagger.HX, ship_geo.MuonTagger.HY)
 detectorList.append(MuonTagger)
 for x in detectorList:
- run.AddModule(x)  
-
+ run.AddModule(x)
+  
 fMagField = ROOT.ShipGoliathField()
 fieldfile = os.environ["FAIRSHIP"]+"/field/GoliathFieldMap.root"
 fMagField.Init(fieldfile)

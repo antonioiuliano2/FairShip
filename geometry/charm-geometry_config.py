@@ -297,7 +297,7 @@ with ConfigRegistry.register_config("basic") as c:
     c.MuonTagger.PTh1 = 40 * u.cm #last 3 slabs' thickness
     c.MuonTagger.STh = 5.0 * u.cm
     c.MuonTagger.BX = 2.40 * u.m
-    c.MuonTagger.BY = 2.20 * u.m + 2*c.MufluxSpectrometer.goliathcentre_to_beam + 30 *mm
+    c.MuonTagger.BY = 2.20 * u.m + 2*c.MufluxSpectrometer.goliathcentre_to_beam + 30 *u.mm
     c.MuonTagger.BZ = c.MuonTagger.PTh * 2 + c.MuonTagger.PTh1 * 3 + c.MuonTagger.STh * 5
     
     if c.MufluxSpectrometer.muflux == True:
