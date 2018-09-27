@@ -257,7 +257,7 @@ void Box::ConstructGeometry()
 
       if (nrun > 0){ //passive red blocks followed by an ECC brick
       for (int i = 0; i<NBricks; i++) activate[i] = false;
-      activate[nrun-1]=true;
+      activate[NBricks-1]=true;
       }
       else  for (int i = 0; i<NBricks; i++) activate[i] = true;      
      
@@ -295,23 +295,23 @@ void Box::ConstructGeometry()
       Int_t nfilm = 1, nlead = 1, nleadslab = 1;
       Double_t zpoint = -TargetZ/2;
 
-      for (Int_t irun = 0; irun < NBricks; irun++){
+      for (Int_t irun = 0; irun < NBricks; irun++){ //irun is the index, nrun is the number of the configuration run
         if (activate[irun]){
          
-         if (irun > 2) zpoint = zpoint + distPas2ECC;	  
+         if (nrun > 2) zpoint = zpoint + distPas2ECC;	  
 	 
-         for(Int_t n=0; n<NPlates[irun]+1; n++) //adding emulsions
+         for(Int_t n=0; n<NPlates[nrun]+1; n++) //adding emulsions
 	    {
 	      AddEmulsionFilm(zpoint + n*AllPlateWidth, nfilm, volTarget, volEmulsionFilm, volEmulsionFilm2, volPlBase);
 	      nfilm++;
 	    }
            
-	 for(Int_t n=0; n<NPlates[irun]; n++) //adding 1 mm lead plates
+	 for(Int_t n=0; n<NPlates[nrun]; n++) //adding 1 mm lead plates
 	    {
               volTarget->AddNode(volLeadslab, nleadslab, new TGeoTranslation(0,0,zpoint + EmPlateWidth + PassiveSlabThickness/2 + n*AllPlateWidth));
               nleadslab++;
 	    }	
-	 zpoint = zpoint + NPlates[irun] *AllPlateWidth + EmPlateWidth;
+	 zpoint = zpoint + NPlates[nrun] *AllPlateWidth + EmPlateWidth;
 	}
 
 	else if (volPasLead != NULL && ((irun > 0) || (NBricks == 2))) { //only passive layer of lead, first is skipped
