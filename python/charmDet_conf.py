@@ -140,7 +140,10 @@ def configure(run,ship_geo):
   
  fMagField = ROOT.ShipGoliathField()
  
- fieldfile = os.environ["FAIRSHIP"]+"/field/GoliathFieldMap.root" 
+ #fieldfile = os.environ["FAIRSHIP"]+"/field/GoliathFieldMap_3600A_0A.root"  
+ fieldfile = os.environ["FAIRSHIP"]+"/field/GoliathFieldMap_2400A_1167A.root" 
+ #default field map
+ #fieldfile = os.environ["FAIRSHIP"]+"/field/GoliathFieldMap.root"
  fMagField.Init(fieldfile)
  run.SetField(fMagField)   
  

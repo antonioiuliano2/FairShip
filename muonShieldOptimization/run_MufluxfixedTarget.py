@@ -20,7 +20,7 @@ chibb = 1.6e-7
 npot  = 5E13
 nStart = 0
 
-CharmdetSetup = 1 # 1 charm cross section setup, 0 muonflux setup
+CharmdetSetup = 0 # 1 charm cross section setup, 0 muonflux setup
 charmInputFile = "root://eoslhcb.cern.ch//eos/ship/data/Charm/Cascade-parp16-MSTP82-1-MSEL4-76Mpot_1.root"
 nStart = 0
 
