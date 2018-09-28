@@ -113,7 +113,6 @@ def init():
     logger.info("use EvtGen as primary decayer")
   withEvtGen     = args.withEvtGen
   charm  = args.charm
-  CharmdetSetup = args.CharmdetSetup
   beauty = args.beauty
   if charm and beauty: 
     logger.warn("charm and beauty decays are set! Beauty gets priority")
@@ -172,7 +171,7 @@ run.SetMaterials("media.geo")
 # -----Create geometry----------------------------------------------
 import charmDet_conf as shipDet_conf
 modules = shipDet_conf.configure(run,ship_geo)
-print "MA COME: ", ship_geo.MufluxSpectrometer.muflux
+
 # -----Create PrimaryGenerator--------------------------------------
 primGen = ROOT.FairPrimaryGenerator()
 P8gen = ROOT.FixedTargetGenerator()
@@ -190,8 +189,6 @@ else:
 P8gen.SetMom(400.*u.GeV)
 P8gen.SetEnergyCut(ecut*u.GeV)
 P8gen.SetDebug(Debug)
-
-P8gen.SetHeartBeat(100000)
 if G4only: P8gen.SetG4only()
 if withEvtGen: P8gen.WithEvtGen()
 if boostDiMuon > 1:
