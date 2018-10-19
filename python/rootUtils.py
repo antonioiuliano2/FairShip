@@ -63,6 +63,7 @@ def bookProf(h,key=None,title='',nbinsx=100,xmin=0,xmax=1,ymin=None,ymax=None,op
 def writeHists(h,fname,plusCanvas=False):
   f = TFile(fname,'RECREATE')
   for akey in h:
+    if not hasattr(h[akey],'Class'): continue
     cln = h[akey].Class().GetName()
     if not cln.find('TH')<0 or not cln.find('TP')<0:   h[akey].Write()
     if plusCanvas and not cln.find('TC')<0:   h[akey].Write()
@@ -186,6 +187,17 @@ def checkFileExists(x):
      return 'tree'
     else:
      return 'ntuple'
-
+def findMaximumAndMinimum(histo):
+ amin,amax = 1E30, -130
+ nmin,nmax = 0, 0
+ for n in range(1,histo.GetNbinsX()+1):
+  c =  histo.GetBinContent(n)
+  if c>amax:
+    amax = c
+    nmax = n
+  if c<amin:
+    amin = c
+    nmin = n
+ return amin,amax,nmin,nmax
 
 

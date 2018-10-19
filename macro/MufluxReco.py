@@ -41,18 +41,18 @@ try:
            ["ecalDebugDraw","inputFile=","geoFile=","nEvents=","noStrawSmearing","noVertexing","saveDisk","realPR","withT0", "withNTaggerHits=", "withDist2Wire"])
 except getopt.GetoptError:
         # print help information and exit:
-        print ' enter --inputFile=  --geoFile= --nEvents=  --firstEvent=,' 
-        print ' noStrawSmearing: no smearing of distance to wire, default on' 
-        print ' outputfile will have same name with _rec added'   
+        print ' enter --inputFile=  --geoFile= --nEvents=  --firstEvent=,'
+        print ' noStrawSmearing: no smearing of distance to wire, default on'
+        print ' outputfile will have same name with _rec added'
         sys.exit()
 for o, a in opts:
-        if o in ("noVertexing"):
+        if o in ("--noVertexing",):
             vertexing = False
-        if o in ("noStrawSmearing"):
+        if o in ("--noStrawSmearing",):
             withNoStrawSmearing = True
-        if o in ("--withT0"):
+        if o in ("--withT0",):
             withT0 = True
-        if o in ("--withDist2Wire"):
+        if o in ("--withDist2Wire",):
             withDist2Wire = True
         if o in ("-t", "--withNTaggerHits"):
             withNTaggerHits = int(a)
@@ -62,13 +62,13 @@ for o, a in opts:
             geoFile = a
         if o in ("-n", "--nEvents="):
             nEvents = int(a)
-        if o in ("-Y"): 
+        if o in ("-Y",):
             dy = float(a)
-        if o in ("--ecalDebugDraw"):
+        if o in ("--ecalDebugDraw",):
             EcalDebugDraw = True
-        if o in ("--saveDisk"):
+        if o in ("--saveDisk",):
             saveDisk = True
-	if o in ("--realPR"):
+        if o in ("--realPR",):
             realPR = "_PR"
 
 
@@ -93,18 +93,21 @@ else:
   if saveDisk: os.system('mv '+inputFile+' '+outFile)
   else :       os.system('cp '+inputFile+' '+outFile)
 
-if not geoFile:
- tmp = inputFile.replace('ship.','geofile_full.')
- geoFile = tmp.replace('_rec','')
+# check if simulation or raw data
+f=ROOT.TFile.Open(outFile)
+if f.cbmsim.FindBranch('MCTrack'): simulation = True
+else: simulation = False
+f.Close()
 
-fgeo = ROOT.TFile.Open(geoFile)
-#fgeo = ROOT.TFile(geoFile)
-from ShipGeoConfig import ConfigRegistry
-from rootpyPickler import Unpickler
+if simulation and geoFile:
+ fgeo = ROOT.TFile.Open(geoFile)
+ from ShipGeoConfig import ConfigRegistry
+ from rootpyPickler import Unpickler
 #load Shipgeo dictionary
-upkl    = Unpickler(fgeo)
-#ShipGeo = upkl.load('ShipGeo')
-ShipGeo = ConfigRegistry.loadpy("$FAIRSHIP/geometry/charm-geometry_config.py", Yheight = dy)
+ upkl    = Unpickler(fgeo)
+ ShipGeo = upkl.load('ShipGeo')
+else:
+ ShipGeo = ConfigRegistry.loadpy("$FAIRSHIP/geometry/charm-geometry_config.py", Yheight = dy)
 
 h={}
 log={}
@@ -175,8 +178,17 @@ if withHists:
  ut.bookHist(h,'hits-T2x','x vs y hits in T2 x plane',50,-25.,25.,100,-50.,50) 
  ut.bookHist(h,'hits-T2v','x vs y hits in T2 v plane',50,-25.,25.,100,-50.,50) 
  ut.bookHist(h,'hits-T3','x vs y hits in T3',200,-100.,100.,160,-80.,80) 
- ut.bookHist(h,'hits-T4','x vs y hits in T4',200,-100.,100.,160,-80.,80)   
-    
+ ut.bookHist(h,'hits-T4','x vs y hits in T4',200,-100.,100.,160,-80.,80) 
+
+ ut.bookHist(h,'muontaggerhits', 'Muon Tagger Points', 300, -150, 150, 200, -100, 100)
+ h['muontaggerhits'].SetMarkerSize(15)  
+
+ ut.bookHist(h, 'muontagger_z', 'Z Hits', 600, 850, 2500)
+ ut.bookHist(h, 'muontaggerdist', 'Muontagger Hits', 300, -150, 150, 200, -100, 100, 600, 850, 2000)
+
+ 
+ ut.bookHist(h, 'muontagger_clusters', 'Clusters', 50, 0, 50)
+   
  ut.bookHist(h,'NTrueTracks','Number of tracks.', 3, -0.5, 2.5)
  h['NTrueTracks'].GetXaxis().SetBinLabel(1,"Stations 1&2, Y views")
  h['NTrueTracks'].GetXaxis().SetBinLabel(2,"Stations 1&2, Stereo views")
@@ -322,7 +334,7 @@ if withHists:
 import charmDet_conf
 run = ROOT.FairRunSim()
 run.SetName("TGeant4")  # Transport engine
-run.SetOutputFile("dummy")  # Output file
+run.SetOutputFile(ROOT.TMemFile('output', 'recreate'))  # Output file
 run.SetUserConfig("g4Config_basic.C") # geant4 transport not used, only needed for creating VMC field
 rtdb = run.GetRuntimeDb()
 modules = charmDet_conf.configure(run,ShipGeo)
@@ -349,12 +361,14 @@ builtin.withNTaggerHits = withNTaggerHits
 builtin.withDist2Wire = withDist2Wire
 builtin.h    = h
 builtin.log  = log
+builtin.simulation = simulation
 iEvent = 0
 builtin.iEvent  = iEvent
 
 # import reco tasks
 import MufluxDigiReco
-SHiP = MufluxDigiReco.MufluxDigiReco(outFile,fgeo)
+geoMat =  ROOT.genfit.TGeoMaterialInterface()
+SHiP = MufluxDigiReco.MufluxDigiReco(outFile)
 
 nEvents   = min(SHiP.sTree.GetEntries(),nEvents)
 # main loop
@@ -362,8 +376,8 @@ for iEvent in range(firstEvent, nEvents):
  if iEvent%1000 == 0 or debug: print 'event ',iEvent
  SHiP.iEvent = iEvent
  rc    = SHiP.sTree.GetEvent(iEvent) 
- SHiP.digitize()
- SHiP.reconstruct()
+ if simulation: SHiP.digitize() 
+ # IS BROKEN SHiP.reconstruct()
  # memory monitoring
  # mem_monitor() 
  
