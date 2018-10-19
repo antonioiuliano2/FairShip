@@ -324,7 +324,7 @@ if simEngine == "Pythia8":
   primGen.SetTarget(0., 0.) #vertex is setted in pythia8Generator
   ut.checkFileExists(inputFile)
   if ship_geo.Box.gausbeam:
-   primGen.SetBeam(0.,0., 0.5, 0.5) #more central beam, for hits in downstream detectors    
+   primGen.SetBeam(ship_geo.Box.beamx,ship_geo.Box.beamy, 0.5, 0.5) #more central beam, for hits in downstream detectors    
    primGen.SmearGausVertexXY(True) #sigma = x
   else:
    primGen.SetBeam(0.,0., ship_geo.Box.TX-1., ship_geo.Box.TY-1.) #Uniform distribution in x/y on the target (0.5 cm of margin at both sides)
