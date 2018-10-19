@@ -35,6 +35,7 @@ public:
     //Set options for detector contruction (active/passive, which design)
     void SetDetectorDesign(Int_t Design);
     void MakeNuTargetPassive(Bool_t a);
+    void SaveOnlyInBrick(Bool_t saveonlyinbrick); //only BoxPoints in the brick where the neutrino interaction happened are saved
     void MergeTopBot(Bool_t SingleEmFilm);
 
     void ConstructGeometry();
@@ -48,6 +49,7 @@ public:
     void SetNumberBricks(Double_t col, Double_t row, Double_t wall);
     void SetTTzdimension(Double_t TTZ);
     void SetNumberTargets(Int_t target);
+    Bool_t FindBrick(Double_t x, Double_t y, Double_t z, Int_t &NTarget, Int_t &NWall, Int_t &NRow, Int_t &NColumn, Int_t &NPlate); //identifying brick number from position 
 
     //Functions to get parameters relative to the magnet in which the detector is placed
     void SetMagnetConfiguration(Int_t config);//1=TP, 0=new
@@ -213,6 +215,7 @@ protected:
      Double_t fHpTDistance;    
      Double_t fHpTDZ;
      Int_t fnHpT;
+     Bool_t fonlyinbrick;
 
     Int_t InitMedium(const char* name);
     

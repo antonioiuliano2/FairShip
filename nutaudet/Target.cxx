@@ -261,6 +261,11 @@ void Target::SetHpTParam(Int_t n, Double_t dd, Double_t DZ) //need to know about
  fHpTDZ = DZ;
 }
 
+void Target::SaveOnlyInBrick(Bool_t saveonlyinbrick) //option to save only BoxPoint in the initial brick (where the neutrino interacted)
+{
+ fonlyinbrick = saveonlyinbrick; 
+}
+
 void Target::ConstructGeometry()
 {
   // cout << "Design = " << fDesign << endl;
@@ -700,7 +705,15 @@ Bool_t  Target::ProcessHits(FairVolume* vol)
 	
     if (fELoss == 0. ) { return kFALSE; }
     TParticle* p=gMC->GetStack()->GetCurrentTrack();
-    //Int_t MotherID =gMC->GetStack()->GetCurrentParentTrackNumber();
+    TParticle* n = ((ShipStack*) gMC->GetStack())->GetParticle(0); //initial neutrino
+    Int_t NTargetProva, NWallProva, NRowProva, NColumnProva, NPlateProva;
+    Bool_t isinbrick;
+
+    isinbrick = FindBrick(n->Vx(),n->Vy(),n->Vz(),NTargetProva, NWallProva, NRowProva, NColumnProva, NPlateProva);
+    if (fonlyinbrick){ //only the hits in the initial brick are saved
+    if (!isinbrick) return kFALSE; //if the neutrino interacted outside of the bricks, no targetpoints are saved
+    if ((NWall != NWallProva) || (NRow != NRowProva) || (NColumn != NColumnProva)) return kFALSE;  //removing hits in the bricks outside the interacting one
+    }
     Int_t fMotherID =p->GetFirstMother();
     Int_t pdgCode = p->GetPdgCode();
 
@@ -725,6 +738,22 @@ Bool_t  Target::ProcessHits(FairVolume* vol)
   return kTRUE;
 }
 
+Bool_t Target::FindBrick(Double_t x, Double_t y, Double_t z, Int_t &NTarget, Int_t &NWall,  Int_t &NRow, Int_t &NColumn, Int_t &NPlate)
+{
+ gGeoManager->FindNode(x,y,z);
+ if (gGeoManager->GetLevel() == 0) return kFALSE;//we have in the cave, no mother volume present
+ const char *name = gGeoManager->FindNode(x,y,z)->GetMotherVolume()->GetName(); //go there
+ if(strcmp(name, "Brick") == 0 ||strcmp(name, "CES") == 0){
+  NPlate = gGeoManager->GetMother(0)->GetNumber();
+  NColumn = gGeoManager->GetMother(2)->GetNumber();
+  NRow = gGeoManager->GetMother(3)->GetNumber();
+  NWall = gGeoManager->GetMother(4)->GetNumber();
+  NTarget = gGeoManager->GetMother(5)->GetNumber();
+  if (NTarget == 2) NWall += fNWall; //if more than one target is present, do not reset the number of walls
+  return kTRUE;
+ }
+ else return kFALSE;
+}
 
 void Target::DecodeBrickID(Int_t detID, Int_t &NWall, Int_t &NRow, Int_t &NColumn, Int_t &NPlate, Bool_t &EmCES, Bool_t &EmBrick, Bool_t &EmTop)
 {

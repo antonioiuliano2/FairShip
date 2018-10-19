@@ -206,7 +206,7 @@ def configure(run,ship_geo):
    taumuondetector.SetPillarDimensions(ship_geo.tauMudet.PillarX,ship_geo.tauMudet.PillarY, ship_geo.tauMudet.PillarZ)
    detectorList.append(taumuondetector)
    if ship_geo.nuTauTargetDesign==3: 
-    taumuondetector.SetRpcDimDifferences(ship_geo.tauMudet.deltax, ship_geo.tauMudet.deltay)
+    taumuondetector.SetVetoTaggerTransverseDimensions(ship_geo.tauMudet.TaggerX, ship_geo.tauMudet.TaggerY)
    if ship_geo.nuTauTargetDesign<3:
     taumuondetector.SetReturnYokeDimensions(ship_geo.tauMudet.XRyoke,ship_geo.tauMudet.YRyoke, ship_geo.tauMudet.ZRyoke)
     taumuondetector.SetSmallerYokeDimensions(ship_geo.tauMudet.XRyoke_s,ship_geo.tauMudet.YRyoke_s, ship_geo.tauMudet.ZRyoke_s)
@@ -238,6 +238,7 @@ def configure(run,ship_geo):
    NuTauTarget.MakeNuTargetPassive(ship_geo.NuTauTarget.nuTargetPassive)
    if hasattr(ship_geo.NuTauTarget,"SingleEmFilm"): #for backward compatibility
     NuTauTarget.MergeTopBot(ship_geo.NuTauTarget.SingleEmFilm)
+   NuTauTarget.SaveOnlyInBrick(ship_geo.NuTauTarget.SaveOnlyInBrick)
    NuTauTarget.SetDetectorDesign(ship_geo.NuTauTarget.Design)
    if ship_geo.nuTauTargetDesign!=3:
     NuTauTarget.SetCenterZ(ship_geo.NuTauTarget.zC)
@@ -398,8 +399,8 @@ def configure(run,ship_geo):
   run.SetField(fMagField)
 #
  exclusionList = []
- #exclusionList = ["Muon","Ecal","Hcal","Strawtubes","TargetTrackers","NuTauTarget","HighPrecisionTrackers",\
- #                 "Veto","Magnet","MuonShield","TargetStation","NuTauMudet","EmuMagnet", "TimeDet"]
+# exclusionList = ["Muon","Ecal","Hcal","Strawtubes",\
+#                  "Veto","Magnet","MuonShield","TargetStation", "TimeDet"]
  for x in detectorList:
    if x.GetName() in exclusionList: continue
    run.AddModule(x)

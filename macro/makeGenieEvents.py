@@ -4,8 +4,8 @@ import shipunit as u
 import shipRoot_conf
 shipRoot_conf.configure()
 # location of these files on eos: eos/ship/data/
-# 
-xsec = "xsec_splines-iron-nu_e-nu_mu.xml"
+xsec = "Nu_splines.xml"
+#xsec = "xsec_splines-iron-nu_e-nu_mu.xml"
 hfile = "pythia8_Geant4-withCharm_onlyNeutrinos.root"
 
 pdg  = ROOT.TDatabasePDG()

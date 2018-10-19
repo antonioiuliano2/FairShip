@@ -591,24 +591,28 @@ with ConfigRegistry.register_config("basic") as c:
         c.tauMudet.B = 1.5 * u.tesla
     if nuTauTargetDesign==3:
         scaleMudet=1.
-	c.tauMudet.NFe = 22
-    	c.tauMudet.NRpc= 23
-        c.tauMudet.Xtot = scaleMudet*2.170627*u.m #same dimensions as Thomas' veto box
-        c.tauMudet.Ytot = scaleMudet*4.9124968*u.m
-        c.tauMudet.deltax = 10* u.cm
-        c.tauMudet.deltay = 20* u.cm
+	c.tauMudet.NFe = 15
+    	c.tauMudet.NRpc= c.tauMudet.NFe + 1
+        #c.tauMudet.Xtot = scaleMudet*2.170627*u.m #same dimensions as Thomas' veto box
+        #c.tauMudet.Ytot = scaleMudet*4.9124968*u.m
+        #c.tauMudet.deltax = 10* u.cm
+        #c.tauMudet.deltay = 20* u.cm
+        c.tauMudet.Xtot = scaleMudet*2.4*u.m
+        c.tauMudet.Ytot = scaleMudet*3.8*u.m 
+        c.tauMudet.TaggerX = scaleMudet*2.170627*u.m
+        c.tauMudet.TaggerY = scaleMudet*4.9124968*u.m
         c.tauMudet.XFe = c.tauMudet.Xtot
         c.tauMudet.YFe = c.tauMudet.Ytot
-        c.tauMudet.ZFe = 5.*u.cm
+        c.tauMudet.ZFe = 10.*u.cm
         c.tauMudet.XRpc = c.tauMudet.Xtot
         c.tauMudet.YRpc = c.tauMudet.YFe
-        c.tauMudet.ZRpc = 2.*u.cm
+        c.tauMudet.ZRpc = 3.*u.cm
         c.tauMudet.Ztot = c.tauMudet.NRpc*c.tauMudet.ZRpc+c.tauMudet.NFe*c.tauMudet.ZFe
         #c.tauMudet.zMudetC = -c.decayVolume.length/2. - c.tauMudet.Ztot/2
         c.tauMudet.zMudetC = c.Chamber1.z -c.chambers.Tub1length-10*u.cm - c.tauMudet.Ztot/2
         c.tauMudet.PillarX = 40*u.cm
         c.tauMudet.PillarZ = 50*u.cm
-        c.tauMudet.PillarY = 10*u.m - c.cave.floorHeightMuonShield - c.tauMudet.Ytot/2 + c.tauMudet.deltay/2  - 0.1*u.mm
+        c.tauMudet.PillarY = 10*u.m - c.cave.floorHeightMuonShield - c.tauMudet.Ytot/2 - 0.1*u.mm
     c.tauMudet.XGas =  c.tauMudet.Xtot
     c.tauMudet.YGas =  c.tauMudet.YRpc
     c.tauMudet.ZGas = 1*u.mm
@@ -662,7 +666,9 @@ with ConfigRegistry.register_config("basic") as c:
 
     c.NuTauTarget.Ydist = 0.2*u.cm
     
-    c.NuTauTarget.SingleEmFilm = True
+    c.NuTauTarget.SingleEmFilm = False
+    c.NuTauTarget.SaveOnlyInBrick = False #save only BoxPoints in the brick where neutrino interacted, memory saver
+
     c.NuTauTarget.EmTh = 0.0070 * u.cm
     c.NuTauTarget.EmX = 12.5 * u.cm
     c.NuTauTarget.EmY = 9.9 * u.cm
@@ -716,7 +722,8 @@ with ConfigRegistry.register_config("basic") as c:
             c.NuTauTarget.zdim = c.NuTauTarget.wall* c.NuTauTarget.CellW + (c.NuTauTarget.wall+1)*c.NuTauTT.TTZ
         if nuTauTargetDesign ==3:
             c.NuTauTarget.zdim = c.NuTauTarget.wall* c.NuTauTarget.CellW + (c.NuTauTarget.wall+1)*c.NuTauTT.TTZ
-            c.NuTauTarget.zC = c.EmuMagnet.zC - c.NuTauTarget.zdim/2.                    
+            c.NuTauTarget.zC = c.EmuMagnet.zC - c.NuTauTarget.zdim/2.   
+            #c.NuTauTarget.zC = c.EmuMagnet.zC - c.EmuMagnet.Z/2 + c.EmuMagnet.Height1/2 + c.NuTauTarget.zdim/2                     
 
     if nuTauTargetDesign == 2:  #NEW with NO magnet
         c.NuTauTarget.RohG = 0 * u.cm

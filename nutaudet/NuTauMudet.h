@@ -25,7 +25,7 @@ class NuTauMudet:public FairDetector
     void SetDesign(Int_t Design);
     void SetTotDimensions(Double_t X, Double_t Y, Double_t Z);
     void SetFeDimensions(Double_t X, Double_t Y, Double_t Z);
-    void SetRpcDimDifferences(Double_t deltax, Double_t deltay);
+    void SetVetoTaggerTransverseDimensions(Double_t TaggerX, Double_t TaggerY);
     void SetRpcDimensions(Double_t X, Double_t Y, Double_t Z);
     void SetRpcStripDimensions(Double_t X, Double_t Y, Double_t Z);
     void SetRpcGasDimensions(Double_t X, Double_t Y, Double_t Z);
@@ -141,7 +141,7 @@ protected:
     Double_t fCoilW;
     Int_t fNCoil;
     
-    Double_t fdeltax, fdeltay; //different RPC transverse sizes
+    Double_t fTagX, fTagY; //different RPC transverse sizes
     //Dimension for detailed RPC simulation:
     Double_t fXStrip;
     Double_t fYStrip;
