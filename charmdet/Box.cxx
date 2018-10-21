@@ -95,6 +95,8 @@ Box::~Box()
 void Box::Initialize()
 {
     FairDetector::Initialize();
+    fbeamx = 0.; //default beam center position in xy plane is origin
+    fbeamy = 0.;
 }
 
 void Box::SetGapGeometry(Double_t distancePassive2ECC){ 
@@ -167,6 +169,10 @@ void Box::SetRunNumber(Int_t RunNumber){
   nrun = RunNumber;		
 }
 
+void Box::GetBeamPosition(Double_t beamx, Double_t beamy){
+  fbeamx = beamx;
+  fbeamy = beamy;
+}
 
 // -----   Private method InitMedium
 Int_t Box::InitMedium(const char* name)
@@ -277,7 +283,7 @@ void Box::ConstructGeometry()
       volTarget->SetLineColor(kCyan);
       volTarget->SetTransparency(1);
       
-      top->AddNode(volTarget,1,new TGeoTranslation(0,0,zBoxPosition-TargetZ/2)); //Box ends at origin           
+      top->AddNode(volTarget,1,new TGeoTranslation(fbeamx,fbeamy,zBoxPosition-TargetZ/2)); //Box ends at origin           
  
       TGeoVolume *volPasLead = NULL;
       if (nrun > 1){
@@ -392,7 +398,7 @@ void Box::ConstructGeometry()
       TGeoVolume *volTarget = new TGeoVolume("volTarget", Target, air);
       volTarget->SetTransparency(1);
 
-      top->AddNode(volTarget,1,new TGeoTranslation(0,0,zBoxPosition-TargetZ/2));
+      top->AddNode(volTarget,1,new TGeoTranslation(fbeamx, fbeamy,zBoxPosition-TargetZ/2));
       TGeoBBox *Cooling = new TGeoBBox("Cooling", CoolingX/2, CoolingY/2, CoolingZ/4); //water slips to cool the target (i split in half, to put an other emulsion in the middle
       TGeoVolume *volCooling = new TGeoVolume("volCooling", Cooling, PBase);
       volCooling->SetLineColor(kCyan);      

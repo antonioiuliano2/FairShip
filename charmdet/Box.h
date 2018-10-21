@@ -44,7 +44,8 @@ public:
     void SetCoatingParam(Double_t CoatX, Double_t CoatY, Double_t CoatZ);
 
     void SetGapGeometry(Double_t distancePassive2ECC); //distance between passive and ECC
-    
+    void GetBeamPosition(Double_t beamx, Double_t beamy);    
+
     /**      Initialization of the detector is done here    */
     virtual void Initialize();
     
@@ -109,6 +110,7 @@ protected:
     Bool_t fJulytarget; //Lead ECC vs SHiP ECC
     //Number of the simulated run
     Int_t nrun;
+    Double_t fbeamx, fbeamy; //center of beam position
     
     //attributes for the brick
     Double_t EmulsionThickness;
