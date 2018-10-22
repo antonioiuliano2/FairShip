@@ -105,7 +105,7 @@ with ConfigRegistry.register_config("basic") as c:
     c.Box.beamy = -1.0*u.cm
 
     c.Box.Julytarget = True
-    c.Box.GapPostTargetTh = 1.2 * u.cm  
+    c.Box.GapPostTargetTh = 7.7 * u.mm  
     c.Box.CharmTargetNumber =  cTarget #target configuration for charm (changed name to avoid confusion with the run number during exposure)
 
     # target absorber muon shield setup, decayVolume.length = nominal EOI length, only kept to define z=0
