@@ -105,7 +105,7 @@ with ConfigRegistry.register_config("basic") as c:
     c.Box.beamy = -1.0*u.cm
 
     c.Box.Julytarget = True
-    c.Box.GapPostTargetTh = 0.73 * u.cm     
+    c.Box.GapPostTargetTh = 1.2 * u.cm  
     c.Box.CharmTargetNumber =  cTarget #target configuration for charm (changed name to avoid confusion with the run number during exposure)
 
     # target absorber muon shield setup, decayVolume.length = nominal EOI length, only kept to define z=0
@@ -264,7 +264,7 @@ with ConfigRegistry.register_config("basic") as c:
    
     
     #position of module centres
-    c.Spectrometer.zSi0 = c.Spectrometer.PairSiDistance/2. + c.Spectrometer.DimZSi/2. + c.Box.GapPostTargetTh
+    c.Spectrometer.zSi0 = c.Spectrometer.PairSiDistance/2. + c.Spectrometer.DimZSi/2. + 0.73 *u.cm  
     c.Spectrometer.zSi1 = c.Spectrometer.zSi0 + 2.70 *u.cm
     c.Spectrometer.zSi2 = c.Spectrometer.zSi1 + 2.54 *u.cm
     c.Spectrometer.zSi3 = c.Spectrometer.zSi2 + 2.70 *u.cm
@@ -298,7 +298,7 @@ with ConfigRegistry.register_config("basic") as c:
     
     PixeltoGoliath = 30.45 *u.cm #25.45 + 5cm different goliath dz
     c.Spectrometer.zBox = 350.75 - c.Spectrometer.TS/2 - PixeltoGoliath - c.Spectrometer.DimZpixelbox/2.
-    c.Box.zBox = c.Spectrometer.zBox - c.Spectrometer.DimZpixelbox/2. 
+    c.Box.zBox = c.Spectrometer.zBox - c.Spectrometer.DimZpixelbox/2. - c.Box.GapPostTargetTh
 
     #position of SciFis 
     distGoliathSciFi1 = 10*u.cm
