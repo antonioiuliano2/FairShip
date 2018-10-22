@@ -13,6 +13,9 @@ with ConfigRegistry.register_config("basic") as c:
     if "Setup" not in globals(): #muon flux or charm xsec measurement
       Setup = 0    
 
+    if "cTarget" not in globals():
+      cTarget = 1
+
     if Setup == 0: 
      c.MufluxSpectrometer.muflux = True
     else: 
@@ -103,7 +106,7 @@ with ConfigRegistry.register_config("basic") as c:
 
     c.Box.Julytarget = True
     c.Box.GapPostTargetTh = 0.73 * u.cm     
-    c.Box.RunNumber =  3 #run configuration for charm
+    c.Box.CharmTargetNumber =  cTarget #target configuration for charm (changed name to avoid confusion with the run number during exposure)
 
     # target absorber muon shield setup, decayVolume.length = nominal EOI length, only kept to define z=0
     c.decayVolume            =  AttrDict(z=0*u.cm)

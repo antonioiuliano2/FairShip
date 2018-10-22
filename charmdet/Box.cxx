@@ -165,8 +165,8 @@ void Box::SetTargetDesign(Bool_t Julytarget){
   fJulytarget = Julytarget;
 }
 
-void Box::SetRunNumber(Int_t RunNumber){		
-  nrun = RunNumber;		
+void Box::SetTargetNumber(Int_t CharmTargetNumber){		
+  nrun = CharmTargetNumber;		
 }
 
 void Box::GetBeamPosition(Double_t beamx, Double_t beamy){
@@ -306,18 +306,18 @@ void Box::ConstructGeometry()
          
          if (nrun > 2) zpoint = zpoint + distPas2ECC;	  
 	 
-         for(Int_t n=0; n<NPlates[nrun]+1; n++) //adding emulsions
+         for(Int_t n=0; n<NPlates[nrun-1]+1; n++) //adding emulsions
 	    {
 	      AddEmulsionFilm(zpoint + n*AllPlateWidth, nfilm, volTarget, volEmulsionFilm, volEmulsionFilm2, volPlBase);
 	      nfilm++;
 	    }
            
-	 for(Int_t n=0; n<NPlates[nrun]; n++) //adding 1 mm lead plates
+	 for(Int_t n=0; n<NPlates[nrun-1]; n++) //adding 1 mm lead plates
 	    {
               volTarget->AddNode(volLeadslab, nleadslab, new TGeoTranslation(0,0,zpoint + EmPlateWidth + PassiveSlabThickness/2 + n*AllPlateWidth));
               nleadslab++;
 	    }	
-	 zpoint = zpoint + NPlates[nrun] *AllPlateWidth + EmPlateWidth;
+	 zpoint = zpoint + NPlates[nrun-1] *AllPlateWidth + EmPlateWidth;
 	}
 
 	else if (volPasLead != NULL && ((irun > 0) || (NBricks == 2))) { //only passive layer of lead, first is skipped
