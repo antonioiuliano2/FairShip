@@ -320,7 +320,6 @@ void Box::ConstructGeometry()
 	 zpoint = zpoint + NPlates[nrun-1] *AllPlateWidth + EmPlateWidth;
 	}
 
-	//else if (volPasLead != NULL && ((irun > 0) || (NBricks == 2))) { //only passive layer of lead, first is skipped
         else if (volPasLead != NULL) { //only passive layer of lead
 	 volTarget->AddNode(volPasLead,nlead,new TGeoTranslation(0,0,zpoint + zPasLead/2));
 	 zpoint = zpoint + zPasLead;
