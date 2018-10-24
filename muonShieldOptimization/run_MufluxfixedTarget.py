@@ -182,7 +182,7 @@ else:
  P8gen.SetCharmTarget() #looks for charm target instead of SHiP standard target
  P8gen.SetTarget("volTarget_1",0.,0.) # will distribute PV inside target, beam offset x=y=0.
  if ship_geo.Box.gausbeam:
-  primGen.SetBeam(0.,0., 0.5, 0.5) #more central beam, for hits in downstream detectors    
+  primGen.SetBeam(ship_geo.Box.beamx,ship_geo.Box.beamy, 0.5, 0.5) #more central beam, for hits in downstream detectors    
   primGen.SmearGausVertexXY(True) #sigma = x
  else:
   primGen.SetBeam(0.,0., ship_geo.Box.TX-1., ship_geo.Box.TY-1.) #Uniform distribution in x/y on the target (0.5 cm of margin at both sides)
