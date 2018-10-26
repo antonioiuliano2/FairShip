@@ -250,8 +250,6 @@ with ConfigRegistry.register_config("basic") as c:
     #position of module centres units are cm. Geometry is given with reference to the centre of all modules, precision is given to the microm range
     #module position naming: "axis"Si"Telescope number"
     
-		#Old incorrect values to be updated with measured detector values
-    
     c.Spectrometer.zSi0 = 1.05
     
     c.Spectrometer.zSi2 = 6.29
