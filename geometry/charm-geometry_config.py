@@ -1,4 +1,4 @@
-emimport shipunit as u
+import shipunit as u
 from ShipGeoConfig import AttrDict, ConfigRegistry
 # the following params should be passed through 'ConfigRegistry.loadpy' method
 # none for the moment
