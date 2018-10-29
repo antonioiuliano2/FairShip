@@ -14,6 +14,7 @@ with ConfigRegistry.register_config("basic") as c:
       Setup = 0    
 
     if Setup == 0: 
+
      c.MufluxSpectrometer.muflux = True
     else: 
      c.MufluxSpectrometer.muflux = False
@@ -247,89 +248,86 @@ with ConfigRegistry.register_config("basic") as c:
     c.Spectrometer.SY = c.Spectrometer.DY    
    
     
-    #position of module centres units are cm. Geometry is given with reference to the centre of all modules, precision is given to the microm range
+    #position of module centres units are cm. Geometry is given with reference to the centre of all modules for the xy plane and the front of the pixel box for the z axis, precision is given to the microm range
     #module position naming: "axis"Si"Telescope number"
     
-    c.Spectrometer.zSi0 = 1.05
-    
-    c.Spectrometer.zSi2 = 6.29
-    c.Spectrometer.zSi4 = 11.53
-    
 		#measured values
-    c.Spectrometer.zSi0 = 0 #by definition
-    c.Spectrometer.xSi0 = -0.8685
-    c.Spectrometer.ySi0 = -0.00014
-    c.Spectrometer.zSi1 = 0.640
-    c.Spectrometer.ySi1 = -0.7692
-    c.Spectrometer.xSi1 = -0.1892
-    c.Spectrometer.zSi2 = 2.0861 
-	c.Spectrometer.ySi2 = -0.1892
-	c.Spectrometer.xSi2 = -7.692
-    c.Spectrometer.zSi3 = 3.1182078611153476
-    c.Spectrometer.ySi3 = 0.7465
-    c.Spectrometer.xSi3 = 0.06187621015609202
-    c.Spectrometer.zSi4 = 4.7216
-	c.Spectrometer.ySi4 = -0.1386
-	c.Spectrometer.xSi4 = -0.8978
-    c.Spectrometer.zSi5 = 5.754972097923141
-    c.Spectrometer.ySi5 = 0.7260
-    c.Spectrometer.xSi5 = -0.519
-    c.Spectrometer.zSi6 = 7.5513
-    c.Spectrometer.ySi6 = -0.8577
-    c.Spectrometer.xSi6 = -0.00087
-    c.Spectrometer.zSi7 = 8.518546746156293
-    c.Spectrometer.xSi7 = 0.8291
-    c.Spectrometer.ySi7 = 0.0265
-    c.Spectrometer.zSi8 = 10.2331
+    c.Spectrometer.zSi0 = 0.75 #by definition
+    c.Spectrometer.xSi0 = 0.001504
+    c.Spectrometer.ySi0 = -0.001325
+    c.Spectrometer.zSi1 = 1.39
+    c.Spectrometer.ySi1 = 0.000999
+    c.Spectrometer.xSi1 = 0.000724
+    c.Spectrometer.zSi2 = 3.157005 
+	c.Spectrometer.ySi2 = -0.209966
+	c.Spectrometer.xSi2 = 0.090267
+    c.Spectrometer.zSi3 = 3.825935
+    c.Spectrometer.ySi3 = 0.093751
+    c.Spectrometer.xSi3 = 0.062744
+    c.Spectrometer.zSi4 = 5.926781
+	c.Spectrometer.ySi4 = 0.061839
+	c.Spectrometer.xSi4 = 0.060395
+    c.Spectrometer.zSi5 = 6.529568
+    c.Spectrometer.ySi5 = 0.030714
+    c.Spectrometer.xSi5 = -0.004239
+    c.Spectrometer.zSi6 = 8.514842
+    c.Spectrometer.ySi6 = -0.244948
+    c.Spectrometer.xSi6 = 0.1184893
+    c.Spectrometer.zSi7 = 9.267276
+    c.Spectrometer.xSi7 = 0.026495927
+    c.Spectrometer.ySi7 = 0.010923
+    c.Spectrometer.zSi8 = 11.213014
     c.Spectrometer.ySi8 = -0.1486
     c.Spectrometer.xSi8 = -0.9757
-    c.Spectrometer.zSi9 = 11.210555594007672
-    c.Spectrometer.ySi9 = 10.144
-    c.Spectrometer.xSi9 = -0.1051
-    c.Spectrometer.zSi10 = 13.220 
-    c.Spectrometer.ySi10 = -0.8481
-    c.Spectrometer.xSi10 = -0.0366
-    c.Spectrometer.zSi11 = 13.860
-    c.Spectrometer.ySi11 = -0.8394
-    c.Spectrometer.xSi11 = 0.000044
+    c.Spectrometer.zSi9 = 11.958816
+    c.Spectrometer.ySi9 = 0.173832
+    c.Spectrometer.xSi9 = 0.105792
+    c.Spectrometer.zSi10 = 13.915999
+    c.Spectrometer.ySi10 = -0.164596
+    c.Spectrometer.xSi10 = 0.122019
+    c.Spectrometer.zSi11 = 14.61
+    c.Spectrometer.ySi11 = 0.000618
+    c.Spectrometer.xSi11 = 0.000247
     
     #angles of module centers given in radiants, naming: "rotationaxis"Ang"module number"
-    c.Spectrometer.xAng0 = 3.141592653589793238
-    c.Spectrometer.yAng0 = 0.059
-    c.Spectrometer.zAng0 = 1.574796326794896619
-    c.Spectrometer.xAng1 = -0.13350073327878798
-    c.Spectrometer.yAng1 = -0.0636542643274851
-    c.Spectrometer.zAng1 = 1.5772679568516816
-    c.Spectrometer.xAng2 = 3.166592653589793238
-    c.Spectrometer.yAng2 = -0.26
-    c.Spectrometer.zAng2 = 0.001
-    c.Spectrometer.xAng3 = 0.08776803705602025
-    c.Spectrometer.yAng3 = -0.14795333707423286
-    c.Spectrometer.zAng3 = 3.133361704479321
-    c.Spectrometer.xAng4 = 3.311592653589793238
-    c.Spectrometer.yAng4 = 0.06
-    c.Spectrometer.zAng4 = 1.5807963267948966
-    c.Spectrometer.xAng5 = -0.12274984814157129
-    c.Spectrometer.yAng5 = -0.03625718041285778
-    c.Spectrometer.zAng5 = 1.5751906504875888
-    c.Spectrometer.xAng6 = 3.261592653589793238
-    c.Spectrometer.yAng6 = -0.18
-    c.Spectrometer.zAng6 = -0.02
-    c.Spectrometer.xAng7 = -0.05636572042119413
-    c.Spectrometer.yAng7 = 0.08248411450194272
-    c.Spectrometer.zAng7 = 3.136564036408832
-    c.Spectrometer.xAng8 = 2.9715926535897932
-    c.Spectrometer.yAng8 = 0.0
-    c.Spectrometer.zAng8 = 1.5727963267948966
-    c.Spectrometer.xAng9 = -0.02912799924384356
-    c.Spectrometer.yAng9 = -0.0961864374484577
-    c.Spectrometer.zAng9 = 1.5710018847063167
-    c.Spectrometer.xAng10 = 3.1815926535897932
-    c.Spectrometer.yAng10 = -0.08
-    c.Spectrometer.zAng10 = -0.003
-    c.Spectrometer.xAng11 = -0.0985278587920459
-    c.Spectrometer.yAng11 = -0.005788835925807501
-    c.Spectrometer.zAng11 = -3.1403884952218846
+    #angles are taken as rotated by -pi over the y axis for every second group of two angles starting from 0 & 1. Angles rotated by pi over the x axis for every second group of two angles starting from 2 & 3 , see Niko's/Vadim's plots and especially telescope configuration for more details
+
+    c.Spectrometer.xAng0 = 3.19421
+    c.Spectrometer.yAng0 = -3.29429 #so here shifted by pi in the negative direction 
+    c.Spectrometer.zAng0 = 1.57137
+    c.Spectrometer.xAng1 = -0.16987
+    c.Spectrometer.yAng1 = -2.86659 #same here
+    c.Spectrometer.zAng1 = 1.53562
+    c.Spectrometer.xAng2 = 3.40874 #here shifted by pi in the positive direction
+    c.Spectrometer.yAng2 = 2.95504
+    c.Spectrometer.zAng2 = 0.01527
+    c.Spectrometer.xAng3 = 3.26622
+    c.Spectrometer.yAng3 = -0.14922
+    c.Spectrometer.zAng3 = 3.13153
+    c.Spectrometer.xAng4 = 3.18866
+    c.Spectrometer.yAng4 = 3.30733
+    c.Spectrometer.zAng4 = 1.56981
+    c.Spectrometer.xAng5 = -0.09669
+    c.Spectrometer.yAng5 = -2.84530
+    c.Spectrometer.zAng5 = 1.54855
+    c.Spectrometer.xAng6 = 3.42704
+    c.Spectrometer.yAng6 = 3.06428
+    c.Spectrometer.zAng6 = 0.00329
+    c.Spectrometer.xAng7 = -3.23773
+    c.Spectrometer.yAng7 = 0.09254
+    c.Spectrometer.zAng7 = 3.13569
+    c.Spectrometer.xAng8 = 3.19316
+    c.Spectrometer.yAng8 = -3.04905
+    c.Spectrometer.zAng8 = 1.56681
+    c.Spectrometer.xAng9 = -0.05034
+    c.Spectrometer.yAng9 = -3.26475
+    c.Spectrometer.zAng9 = 1.57408
+    c.Spectrometer.xAng10 = 3.42726
+    c.Spectrometer.yAng10 = 3.13797
+    c.Spectrometer.zAng10 = -0.0066
+    c.Spectrometer.xAng11 = 3.01638
+    c.Spectrometer.yAng11 = 0.01555
+    c.Spectrometer.zAng11 = -3.14025
     
     """
     c.Spectrometer.zSi0 = 1.05 
