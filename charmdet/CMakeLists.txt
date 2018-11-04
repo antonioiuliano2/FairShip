@@ -6,8 +6,8 @@ set(INCLUDE_DIRECTORIES
 ${BASE_INCLUDE_DIRECTORIES}
 ${CMAKE_SOURCE_DIR}/shipdata
 ${CMAKE_SOURCE_DIR}/charmdet
+${CMAKE_SOURCE_DIR}/genfit/core/include
 ${ROOT_INCLUDE_DIR} 
-
 )
 
 include_directories( ${INCLUDE_DIRECTORIES})
@@ -16,6 +16,7 @@ include_directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
 set(LINK_DIRECTORIES
 ${ROOT_LIBRARY_DIR}
 ${FAIRROOT_LIBRARY_DIR}
+${GENFIT_LIBRARY_DIR}
 
 )
  
@@ -38,11 +39,12 @@ Scintillator.cxx
 ScintillatorPoint.cxx
 ScintillatorHit.cxx
 SciFiHit.cxx;
+ReProcessAbsorber.cxx
 )
 
 Set(HEADERS )
 Set(LINKDEF BoxLinkDef.h)
 Set(LIBRARY_NAME charmdet)
-Set(DEPENDENCIES Base ShipData GeoBase ParBase Geom Core)
+Set(DEPENDENCIES Base ShipData GeoBase ParBase Geom Core genfit)
 
 GENERATE_LIBRARY()
