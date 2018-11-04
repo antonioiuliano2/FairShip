@@ -262,13 +262,116 @@ with ConfigRegistry.register_config("basic") as c:
     c.Spectrometer.SY = c.Spectrometer.DY    
    
     
-    #position of module centres
-    c.Spectrometer.zSi0 = c.Spectrometer.PairSiDistance/2. + c.Spectrometer.DimZSi/2. + 0.73 *u.cm  
-    c.Spectrometer.zSi1 = c.Spectrometer.zSi0 + 2.70 *u.cm
-    c.Spectrometer.zSi2 = c.Spectrometer.zSi1 + 2.54 *u.cm
-    c.Spectrometer.zSi3 = c.Spectrometer.zSi2 + 2.70 *u.cm
-    c.Spectrometer.zSi4 = c.Spectrometer.zSi3 + 2.54 *u.cm
-    c.Spectrometer.zSi5 = c.Spectrometer.zSi4 + 2.70 *u.cm    
+  #Pixel Dimensions and numbers
+    c.Spectrometer.PixelsizeX=0.0025
+    c.Spectrometer.PixelsizeY=0.0005
+    c.Spectrometer.PixelsizeZ=0.0025
+    c.Spectrometer.PixelNumberX=160
+    c.Spectrometer.PixelNumberY=336
+    
+    #position of module centres units are cm. Geometry is given with reference to the centre of all modules for the xy plane and the front of the pixel box for the z axis, precision is given to the microm range
+    #module position naming: "axis"Si"Telescope number"
+    
+		#measured values
+    c.Spectrometer.zSi0 = 0.75 #by definition
+    c.Spectrometer.xSi0 = 0.001504
+    c.Spectrometer.ySi0 = -0.001325
+    c.Spectrometer.zSi1 = 1.39
+    c.Spectrometer.ySi1 = 0.000999
+    c.Spectrometer.xSi1 = 0.000724
+    c.Spectrometer.zSi2 = 3.157005 
+    c.Spectrometer.ySi2 = -0.209966
+    c.Spectrometer.xSi2 = 0.090267
+    c.Spectrometer.zSi3 = 3.825935
+    c.Spectrometer.ySi3 = 0.093751
+    c.Spectrometer.xSi3 = 0.062744
+    c.Spectrometer.zSi4 = 5.926781
+    c.Spectrometer.ySi4 = 0.061839
+    c.Spectrometer.xSi4 = 0.060395
+    c.Spectrometer.zSi5 = 6.529568
+    c.Spectrometer.ySi5 = 0.030714
+    c.Spectrometer.xSi5 = -0.004239
+    c.Spectrometer.zSi6 = 8.514842
+    c.Spectrometer.ySi6 = -0.244948
+    c.Spectrometer.xSi6 = 0.1184893
+    c.Spectrometer.zSi7 = 9.267276
+    c.Spectrometer.xSi7 = 0.026495927
+    c.Spectrometer.ySi7 = 0.010923
+    c.Spectrometer.zSi8 = 11.213014
+    c.Spectrometer.ySi8 = -0.1486
+    c.Spectrometer.xSi8 = -0.9757
+    c.Spectrometer.zSi9 = 11.958816
+    c.Spectrometer.ySi9 = 0.173832
+    c.Spectrometer.xSi9 = 0.105792
+    c.Spectrometer.zSi10 = 13.915999
+    c.Spectrometer.ySi10 = -0.164596
+    c.Spectrometer.xSi10 = 0.122019
+    c.Spectrometer.zSi11 = 14.61
+    c.Spectrometer.ySi11 = 0.000618
+    c.Spectrometer.xSi11 = 0.000247
+    
+    #angles of module centers given in radiants, naming: "rotationaxis"Ang"module number"
+    #angles are taken as rotated by -pi over the y axis for every second group of two angles starting from 0 & 1. Angles rotated by pi over the x axis for every second group of two angles starting from 2 & 3 , see Niko's/Vadim's plots and especially telescope configuration for more details
+    c.Spectrometer.xAng0 = 3.19421
+    c.Spectrometer.yAng0 = -3.29429 #so here shifted by pi in the negative direction 
+    c.Spectrometer.zAng0 = 1.57137
+    c.Spectrometer.xAng1 = -0.16987
+    c.Spectrometer.yAng1 = -2.86659 #same here
+    c.Spectrometer.zAng1 = 1.53562
+    c.Spectrometer.xAng2 = 3.40874 #here shifted by pi in the positive direction
+    c.Spectrometer.yAng2 = 2.95504
+    c.Spectrometer.zAng2 = 0.01527
+    c.Spectrometer.xAng3 = 3.26622
+    c.Spectrometer.yAng3 = -0.14922
+    c.Spectrometer.zAng3 = 3.13153
+    c.Spectrometer.xAng4 = 3.18866
+    c.Spectrometer.yAng4 = 3.30733
+    c.Spectrometer.zAng4 = 1.56981
+    c.Spectrometer.xAng5 = -0.09669
+    c.Spectrometer.yAng5 = -2.84530
+    c.Spectrometer.zAng5 = 1.54855
+    c.Spectrometer.xAng6 = 3.42704
+    c.Spectrometer.yAng6 = 3.06428
+    c.Spectrometer.zAng6 = 0.00329
+    c.Spectrometer.xAng7 = -3.23773
+    c.Spectrometer.yAng7 = 0.09254
+    c.Spectrometer.zAng7 = 3.13569
+    c.Spectrometer.xAng8 = 3.19316
+    c.Spectrometer.yAng8 = -3.04905
+    c.Spectrometer.zAng8 = 1.56681
+    c.Spectrometer.xAng9 = -0.05034
+    c.Spectrometer.yAng9 = -3.26475
+    c.Spectrometer.zAng9 = 1.57408
+    c.Spectrometer.xAng10 = 3.42726
+    c.Spectrometer.yAng10 = 3.13797
+    c.Spectrometer.zAng10 = -0.0066
+    c.Spectrometer.xAng11 = 3.01638
+    c.Spectrometer.yAng11 = 0.01555
+    c.Spectrometer.zAng11 = -3.14025
+    
+    """
+    c.Spectrometer.zSi0 = 1.05 
+    c.Spectrometer.zSi1 = 3.75 
+    c.Spectrometer.zSi2 = 6.29 
+    c.Spectrometer.zSi3 = 8.99 
+    c.Spectrometer.zSi4 = 11.53 
+    c.Spectrometer.zSi5 = 14.23 
+    
+    
+    c.Spectrometer.PairSiDistance/2. + c.Spectrometer.DimZSi/2. + c.Box.GapPostTargetTh 
+    c.Spectrometer.zSi0 + 2.70 *u.cm 
+    c.Spectrometer.zSi1 + 2.54 *u.cm
+    c.Spectrometer.zSi2 + 2.70 *u.cm
+    c.Spectrometer.zSi3 + 2.54 *u.cm 
+    c.Spectrometer.zSi4 + 2.70 *u.cm
+    print(c.Spectrometer.zSi0)
+    print(c.Spectrometer.zSi1)
+    print(c.Spectrometer.zSi2)
+    print(c.Spectrometer.zSi3)
+    print(c.Spectrometer.zSi4)
+    print(c.Spectrometer.zSi5)
+	"""
+	
 
     c.Spectrometer.DSciFi1X = 40 * u.cm;
     c.Spectrometer.DSciFi1Y = 40 * u.cm;
@@ -309,25 +412,21 @@ with ConfigRegistry.register_config("basic") as c:
     c.MuonTagger.PTh1 = 40 * u.cm #last 3 slabs' thickness
     c.MuonTagger.STh = 15.0 * u.cm
     
-    #from survey relative to center of RPC system
-    c.MuonTagger.RPC1z = -86.60245 * u.cm
-    c.MuonTagger.RPC2z = 8.35755 * u.cm  
-    c.MuonTagger.RPC3z = 63.75255 * u.cm
-    c.MuonTagger.RPC4z = 118.86755 * u.cm   
-    c.MuonTagger.RPC5z = 173.67755 * u.cm 
-       
+    #from survey relative to center of RPC system (18.569225 + 0.00326706 ad hoc, iron blocks were measured by hand in survey coords)
+    #from survey to FairShip: subtract 8.89608294 m
+          
     #from survey 
-    #c.MuonTagger.RPC1z = 878.8251 * u.cm
-    #c.MuonTagger.RPC2z = 973.7851 * u.cm  
-    #c.MuonTagger.RPC3z = 1029.1801 * u.cm
-    #c.MuonTagger.RPC4z = 1084.2951 * u.cm   
-    #c.MuonTagger.RPC5z = 1139.1051 * u.cm 
-           
+    c.MuonTagger.RPC1z = -88.160794 * u.cm
+    c.MuonTagger.RPC2z = 6.799206 * u.cm  
+    c.MuonTagger.RPC3z = 62.194206 * u.cm
+    c.MuonTagger.RPC4z = 117.309206 * u.cm   
+    c.MuonTagger.RPC5z = 172.119206 * u.cm  
+             
     c.MuonTagger.RPCthickness = 8. * u.cm
     c.MuonTagger.VStripx =  0.8625 * u.cm
     c.MuonTagger.VStripx_L =  0.9625 * u.cm    
     c.MuonTagger.VStripx_R =  0.86 * u.cm 
-    c.MuonTagger.HStripy =  0.8625 * u.cm   
+    c.MuonTagger.HStripy =  0.8625 * u.cm 
     c.MuonTagger.HStripy_ext =  0.3 * u.cm   
     c.MuonTagger.Stripfoamz =  0.6 * u.cm       
     c.MuonTagger.Stripz =  0.003 * u.cm # same as ground plane thickness
@@ -345,14 +444,16 @@ with ConfigRegistry.register_config("basic") as c:
     #c.MuonTagger.BX = 195.5 * u.cm
     #c.MuonTagger.BY = 125. * u.cm
     #c.MuonTagger.BZ = c.MuonTagger.PTh * 2 + c.MuonTagger.PTh1 * 3 + c.MuonTagger.STh * 5
-    #length of muon tagger from survey + 80 cm + 7.5 cm
-    c.MuonTagger.BZ = 347.3551 * u.cm + 9. * u.cm
-    #c.MuonTagger.BZ = 347.3551 * u.cm 
+    #length of muon tagger from survey (260.475) + half of first rpc space (7.5) + first wall (80cm) + half of last rpc (4)
+    # half length 175.9875
+    #c.MuonTagger.BZ = 347.3551 * u.cm + 9. * u.cm
+    c.MuonTagger.BZ = 352.301706 * u.cm 
+    #c.MuonTagger.BZ = 351.975 * u.cm 
     
     if c.MufluxSpectrometer.muflux == True:
        #for the muflux measurement the muontagger has to be moved back 791.75 measured by hand, 173.6775=347.3551/2
-       c.MuonTagger.zBox = 791.*u.cm  + 173.67755*u.cm
-
+       #c.MuonTagger.zBox = 791.*u.cm  + 173.67755*u.cm
+       c.MuonTagger.zBox = 791.*u.cm  + 175.9875*u.cm
     else:    
        c.MuonTagger.zBox = c.Spectrometer.zBox + c.Spectrometer.DimZpixelbox/2. + PixeltoGoliath + c.Spectrometer.TS + 261*u.cm + c.MuonTagger.BZ/2. #real position of MuonTagger
 
