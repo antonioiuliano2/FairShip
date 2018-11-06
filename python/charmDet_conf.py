@@ -51,7 +51,7 @@ def configure(run,ship_geo):
  Spectrometer.SetTransverseSizes(ship_geo.Spectrometer.D1Short, ship_geo.Spectrometer.D1Long, ship_geo.Spectrometer.Sioverlap, ship_geo.Spectrometer.DSciFi1X, ship_geo.Spectrometer.DSciFi1Y, ship_geo.Spectrometer.DSciFi2X, ship_geo.Spectrometer.DSciFi2Y)   
  Spectrometer.SetSiliconDZ(ship_geo.Spectrometer.DimZSi)
  #Spectrometer.SetSiliconDetNumber(ship_geo.Spectrometer.nSiDet)
- Spectrometer.SetSiliconDetPositions(ship_geo.Spectrometer.zSi0,ship_geo.Spectrometer.zSi1, ship_geo.Spectrometer.zSi2,ship_geo.Spectrometer.zSi3,ship_geo.Spectrometer.zSi4, ship_geo.Spectrometer.zSi5, ship_geo.Spectrometer.PairSiDistance)
+ Spectrometer.SetSiliconDetPositions(ship_geo.Spectrometer.zSi0,ship_geo.Spectrometer.zSi1, ship_geo.Spectrometer.zSi2,ship_geo.Spectrometer.zSi3,ship_geo.Spectrometer.zSi4, ship_geo.Spectrometer.zSi5,ship_geo.Spectrometer.zSi6,ship_geo.Spectrometer.zSi7, ship_geo.Spectrometer.zSi8,ship_geo.Spectrometer.zSi9,ship_geo.Spectrometer.zSi10, ship_geo.Spectrometer.zSi11, ship_geo.Spectrometer.PairSiDistance)
  Spectrometer.SetSciFiDetPositions(ship_geo.Spectrometer.zSciFi1, ship_geo.Spectrometer.zSciFi2)
 # -----Goliath part by Annarita--------
  Spectrometer.SetGoliathSizes(ship_geo.Spectrometer.H, ship_geo.Spectrometer.TS, ship_geo.Spectrometer.LS, ship_geo.Spectrometer.BasisH);

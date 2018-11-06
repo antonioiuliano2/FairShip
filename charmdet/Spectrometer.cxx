@@ -128,7 +128,7 @@ void Spectrometer::SetSiliconDZ(Double_t SiliconDZ)
   DimZSi = SiliconDZ;
 }
 
-void Spectrometer::SetSiliconDetPositions(Double_t zSi0, Double_t zSi1, Double_t zSi2, Double_t zSi3, Double_t zSi4, Double_t zSi5, Double_t PairSiDistance)
+void Spectrometer::SetSiliconDetPositions(Double_t zSi0, Double_t zSi1, Double_t zSi2, Double_t zSi3, Double_t zSi4, Double_t zSi5, Double_t zSi6, Double_t zSi7, Double_t zSi8, Double_t zSi9, Double_t zSi10, Double_t zSi11, Double_t PairSiDistance)
 { 
  zs0 = zSi0;
  zs1 = zSi1;
@@ -136,6 +136,12 @@ void Spectrometer::SetSiliconDetPositions(Double_t zSi0, Double_t zSi1, Double_t
  zs3 = zSi3;
  zs4 = zSi4;
  zs5 = zSi5;
+ zs6 = zSi6;
+ zs7 = zSi7;
+ zs8 = zSi8;
+ zs9 = zSi9;
+ zs10 = zSi10;
+ zs11 = zSi11;
  pairwisedistance = PairSiDistance;
 }
 
@@ -227,18 +233,18 @@ void Spectrometer::ConstructGeometry()
     volPixelx->SetLineColor(kBlue-5);
     AddSensitiveVolume(volPixelx);
 
-    volPixelBox->AddNode(volPixely, 111, new TGeoTranslation(overlap - Dim1Short/2.,0,-DimZPixelBox/2.+ zs0 - pairwisedistance/2));
-    volPixelBox->AddNode(volPixely, 112, new TGeoTranslation(-overlap + Dim1Short/2.,0,-DimZPixelBox/2. + zs0 + pairwisedistance/2));
-    volPixelBox->AddNode(volPixelx, 121, new TGeoTranslation(0,overlap - Dim1Short/2.,-DimZPixelBox/2.  + zs1 - pairwisedistance/2)); 
-    volPixelBox->AddNode(volPixelx, 122, new TGeoTranslation(0,-overlap + Dim1Short/2.,-DimZPixelBox/2.  +  zs1 + pairwisedistance/2)); 
-    volPixelBox->AddNode(volPixely, 131, new TGeoTranslation(overlap - Dim1Short/2.,0,-DimZPixelBox/2. + zs2 - pairwisedistance/2));
-    volPixelBox->AddNode(volPixely, 132, new TGeoTranslation(-overlap + Dim1Short/2.,0,-DimZPixelBox/2. +  zs2 + pairwisedistance/2));
-    volPixelBox->AddNode(volPixelx, 141, new TGeoTranslation(0,overlap - Dim1Short/2. ,-DimZPixelBox/2. +  zs3 - pairwisedistance/2)); 
-    volPixelBox->AddNode(volPixelx, 142, new TGeoTranslation(0,-overlap + Dim1Short/2.,-DimZPixelBox/2. + zs3 + pairwisedistance/2)); 
-    volPixelBox->AddNode(volPixely, 151, new TGeoTranslation(overlap - Dim1Short/2.,0,-DimZPixelBox/2. + zs4 - pairwisedistance/2));
-    volPixelBox->AddNode(volPixely, 152, new TGeoTranslation(-overlap + Dim1Short/2.,0,-DimZPixelBox/2. + zs4 + pairwisedistance/2));
-    volPixelBox->AddNode(volPixelx, 161, new TGeoTranslation(0,overlap - Dim1Short/2.,-DimZPixelBox/2. + zs5 - pairwisedistance/2)); 
-    volPixelBox->AddNode(volPixelx, 162, new TGeoTranslation(0,-overlap + Dim1Short/2.,-DimZPixelBox/2. + zs5 + pairwisedistance/2)); 
+    volPixelBox->AddNode(volPixely, 111, new TGeoTranslation(overlap - Dim1Short/2.,0,-DimZPixelBox/2.+ zs0));
+    volPixelBox->AddNode(volPixely, 112, new TGeoTranslation(-overlap + Dim1Short/2.,0,-DimZPixelBox/2. + zs1));
+    volPixelBox->AddNode(volPixelx, 121, new TGeoTranslation(0,overlap - Dim1Short/2.,-DimZPixelBox/2.  + zs2)); 
+    volPixelBox->AddNode(volPixelx, 122, new TGeoTranslation(0,-overlap + Dim1Short/2.,-DimZPixelBox/2.  + zs3)); 
+    volPixelBox->AddNode(volPixely, 131, new TGeoTranslation(overlap - Dim1Short/2.,0,-DimZPixelBox/2. + zs4));
+    volPixelBox->AddNode(volPixely, 132, new TGeoTranslation(-overlap + Dim1Short/2.,0,-DimZPixelBox/2. +  zs5));
+    volPixelBox->AddNode(volPixelx, 141, new TGeoTranslation(0,overlap - Dim1Short/2. ,-DimZPixelBox/2. +  zs6)); 
+    volPixelBox->AddNode(volPixelx, 142, new TGeoTranslation(0,-overlap + Dim1Short/2.,-DimZPixelBox/2. + zs7)); 
+    volPixelBox->AddNode(volPixely, 151, new TGeoTranslation(overlap - Dim1Short/2.,0,-DimZPixelBox/2. + zs8));
+    volPixelBox->AddNode(volPixely, 152, new TGeoTranslation(-overlap + Dim1Short/2.,0,-DimZPixelBox/2. + zs9));
+    volPixelBox->AddNode(volPixelx, 161, new TGeoTranslation(0,overlap - Dim1Short/2.,-DimZPixelBox/2. + zs10)); 
+    volPixelBox->AddNode(volPixelx, 162, new TGeoTranslation(0,-overlap + Dim1Short/2.,-DimZPixelBox/2. + zs11)); 
     
     TGeoBBox *SciFi1 = new TGeoBBox("SciFi1", DimSciFi1X/2, DimSciFi1Y/2, DimZ/2); 
     TGeoVolume *subvolSciFi1 = new TGeoVolume("volSciFi1",SciFi1,sttmix8020_2bar);
