@@ -48,10 +48,23 @@ def configure(run,ship_geo):
  Spectrometer = ROOT.Spectrometer("Spectrometer",ship_geo.Spectrometer.DX, ship_geo.Spectrometer.DY, ship_geo.Spectrometer.DZ,ROOT.kTRUE)
  if (ship_geo.MufluxSpectrometer.muflux==False):
   Spectrometer.GetBeamPosition(ship_geo.Box.beamx, ship_geo.Box.beamy)
- Spectrometer.SetTransverseSizes(ship_geo.Spectrometer.D1Short, ship_geo.Spectrometer.D1Long, ship_geo.Spectrometer.Sioverlap, ship_geo.Spectrometer.DSciFi1X, ship_geo.Spectrometer.DSciFi1Y, ship_geo.Spectrometer.DSciFi2X, ship_geo.Spectrometer.DSciFi2Y)   
+ Spectrometer.SetTransverseSizes(ship_geo.Spectrometer.D1Short, ship_geo.Spectrometer.D1Long, ship_geo.Spectrometer.DSciFi1X, ship_geo.Spectrometer.DSciFi1Y, ship_geo.Spectrometer.DSciFi2X, ship_geo.Spectrometer.DSciFi2Y)   
  Spectrometer.SetSiliconDZ(ship_geo.Spectrometer.DimZSi)
  #Spectrometer.SetSiliconDetNumber(ship_geo.Spectrometer.nSiDet)
- Spectrometer.SetSiliconDetPositions(ship_geo.Spectrometer.zSi0,ship_geo.Spectrometer.zSi1, ship_geo.Spectrometer.zSi2,ship_geo.Spectrometer.zSi3,ship_geo.Spectrometer.zSi4, ship_geo.Spectrometer.zSi5,ship_geo.Spectrometer.zSi6,ship_geo.Spectrometer.zSi7, ship_geo.Spectrometer.zSi8,ship_geo.Spectrometer.zSi9,ship_geo.Spectrometer.zSi10, ship_geo.Spectrometer.zSi11, ship_geo.Spectrometer.PairSiDistance)
+ Spectrometer.SetSiliconDetPositions(ship_geo.Spectrometer.zSi0,ship_geo.Spectrometer.zSi1, ship_geo.Spectrometer.zSi2,ship_geo.Spectrometer.zSi3,ship_geo.Spectrometer.zSi4, ship_geo.Spectrometer.zSi5,ship_geo.Spectrometer.zSi6,ship_geo.Spectrometer.zSi7, ship_geo.Spectrometer.zSi8,ship_geo.Spectrometer.zSi9,ship_geo.Spectrometer.zSi10, ship_geo.Spectrometer.zSi11)
+
+ Spectrometer.SetSiliconStationPositions(0, ship_geo.Spectrometer.xSi0, ship_geo.Spectrometer.ySi0)
+ Spectrometer.SetSiliconStationPositions(1, ship_geo.Spectrometer.xSi1, ship_geo.Spectrometer.ySi1)
+ Spectrometer.SetSiliconStationPositions(2, ship_geo.Spectrometer.xSi2, ship_geo.Spectrometer.ySi2)
+ Spectrometer.SetSiliconStationPositions(3, ship_geo.Spectrometer.xSi3, ship_geo.Spectrometer.ySi3)
+ Spectrometer.SetSiliconStationPositions(4, ship_geo.Spectrometer.xSi4, ship_geo.Spectrometer.ySi4)
+ Spectrometer.SetSiliconStationPositions(5, ship_geo.Spectrometer.xSi5, ship_geo.Spectrometer.ySi5)
+ Spectrometer.SetSiliconStationPositions(6, ship_geo.Spectrometer.xSi6, ship_geo.Spectrometer.ySi6)
+ Spectrometer.SetSiliconStationPositions(7, ship_geo.Spectrometer.xSi7, ship_geo.Spectrometer.ySi7)
+ Spectrometer.SetSiliconStationPositions(8, ship_geo.Spectrometer.xSi8, ship_geo.Spectrometer.ySi8)
+ Spectrometer.SetSiliconStationPositions(9, ship_geo.Spectrometer.xSi9, ship_geo.Spectrometer.ySi9)
+ Spectrometer.SetSiliconStationPositions(10, ship_geo.Spectrometer.xSi10, ship_geo.Spectrometer.ySi10)
+ Spectrometer.SetSiliconStationPositions(11, ship_geo.Spectrometer.xSi11, ship_geo.Spectrometer.ySi11)
  Spectrometer.SetSciFiDetPositions(ship_geo.Spectrometer.zSciFi1, ship_geo.Spectrometer.zSciFi2)
 # -----Goliath part by Annarita--------
  Spectrometer.SetGoliathSizes(ship_geo.Spectrometer.H, ship_geo.Spectrometer.TS, ship_geo.Spectrometer.LS, ship_geo.Spectrometer.BasisH);
