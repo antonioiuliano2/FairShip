@@ -254,9 +254,7 @@ with ConfigRegistry.register_config("basic") as c:
     #These parameters are used only by the charm detector ---   
     c.Spectrometer.D1Short = 3.36 * u.cm / 2.;
     c.Spectrometer.D1Long = 4 * u.cm;   
-    c.Spectrometer.DimZSi = 0.0200 * u.cm
-    c.Spectrometer.PairSiDistance = 0.600 * u.cm +c.Spectrometer.DimZSi 
-    c.Spectrometer.Sioverlap = 0.2*u.cm   
+    c.Spectrometer.DimZSi = 0.0200 * u.cm   
          
     c.Spectrometer.SX = c.Spectrometer.DX
     c.Spectrometer.SY = c.Spectrometer.DY    
@@ -273,45 +271,46 @@ with ConfigRegistry.register_config("basic") as c:
     #module position naming: "axis"Si"Telescope number"
     
 		#measured values
-    c.Spectrometer.zSi0 = 0.75 #by definition
-    c.Spectrometer.xSi0 = 0.001504
-    c.Spectrometer.ySi0 = -0.001325
-    c.Spectrometer.zSi1 = 1.39
-    c.Spectrometer.ySi1 = 0.000999
-    c.Spectrometer.xSi1 = 0.000724
-    c.Spectrometer.zSi2 = 3.157005 
-    c.Spectrometer.ySi2 = -0.209966
-    c.Spectrometer.xSi2 = 0.090267
-    c.Spectrometer.zSi3 = 3.825935
-    c.Spectrometer.ySi3 = 0.093751
-    c.Spectrometer.xSi3 = 0.062744
-    c.Spectrometer.zSi4 = 5.926781
-    c.Spectrometer.ySi4 = 0.061839
-    c.Spectrometer.xSi4 = 0.060395
-    c.Spectrometer.zSi5 = 6.529568
-    c.Spectrometer.ySi5 = 0.030714
-    c.Spectrometer.xSi5 = -0.004239
-    c.Spectrometer.zSi6 = 8.514842
-    c.Spectrometer.ySi6 = -0.244948
-    c.Spectrometer.xSi6 = 0.1184893
-    c.Spectrometer.zSi7 = 9.267276
-    c.Spectrometer.xSi7 = 0.026495927
-    c.Spectrometer.ySi7 = 0.010923
-    c.Spectrometer.zSi8 = 11.213014
-    c.Spectrometer.ySi8 = -0.1486
-    c.Spectrometer.xSi8 = -0.9757
-    c.Spectrometer.zSi9 = 11.958816
-    c.Spectrometer.ySi9 = 0.173832
-    c.Spectrometer.xSi9 = 0.105792
-    c.Spectrometer.zSi10 = 13.915999
-    c.Spectrometer.ySi10 = -0.164596
-    c.Spectrometer.xSi10 = 0.122019
-    c.Spectrometer.zSi11 = 14.61
-    c.Spectrometer.ySi11 = 0.000618
-    c.Spectrometer.xSi11 = 0.000247
+    c.Spectrometer.xSi0 = 1.53912
+    c.Spectrometer.ySi0 = -0.002332
+    c.Spectrometer.zSi0 = -0.13
+    c.Spectrometer.xSi1 = -0.229076
+    c.Spectrometer.ySi1 = 0.005328
+    c.Spectrometer.zSi1 = 0.52
+    c.Spectrometer.xSi2 = 0.704924
+    c.Spectrometer.ySi2 = 0.808437
+    c.Spectrometer.zSi2 = 2.412
+    c.Spectrometer.xSi3 = 0.705433
+    c.Spectrometer.ySi3 = -0.879224
+    c.Spectrometer.zSi3 = 3.09
+    c.Spectrometer.xSi4 = 1.54963
+    c.Spectrometer.ySi4 = -0.003912
+    c.Spectrometer.zSi4 = 5.17
+    c.Spectrometer.xSi5 = -0.221577
+    c.Spectrometer.ySi5 = -0.023944
+    c.Spectrometer.zSi5 = 5.79
+    c.Spectrometer.xSi6 = 0.690749
+    c.Spectrometer.ySi6 = 0.769728
+    c.Spectrometer.zSi6 = 7.77
+    c.Spectrometer.xSi7 = 0.702302
+    c.Spectrometer.ySi7 = -0.874356
+    c.Spectrometer.zSi7 = 8.46
+    c.Spectrometer.xSi8 = 1.58271
+    c.Spectrometer.ySi8 = -0.0030432
+    c.Spectrometer.zSi8 = 10.462
+    c.Spectrometer.xSi9 = -0.209171
+    c.Spectrometer.ySi9 = 0.002488
+    c.Spectrometer.zSi9 = 11.17
+    c.Spectrometer.xSi10 = 0.694199
+    c.Spectrometer.ySi10 = 0.850237
+    c.Spectrometer.zSi10 = 13.162
+    c.Spectrometer.xSi11 = 0.683245
+    c.Spectrometer.ySi11 = -0.79636
+    c.Spectrometer.zSi11 = 13.85
     
     #angles of module centers given in radiants, naming: "rotationaxis"Ang"module number"
     #angles are taken as rotated by -pi over the y axis for every second group of two angles starting from 0 & 1. Angles rotated by pi over the x axis for every second group of two angles starting from 2 & 3 , see Niko's/Vadim's plots and especially telescope configuration for more details
+    #they are not loaded in FairShip
     c.Spectrometer.xAng0 = 3.19421
     c.Spectrometer.yAng0 = -3.29429 #so here shifted by pi in the negative direction 
     c.Spectrometer.zAng0 = 1.57137
@@ -391,9 +390,9 @@ with ConfigRegistry.register_config("basic") as c:
     #c.Scintillator.DistT2              = 135.25*u.cm
     c.Scintillator.DistT2              = 136.26*u.cm 
                   
-    c.Spectrometer.SZ = c.Spectrometer.DZ*2 + c.Spectrometer.zSi5 - c.Spectrometer.zSi0 + c.Spectrometer.PairSiDistance + c.Spectrometer.DimZSi + 80 *u.cm + 4.5*u.m #4.5 m is the Goliath length + 80 *u.cm + 4.5*u.m #4.5 m is the Goliath length
+    c.Spectrometer.SZ = c.Spectrometer.DZ*2 + c.Spectrometer.zSi5 - c.Spectrometer.zSi0 + c.Spectrometer.DimZSi + 80 *u.cm + 4.5*u.m #4.5 m is the Goliath length + 80 *u.cm + 4.5*u.m #4.5 m is the Goliath length
    
-    c.Spectrometer.DimZpixelbox = c.Box.GapPostTargetTh + c.Spectrometer.zSi5 - c.Spectrometer.zSi0 + c.Spectrometer.PairSiDistance + c.Spectrometer.DimZSi
+    c.Spectrometer.DimZpixelbox = c.Box.GapPostTargetTh + c.Spectrometer.zSi5 - c.Spectrometer.zSi0 + c.Spectrometer.DimZSi
     
     PixeltoGoliath = 30.45 *u.cm #25.45 + 5cm different goliath dz
     c.Spectrometer.zBox = 350.75 - c.Spectrometer.TS/2 - PixeltoGoliath - c.Spectrometer.DimZpixelbox/2.
