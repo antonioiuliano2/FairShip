@@ -15,8 +15,6 @@
 #pragma link C++ class MuonTagger+;
 #pragma link C++ class MuonTaggerPoint+;
 #pragma link C++ class MuonTaggerHit+;
-#pragma link C++ class PIXELHit+;
-#pragma link C++ class SciFiHit+;
 #pragma link C++ class Scintillator+;
 #pragma link C++ class ScintillatorPoint+;
 #pragma link C++ class ScintillatorHit+;

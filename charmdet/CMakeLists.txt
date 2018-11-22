@@ -34,11 +34,9 @@ MufluxSpectrometerPoint.cxx
 MuonTagger.cxx
 MuonTaggerPoint.cxx
 MuonTaggerHit.cxx
-PIXELHit.cxx
 Scintillator.cxx
 ScintillatorPoint.cxx
 ScintillatorHit.cxx
-SciFiHit.cxx;
 ReProcessAbsorber.cxx
 )
 
