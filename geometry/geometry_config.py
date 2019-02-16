@@ -622,10 +622,8 @@ with ConfigRegistry.register_config("basic") as c:
         scaleMudet=1.
     	c.tauMudet.NFe = 20
     	c.tauMudet.NRpc= 20
-        c.tauMudet.Xtot = scaleMudet*2.170627*u.m #same dimensions as Thomas' veto box
-        c.tauMudet.Ytot = scaleMudet*4.9124968*u.m
-        c.tauMudet.deltax = 10* u.cm
-        c.tauMudet.deltay = 20* u.cm
+        c.tauMudet.Xtot = scaleMudet*2.07*u.m #about 10 cm difference with respect to UVT
+        c.tauMudet.Ytot = scaleMudet*4.71*u.m # about 20 cm difference with respect to UVT
         c.tauMudet.XFe = c.tauMudet.Xtot
         c.tauMudet.YFe = c.tauMudet.Ytot
         c.tauMudet.ZFe = 5.*u.cm
@@ -637,7 +635,7 @@ with ConfigRegistry.register_config("basic") as c:
         c.tauMudet.zMudetC = c.Chamber1.z -c.chambers.Tub1length-10*u.cm - c.UpstreamTagger.Ztot - c.tauMudet.Ztot/2
         c.tauMudet.PillarX = 40*u.cm
         c.tauMudet.PillarZ = 50*u.cm
-        c.tauMudet.PillarY = 10*u.m - c.cave.floorHeightMuonShield - c.tauMudet.Ytot/2 + c.tauMudet.deltay/2  - 0.1*u.mm
+        c.tauMudet.PillarY = 10*u.m - c.cave.floorHeightMuonShield - c.tauMudet.Ytot/2 - 0.1*u.mm
     c.tauMudet.XGas =  c.tauMudet.Xtot
     c.tauMudet.YGas =  c.tauMudet.YRpc
     c.tauMudet.ZGas = 1*u.mm

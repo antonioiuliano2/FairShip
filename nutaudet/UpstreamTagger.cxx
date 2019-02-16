@@ -226,7 +226,6 @@ void UpstreamTagger::ConstructGeometry()
     }
   if(fDesign==3)
     {
-      Int_t nr = 1E4;
       //container for the Tagger volumes 
       TGeoBBox *TaggerBox = new TGeoBBox("TaggerBox", fXtot/2, fYtot/2, (2*fZFe+3*fZRpc)/2);    
       TGeoVolume *volTaggerBox = new TGeoVolume("volUpstreamTagger", TaggerBox, vacuum);
@@ -235,10 +234,10 @@ void UpstreamTagger::ConstructGeometry()
       //passive layers
       TGeoBBox *TaggerIronLayer = new TGeoBBox("TaggerIron",fXFe/2, fYFe/2, fZFe/2);
       TGeoVolume *volTaggerIron = new TGeoVolume("volTaggerIron",TaggerIronLayer,Iron);
-
+      volTaggerIron->SetLineColor(kGray);
       for(Int_t i = 0; i < fNFe; i++)
 	{
-	    volTaggerBox->AddNode(volTaggerIron,nr + 100 + i, new TGeoTranslation(0, 0,-fZtot/2+i*fZFe+fZFe/2+(i+1)*fZRpc));
+	    volTaggerBox->AddNode(volTaggerIron, i+1, new TGeoTranslation(0, 0,-fZtot/2+i*fZFe+fZFe/2+(i+1)*fZRpc));
 	}
       //active layers
       TGeoBBox *TaggerRpcContainer = new TGeoBBox("TaggerRpcContainer", fXRpc/2, fYRpc/2, fZRpc/2);
@@ -268,7 +267,7 @@ void UpstreamTagger::ConstructGeometry()
     
       for(Int_t i = 0; i < fNRpc; i++)
 	{
-	    volTaggerBox->AddNode(volTaggerRpcContainer,nr + i,new TGeoTranslation(0, 0, -fZtot/2+i*fZFe + i*fZRpc +fZRpc/2));        
+	    volTaggerBox->AddNode(volTaggerRpcContainer, i+1,new TGeoTranslation(0, 0, -fZtot/2+i*fZFe + i*fZRpc +fZRpc/2));        
 	}
     
      // TGeoBBox *PillarBox = new TGeoBBox(fPillarX/2,fPillarY/2, fPillarZ/2);
@@ -358,14 +357,6 @@ void UpstreamTagger::Register()
     
   FairRootManager::Instance()->Register("UpstreamTaggerPoint", "UpstreamTagger",
 					fUpstreamTaggerPointCollection, kTRUE);
-}
-
-// -----   Public method to Decode volume info  -------------------------------------------
-// -----   returns hpt, arm, rpc numbers -----------------------------------
-void UpstreamTagger::DecodeVolumeID(Int_t detID,int &nARM,int &nRPC)
-{
-  nARM =  detID/1E4;
-  nRPC =  detID - nARM*1E4;
 }
 
 TClonesArray* UpstreamTagger::GetCollection(Int_t iColl) const

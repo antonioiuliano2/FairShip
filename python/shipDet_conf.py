@@ -204,9 +204,6 @@ def configure(run,ship_geo):
    taumuondetector.SetNFeInArm(ship_geo.tauMudet.NFe)
    taumuondetector.SetNRpcInArm(ship_geo.tauMudet.NRpc)
    taumuondetector.SetPillarDimensions(ship_geo.tauMudet.PillarX,ship_geo.tauMudet.PillarY, ship_geo.tauMudet.PillarZ)
-   detectorList.append(taumuondetector)
-   if ship_geo.nuTauTargetDesign==3: 
-    taumuondetector.SetRpcDimDifferences(ship_geo.tauMudet.deltax, ship_geo.tauMudet.deltay)
    if ship_geo.nuTauTargetDesign<3:
     taumuondetector.SetReturnYokeDimensions(ship_geo.tauMudet.XRyoke,ship_geo.tauMudet.YRyoke, ship_geo.tauMudet.ZRyoke)
     taumuondetector.SetSmallerYokeDimensions(ship_geo.tauMudet.XRyoke_s,ship_geo.tauMudet.YRyoke_s, ship_geo.tauMudet.ZRyoke_s)
@@ -215,6 +212,7 @@ def configure(run,ship_geo):
     taumuondetector.SetGapMiddle(ship_geo.tauMudet.GapM)
     taumuondetector.SetMagneticField(ship_geo.tauMudet.B)
     taumuondetector.SetCoilParameters(ship_geo.tauMudet.CoilH, ship_geo.tauMudet.CoilW, ship_geo.tauMudet.N, ship_geo.tauMudet.CoilG)
+   detectorList.append(taumuondetector)
 
    if ship_geo.nuTauTargetDesign==3:
     upstreamtagger = ROOT.UpstreamTagger("UpstreamTagger",ship_geo.UpstreamTagger.zTaggerC, ROOT.kTRUE)

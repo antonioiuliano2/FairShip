@@ -25,7 +25,6 @@ class NuTauMudet:public FairDetector
     void SetDesign(Int_t Design);
     void SetTotDimensions(Double_t X, Double_t Y, Double_t Z);
     void SetFeDimensions(Double_t X, Double_t Y, Double_t Z);
-    void SetRpcDimDifferences(Double_t deltax, Double_t deltay);
     void SetRpcDimensions(Double_t X, Double_t Y, Double_t Z);
     void SetRpcStripDimensions(Double_t X, Double_t Y, Double_t Z);
     void SetRpcGasDimensions(Double_t X, Double_t Y, Double_t Z);
@@ -141,7 +140,6 @@ protected:
     Double_t fCoilW;
     Int_t fNCoil;
     
-    Double_t fdeltax, fdeltay; //different RPC transverse sizes
     //Dimension for detailed RPC simulation:
     Double_t fXStrip;
     Double_t fYStrip;
@@ -164,7 +162,7 @@ protected:
 
     NuTauMudet(const NuTauMudet&);
     NuTauMudet& operator=(const NuTauMudet&);
-    ClassDef(NuTauMudet,5)
+    ClassDef(NuTauMudet,6)
 
 };
 

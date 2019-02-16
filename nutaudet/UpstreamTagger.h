@@ -79,8 +79,6 @@ class UpstreamTagger:public FairDetector
     virtual void   PostTrack() {;}
     virtual void   PreTrack() {;}
     virtual void   BeginEvent() {;}
-
-    void DecodeVolumeID(Int_t detID,int &nARM,int &nRPC);
     
 private:
     
