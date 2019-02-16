@@ -216,6 +216,20 @@ def configure(run,ship_geo):
     taumuondetector.SetMagneticField(ship_geo.tauMudet.B)
     taumuondetector.SetCoilParameters(ship_geo.tauMudet.CoilH, ship_geo.tauMudet.CoilW, ship_geo.tauMudet.N, ship_geo.tauMudet.CoilG)
 
+   if ship_geo.nuTauTargetDesign==3:
+    upstreamtagger = ROOT.UpstreamTagger("UpstreamTagger",ship_geo.UpstreamTagger.zTaggerC, ROOT.kTRUE)
+    upstreamtagger.SetDesign(ship_geo.nuTauTargetDesign)
+    upstreamtagger.SetTotDimensions(ship_geo.UpstreamTagger.Xtot,ship_geo.UpstreamTagger.Ytot, ship_geo.UpstreamTagger.Ztot )
+    upstreamtagger.SetFeDimensions(ship_geo.UpstreamTagger.XFe,ship_geo.UpstreamTagger.YFe, ship_geo.UpstreamTagger.ZFe)
+    upstreamtagger.SetRpcDimensions(ship_geo.UpstreamTagger.XRpc,ship_geo.UpstreamTagger.YRpc, ship_geo.UpstreamTagger.ZRpc)
+    upstreamtagger.SetRpcGasDimensions(ship_geo.UpstreamTagger.XGas,ship_geo.UpstreamTagger.YGas, ship_geo.UpstreamTagger.ZGas)
+    upstreamtagger.SetRpcStripDimensions(ship_geo.UpstreamTagger.XStrip,ship_geo.UpstreamTagger.YStrip, ship_geo.UpstreamTagger.ZStrip)
+    upstreamtagger.SetRpcElectrodeDimensions(ship_geo.UpstreamTagger.XEle,ship_geo.UpstreamTagger.YEle, ship_geo.UpstreamTagger.ZEle)
+    upstreamtagger.SetRpcPETDimensions(ship_geo.UpstreamTagger.XPet,ship_geo.UpstreamTagger.YPet, ship_geo.UpstreamTagger.ZPet)
+    upstreamtagger.SetNFeInArm(ship_geo.UpstreamTagger.NFe)
+    upstreamtagger.SetNRpcInArm(ship_geo.UpstreamTagger.NRpc)
+    #upstreamtagger.SetPillarDimensions(ship_geo.UpstreamTagger.PillarX,ship_geo.UpstreamTagger.PillarY, ship_geo.UpstreamTagger.PillarZ)
+    detectorList.append(upstreamtagger)
    if ship_geo.nuTauTargetDesign==0 or ship_geo.nuTauTargetDesign==1 or ship_geo.nuTauTargetDesign==3:
     EmuMagnet = ROOT.EmulsionMagnet("EmuMagnet",ship_geo.EmuMagnet.zC,"EmulsionMagnet")
     EmuMagnet.SetDesign(ship_geo.EmuMagnet.Design)
@@ -398,9 +412,9 @@ def configure(run,ship_geo):
   if ship_geo.muShieldDesign==6: fMagField.IncludeTarget(ship_geo.target.xy, ship_geo.target.z0, ship_geo.target.length)
   run.SetField(fMagField)
 #
- exclusionList = []
- #exclusionList = ["Muon","Ecal","Hcal","Strawtubes","TargetTrackers","NuTauTarget","HighPrecisionTrackers",\
- #                 "Veto","Magnet","MuonShield","TargetStation","NuTauMudet","EmuMagnet", "TimeDet"]
+ #exclusionList = []
+ exclusionList = ["Muon","Ecal","Hcal","Strawtubes",\
+                  "Veto","Magnet","MuonShield","TargetStation", "TimeDet"]
  for x in detectorList:
    if x.GetName() in exclusionList: continue
    run.AddModule(x)

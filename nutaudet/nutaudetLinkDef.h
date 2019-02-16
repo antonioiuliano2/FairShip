@@ -16,6 +16,7 @@
 #pragma link C++ class TTPoint+;
 #pragma link C++ class Target+;
 #pragma link C++ class TargetPoint+;
-
+#pragma link C++ class UpstreamTagger+;
+#pragma link C++ class UpstreamTaggerPoint+;
 #endif
 

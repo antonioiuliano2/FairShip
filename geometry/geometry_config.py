@@ -546,13 +546,40 @@ with ConfigRegistry.register_config("basic") as c:
           c.EmuMagnet.PillarY = 0 * u.m
        
         
-
+    #Tagger between the Muon Filter and the Decay Vessel
+    c.UpstreamTagger = AttrDict(z=0*u.cm)
+    scaleUpstreamTagger=1.
+    c.UpstreamTagger.NFe = 2
+    c.UpstreamTagger.NRpc= 3
+    c.UpstreamTagger.Xtot = scaleUpstreamTagger*2.170627*u.m #same dimensions as Thomas' veto box
+    c.UpstreamTagger.Ytot = scaleUpstreamTagger*4.9124968*u.m
+    c.UpstreamTagger.XFe = c.UpstreamTagger.Xtot
+    c.UpstreamTagger.YFe = c.UpstreamTagger.Ytot
+    c.UpstreamTagger.ZFe = 5.*u.cm
+    c.UpstreamTagger.XRpc = c.UpstreamTagger.Xtot
+    c.UpstreamTagger.YRpc = c.UpstreamTagger.YFe
+    c.UpstreamTagger.ZRpc = 2.*u.cm
+    c.UpstreamTagger.Ztot = c.UpstreamTagger.NRpc*c.UpstreamTagger.ZRpc+c.UpstreamTagger.NFe*c.UpstreamTagger.ZFe
+    #c.UpstreamTagger.zMudetC = -c.decayVolume.length/2. - c.UpstreamTagger.Ztot/2
+    c.UpstreamTagger.zTaggerC = c.Chamber1.z -c.chambers.Tub1length-10*u.cm - c.UpstreamTagger.Ztot/2
+    c.UpstreamTagger.XGas =  c.UpstreamTagger.Xtot
+    c.UpstreamTagger.YGas =  c.UpstreamTagger.YRpc
+    c.UpstreamTagger.ZGas = 1*u.mm
+    c.UpstreamTagger.XStrip =  c.UpstreamTagger.Xtot
+    c.UpstreamTagger.YStrip =  c.UpstreamTagger.YRpc
+    c.UpstreamTagger.ZStrip = 0.05*u.mm
+    c.UpstreamTagger.XPet =  c.UpstreamTagger.Xtot
+    c.UpstreamTagger.YPet =  c.UpstreamTagger.YRpc
+    c.UpstreamTagger.ZPet = 0.1*u.mm
+    c.UpstreamTagger.XEle =  c.UpstreamTagger.Xtot
+    c.UpstreamTagger.YEle =  c.UpstreamTagger.YRpc
+    c.UpstreamTagger.ZEle = 1*u.mm
    
     #Parameters for tau magnetic Spectrometer
     c.tauMudet = AttrDict(z=0*u.cm)
     if nuTauTargetDesign<=2:
 	c.tauMudet.NFe = 12
-    	c.tauMudet.NRpc= 11
+        c.tauMudet.NRpc= 11
         if nuTauTargetDesign==0: #TP
             c.tauMudet.YRyoke = 90*u.cm
             c.tauMudet.YRyoke_s = c.tauMudet.YRyoke-30*u.cm
@@ -593,8 +620,8 @@ with ConfigRegistry.register_config("basic") as c:
         c.tauMudet.B = 1.5 * u.tesla
     if nuTauTargetDesign==3:
         scaleMudet=1.
-	c.tauMudet.NFe = 22
-    	c.tauMudet.NRpc= 23
+    	c.tauMudet.NFe = 20
+    	c.tauMudet.NRpc= 20
         c.tauMudet.Xtot = scaleMudet*2.170627*u.m #same dimensions as Thomas' veto box
         c.tauMudet.Ytot = scaleMudet*4.9124968*u.m
         c.tauMudet.deltax = 10* u.cm
@@ -607,7 +634,7 @@ with ConfigRegistry.register_config("basic") as c:
         c.tauMudet.ZRpc = 2.*u.cm
         c.tauMudet.Ztot = c.tauMudet.NRpc*c.tauMudet.ZRpc+c.tauMudet.NFe*c.tauMudet.ZFe
         #c.tauMudet.zMudetC = -c.decayVolume.length/2. - c.tauMudet.Ztot/2
-        c.tauMudet.zMudetC = c.Chamber1.z -c.chambers.Tub1length-10*u.cm - c.tauMudet.Ztot/2
+        c.tauMudet.zMudetC = c.Chamber1.z -c.chambers.Tub1length-10*u.cm - c.UpstreamTagger.Ztot - c.tauMudet.Ztot/2
         c.tauMudet.PillarX = 40*u.cm
         c.tauMudet.PillarZ = 50*u.cm
         c.tauMudet.PillarY = 10*u.m - c.cave.floorHeightMuonShield - c.tauMudet.Ytot/2 + c.tauMudet.deltay/2  - 0.1*u.mm

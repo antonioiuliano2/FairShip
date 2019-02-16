@@ -32,6 +32,8 @@ EmulsionMagnet.cxx
 TargetPoint.cxx
 TargetTracker.cxx
 TTPoint.cxx
+UpstreamTagger.cxx
+UpstreamTaggerPoint.cxx
 )
 
 Set(HEADERS )
