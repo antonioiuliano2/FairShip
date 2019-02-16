@@ -26,15 +26,14 @@ class Spectrometer:public FairDetector
     void SetZsize(const Double_t MSsize);
     void SetBoxParam(Double_t SX, Double_t SY, Double_t SZ, Double_t zBox,Double_t SZPixel);
     void SetTransverseSizes(Double_t D1X, Double_t D1Y, Double_t DSciFi1X, Double_t DSciFi1Y, Double_t DSciFi2X, Double_t DSciFi2Y);
-    void SetSiliconDZ(Double_t SiliconDZ);
-    void SetSiliconDetPositions(Double_t zSi0, Double_t zSi1, Double_t zSi2, Double_t zSi3, Double_t zSi4, Double_t zSi5,Double_t zSi6, Double_t zSi7, Double_t zSi8, Double_t zSi9, Double_t zSi10, Double_t zSi11);
-    void SetSiliconStationPositions(Int_t nstation, Double_t posx, Double_t posy);
+    void SetSiliconDZ(Double_t SiliconDZ);  
+    void SetSiliconStationPositions(Int_t nstation, Double_t posx, Double_t posy, Double_t posz);
     void SetSciFiDetPositions(Double_t zSciFi1, Double_t zSciFi2);
+    void GetBeamPosition(Double_t beamx, Double_t beamy);
     void SetSiliconDetNumber(Int_t nSilicon);
      //methods for Goliath by Annarita
     void SetGoliathSizes(Double_t H, Double_t TS, Double_t LS, Double_t BasisH);
     void SetCoilParameters(Double_t CoilR, Double_t UpCoilH, Double_t LowCoilH, Double_t CoilD);
-    void GetBeamPosition(Double_t beamx, Double_t beamy);
     //
     /**      Initialization of the detector is done here    */
     virtual void Initialize();
@@ -144,11 +143,8 @@ protected:
     Int_t nSi;
     Double_t DimZSi;
 
-    Double_t xs[12], ys[12];
-    Double_t zs0, zs1, zs2, zs3, zs4, zs5, zs6, zs7, zs8, zs9, zs10, zs11, pairwisedistance;
-    Double_t xangle[12];
-    Double_t yangle[12];
-    Double_t zangle[12];
+    Double_t xs[12], ys[12], zs[12];
+    Double_t xangle[12], yangle[12], zangle[12];
     
     Double_t zposSciFi1, zposSciFi2;
     
