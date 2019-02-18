@@ -579,7 +579,7 @@ with ConfigRegistry.register_config("basic") as c:
     c.tauMudet = AttrDict(z=0*u.cm)
     if nuTauTargetDesign<=2:
 	c.tauMudet.NFe = 12
-        c.tauMudet.NRpc= 11
+    	c.tauMudet.NRpc= 11
         if nuTauTargetDesign==0: #TP
             c.tauMudet.YRyoke = 90*u.cm
             c.tauMudet.YRyoke_s = c.tauMudet.YRyoke-30*u.cm

@@ -463,8 +463,8 @@ void NuTauMudet::ConstructGeometry()
       TGeoBBox *RpcContainer = new TGeoBBox("RpcContainer", fXRpc/2, fYRpc/2, fZRpc/2);
       TGeoVolume *volRpcContainer = new TGeoVolume("volRpcContainer",RpcContainer,vacuum);
   
-      TGeoBBox *Strip  = new TGeoBBox("Strip",fXStrip/2, fYStrip/2, fZStrip/2);
-      TGeoVolume *volStrip  = new TGeoVolume("volStrip",Strip,Cu);
+      TGeoBBox *Strip = new TGeoBBox("Strip",fXStrip/2, fYStrip/2, fZStrip/2);
+      TGeoVolume *volStrip = new TGeoVolume("volStrip",Strip,Cu);
       volStrip->SetLineColor(kRed);
       volRpcContainer->AddNode(volStrip,1,new TGeoTranslation (0,0,-3.25*mm));
       volRpcContainer->AddNode(volStrip,2,new TGeoTranslation (0,0,3.25*mm));
@@ -487,7 +487,7 @@ void NuTauMudet::ConstructGeometry()
     
       for(Int_t i = 0; i < fNRpc; i++)
 	{
-    volMudetBox->AddNode(volRpcContainer,nr + i,new TGeoTranslation(0, 0, -fZtot/2+i*fZFe + i*fZRpc +fZRpc/2));
+          volMudetBox->AddNode(volRpcContainer,nr + i,new TGeoTranslation(0, 0, -fZtot/2+i*fZFe + i*fZRpc +fZRpc/2));
 	}
     
       TGeoBBox *Pillar1Box = new TGeoBBox(fPillarX/2,fPillarY/2, fPillarZ/2);
