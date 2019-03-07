@@ -97,6 +97,7 @@ void Box::Initialize()
     FairDetector::Initialize();
     fbeamx = 0.; //default beam center position in xy plane is origin
     fbeamy = 0.;
+    ch1r6 = false; //default configuration is with lead target
 }
 
 void Box::SetGapGeometry(Double_t distancePassive2ECC){ 
@@ -166,7 +167,11 @@ void Box::SetTargetDesign(Bool_t Julytarget){
 }
 
 void Box::SetTargetNumber(Int_t CharmTargetNumber){		
-  nrun = CharmTargetNumber;		
+  nrun = CharmTargetNumber;
+  if (CharmTargetNumber==16){ //special case, CH1 run with a tungsten target
+    nrun = 1;
+    ch1r6 = true;
+  }		
 }
 
 void Box::GetBeamPosition(Double_t beamx, Double_t beamy){
@@ -196,7 +201,8 @@ Int_t Box::InitMedium(const char* name)
 }
 
 void Box::AddEmulsionFilm(Double_t zposition, Int_t nreplica, TGeoVolume * volTarget, TGeoVolume * volEmulsionFilm, TGeoVolume   * volEmulsionFilm2, TGeoVolume * volPlBase){
-	 volTarget->AddNode(volEmulsionFilm2, nreplica, new TGeoTranslation(0,0,zposition + EmulsionThickness/2)); //BOTTOM
+   //emulsion IDs now go from 1 to a maximum of 57 for top layers, from 10000 to a maximum of 10057 for bottom layers
+	 volTarget->AddNode(volEmulsionFilm2, nreplica+10000, new TGeoTranslation(0,0,zposition + EmulsionThickness/2)); //BOTTOM
 	 volTarget->AddNode(volEmulsionFilm, nreplica, new TGeoTranslation(0,0,zposition +3 * EmulsionThickness/2 +PlasticBaseThickness)); //TOP
 	 volTarget->AddNode(volPlBase, nreplica, new TGeoTranslation(0,0, zposition + EmulsionThickness + PlasticBaseThickness/2));
 }
@@ -293,12 +299,13 @@ void Box::ConstructGeometry()
       volPasLead->SetLineColor(kRed);
       }
     
-      TGeoBBox *Leadslab = new TGeoBBox("Leadslab", EmulsionX/2, EmulsionY/2, PassiveSlabThickness/2);
-      TGeoVolume *volLeadslab = new TGeoVolume("volLeadslab",Leadslab,lead);
-      volLeadslab->SetTransparency(1);
-      volLeadslab->SetLineColor(kGray);
+      TGeoBBox *Passiveslab = new TGeoBBox("Passiveslab", EmulsionX/2, EmulsionY/2, PassiveSlabThickness/2);
+      TGeoVolume *volPassiveslab = new TGeoVolume("volPassiveslab",Passiveslab,lead);
+      if (ch1r6) volPassiveslab->SetMedium(tungsten);
+      volPassiveslab->SetTransparency(1);
+      volPassiveslab->SetLineColor(kGray);
       
-      Int_t nfilm = 1, nlead = 1, nleadslab = 1;
+      Int_t nfilm = 1, nlead = 1, npassiveslab = 1;
       Double_t zpoint = -TargetZ/2;
 
       for (Int_t irun = 0; irun < NBricks; irun++){ //irun is the index, nrun is the number of the configuration run
@@ -314,8 +321,8 @@ void Box::ConstructGeometry()
            
 	 for(Int_t n=0; n<NPlates[nrun-1]; n++) //adding 1 mm lead plates
 	    {
-              volTarget->AddNode(volLeadslab, nleadslab, new TGeoTranslation(0,0,zpoint + EmPlateWidth + PassiveSlabThickness/2 + n*AllPlateWidth));
-              nleadslab++;
+              volTarget->AddNode(volPassiveslab, npassiveslab, new TGeoTranslation(0,0,zpoint + EmPlateWidth + PassiveSlabThickness/2 + n*AllPlateWidth));
+              npassiveslab++;
 	    }	
 	 zpoint = zpoint + NPlates[nrun-1] *AllPlateWidth + EmPlateWidth;
 	}
