@@ -13,7 +13,7 @@ debug = 0  # 1 print weights and field
 dryrun = False # True: just setup Pythia and exit
 
 CharmdetSetup = 0 # 1 charm cross section setup, 0 muon flux setup
-CharmTarget = 1 #six different configurations used in July 2018 exposure for charm
+CharmTarget = 3 #six different configurations used in July 2018 exposure for charm
 # Default HNL parameters
 theMass = 1.0*u.GeV
 theCouplings = [0.447e-9, 7.15e-9, 1.88e-9] # ctau=53.3km  TP default for HNL
@@ -239,7 +239,11 @@ if charm == 0: ship_geo = ConfigRegistry.loadpy("$FAIRSHIP/geometry/geometry_con
 else: 
  ship_geo = ConfigRegistry.loadpy("$FAIRSHIP/geometry/charm-geometry_config.py", Setup = CharmdetSetup, cTarget = CharmTarget)
  if CharmdetSetup == 0: print "Setup for muon flux measurement has been set"
- else: print "Setup for charm cross section measurement has been set"
+ else: 
+  print "Setup for charm cross section measurement has been set"
+  if (((CharmTarget > 6) or (CharmTarget < 0)) and (CharmTarget != 16)): #check if proper option for emulsion target has been set
+   print "ERROR: unavailable option for CharmTarget. Currently implemented options: 1,2,3,4,5,6,16"
+   1/0
 # switch off magnetic field to measure muon flux
 #ship_geo.muShield.Field = 0.
 #ship_geo.EmuMagnet.B = 0.

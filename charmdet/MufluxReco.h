@@ -2,6 +2,7 @@
 #define MUFLUXRECO_H 1
 #include "TChain.h" 
 #include "MufluxSpectrometerHit.h"
+#include "MufluxSpectrometerPoint.h"
 #include "ScintillatorHit.h"
 #include "FairEventHeader.h"
 #include "TClonesArray.h"
@@ -32,6 +33,7 @@ public:
 
    /** methods **/
    Bool_t checkCharm();
+   Int_t checkDiMuon();
    void fillHitMaps(Int_t nMax=-1);
    void RPCextrap(Int_t nMax=-1);
    void trackKinematics(Float_t chi2UL,Int_t nMax=-1);
@@ -44,6 +46,7 @@ public:
    Double_t extrapolateToPlane(genfit::Track* fT,Float_t z, TVector3& pos, TVector3& mom);
    StringVecIntMap countMeasurements(TrackInfo* trInfo);
    std::vector<std::vector<int>> GroupIntegers(std::vector<int>& input_array, size_t span);
+   void setEffFudgeFactor(std::string s,float f){effFudgeFac[s]=f;}
 
 private:
   protected:
@@ -60,6 +63,8 @@ private:
     TClonesArray    *RPCTrackX;
     TClonesArray    *Digi_MuonTaggerHits;
     TClonesArray    *cDigi_MufluxSpectrometerHits;
+    TClonesArray    *MufluxSpectrometerPoints;
+    std::map<TString,float> effFudgeFac;
     TBranch        *b_MCTrack;   //!
     TBranch        *b_FitTracks;   //!
     TBranch        *b_TrackInfos;   //!
@@ -67,7 +72,8 @@ private:
     TBranch        *b_RPCTrackX;   //!
     TBranch        *b_Digi_MuonTaggerHits;   //!
     TBranch        *b_Digi_MufluxSpectrometerHits;   //!
-   ClassDef(MufluxReco,3);
+    TBranch        *b_MufluxSpectrometerPoints;   //!
+   ClassDef(MufluxReco,5);
 };
 
 #endif

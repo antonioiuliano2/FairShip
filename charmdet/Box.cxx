@@ -82,6 +82,7 @@ fELoss(-1),
 fBoxPointCollection(new TClonesArray("BoxPoint"))
 {
     zBoxPosition = zBox;
+    ch1r6 = false; //default configuration is with lead target
 }
 
 Box::~Box()
@@ -166,9 +167,9 @@ void Box::SetTargetDesign(Bool_t Julytarget){
   fJulytarget = Julytarget;
 }
 
-void Box::SetTargetNumber(Int_t CharmTargetNumber){		
-  nrun = CharmTargetNumber;
-  if (CharmTargetNumber==16){ //special case, CH1 run with a tungsten target
+void Box::SetRunNumber(Int_t RunNumber){		
+  nrun = RunNumber;
+  if (RunNumber==16){ //special case, CH1 run with a tungsten target
     nrun = 1;
     ch1r6 = true;
   }		
@@ -327,7 +328,7 @@ void Box::ConstructGeometry()
 	 zpoint = zpoint + NPlates[nrun-1] *AllPlateWidth + EmPlateWidth;
 	}
 
-        else if (volPasLead != NULL) { //only passive layer of lead
+	else if (volPasLead != NULL) { //only passive layer of lead, first is skipped
 	 volTarget->AddNode(volPasLead,nlead,new TGeoTranslation(0,0,zpoint + zPasLead/2));
 	 zpoint = zpoint + zPasLead;
          nlead++;

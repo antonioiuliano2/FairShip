@@ -81,7 +81,7 @@ public:
     Box(const Box&);
     Box& operator=(const Box&);
     
-    ClassDef(Box,2)
+    ClassDef(Box,3)
     
 private:
     
