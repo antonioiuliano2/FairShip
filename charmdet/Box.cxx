@@ -98,7 +98,6 @@ void Box::Initialize()
     FairDetector::Initialize();
     fbeamx = 0.; //default beam center position in xy plane is origin
     fbeamy = 0.;
-    ch1r6 = false; //default configuration is with lead target
 }
 
 void Box::SetGapGeometry(Double_t distancePassive2ECC){ 
