@@ -269,6 +269,7 @@ FixedTargetGenerator::~FixedTargetGenerator()
 // -----   Passing the event   ---------------------------------------------
 Bool_t FixedTargetGenerator::ReadEvent(FairPrimaryGenerator* cpg)
 {
+  bool interacted = true;
   Double_t zinter=0;
   Double_t ZoverA = 1.;
   if (targetName.Data() !=""){
@@ -287,9 +288,15 @@ Bool_t FixedTargetGenerator::ReadEvent(FairPrimaryGenerator* cpg)
    while (ck>0.5){
     while (prob2int<rndm) {
  //place x,y,z uniform along path
-      zinter = gRandom->Uniform(zinterStart,end[2]);
+      //zinter = gRandom->Uniform(zinterStart,end[2]);
+      zinter = gRandom->Uniform(zinterStart, 200.);
       Double_t point[3]={xOff,yOff,zinter};
-      bparam = fMaterialInvestigator->MeanMaterialBudget(start, point, mparam);
+      if (zinter > end[2]){ //target end, using the whole target for mean material budget
+       bparam = fMaterialInvestigator->MeanMaterialBudget(start, end, mparam);
+       //mparam[8] = mparam[8] + ((zinter - end[2])/17.59); //17.59 cm interaction length of lead
+       point[2] = end[2] - 0.1;
+      }
+      else bparam = fMaterialInvestigator->MeanMaterialBudget(start, point, mparam);
       Double_t interLength = mparam[8]; 
       TGeoNode *node = gGeoManager->FindNode(point[0],point[1],point[2]);
       TGeoMaterial *mat = 0;
@@ -307,7 +314,8 @@ Bool_t FixedTargetGenerator::ReadEvent(FairPrimaryGenerator* cpg)
     }
     zinterStart = zinter;
     ck-=1;
-  } 
+  }
+  if (zinter > end[2]) interacted = false;
   zinter = zinter*cm;
   }
   Pythia8::Pythia* fPythia;
@@ -342,7 +350,7 @@ Bool_t FixedTargetGenerator::ReadEvent(FairPrimaryGenerator* cpg)
     fPythiaP->event.append(int(n_id),1,0,0,n_px,n_py,n_pz,n_E,n_M,0.,9.);
     TMCProcess procID  = kPTransportation;
     if (n_mid==2212 && (n_mpx*n_mpx+n_mpy*n_mpy)<1E-5) {procID = kPPrimary;} // probably primary and not from cascade
-    cpg->AddTrack(int(n_mid),n_mpx,n_mpy,n_mpz, xOff/cm,yOff/cm,zinter/cm,-1,kFALSE,n_mE,0.,wspill,procID);
+    if (interacted) cpg->AddTrack(int(n_mid),n_mpx,n_mpy,n_mpz, xOff/cm,yOff/cm,zinter/cm,-1,kFALSE,n_mE,0.,wspill,procID);
     fPythiaP->next();
     fPythia = fPythiaP;
   }
@@ -372,7 +380,8 @@ Bool_t FixedTargetGenerator::ReadEvent(FairPrimaryGenerator* cpg)
      }else{
       if (ii<3){im=-1;}
      }
-     cpg->AddTrack(id,px,py,pz,x/cm,y/cm,z/cm,im,wanttracking,e,tof,wspill,procID);
+     if (interacted) cpg->AddTrack(id,px,py,pz,x/cm,y/cm,z/cm,im,wanttracking,e,tof,wspill,procID);
+     else cpg->AddTrack(2212,0.,0.,fMom,xOff/cm,yOff/cm,end[2],-1,kTRUE,-1.,0.,1.); //add a proton at the end of the target
     }    
   return kTRUE;
 }
