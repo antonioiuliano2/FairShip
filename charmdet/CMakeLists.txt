@@ -28,6 +28,7 @@ set(SRCS
 Box.cxx
 BoxPoint.cxx
 BoxContFact.cxx
+EmuBaseTrk.cxx
 Spectrometer.cxx
 SpectrometerPoint.cxx
 PixelModules.cxx

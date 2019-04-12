@@ -1,0 +1,31 @@
+#ifndef EmuBaseTrk_H
+#define EmuBaseTrk_H
+
+/*! EMUBaseTrk: class to introduce real measurements effects in the simulation of tracks left in emulsion couples */
+
+class EmuBaseTrk: public ShipHit {
+    public:
+     EmuBaseTrk(): ShipHit(){}
+     ~EmuBaseTrk() = default;
+     EmuBaseTrk(Int_t detID, Float_t digi);
+     //accessors
+     Double_t GetX() {return fx;};
+     Double_t GetY() {return fy;};
+     Double_t GetTX() {return fTX;};
+     Double_t GetTY() {return fTY;};
+
+    private:
+     EmuBaseTrk(const EmuBaseTrk & other);
+     EmuBaseTrk operator= (const EmuBaseTrk &other);
+     //modifiers
+     void SetX(Double_t x){fx = x;};
+     void SetY(Double_t y){fy = y;};
+     void SetTX(Double_t TX){fTX = TX;};
+     void SetTY(Double_t TY){fTY = TY;};
+
+     Double_t fx, fy; /*< average positions of the hit left by the track in the emulsion */
+     Doube_t fTX,fTY; /*< angles of the track
+     
+
+    ClassDef(EmuBaseTrk,1)
+}
