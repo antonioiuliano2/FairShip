@@ -18,8 +18,8 @@ NR_VER_STRIPS = 184
 total_width = (NR_VER_STRIPS - 2) * STRIP_XWIDTH + EXT_STRIP_XWIDTH_L + EXT_STRIP_XWIDTH_R + (NR_VER_STRIPS - 1) * V_STRIP_OFF
 reduced_width = total_width - (EXT_STRIP_XWIDTH_L + EXT_STRIP_XWIDTH_R)
 
-emuefficiencyfile = ROOT.TFile.Open("heff.root")
-emuefficiencymap = emuefficiencyfile.Get("heff")
+#emuefficiencyfile = ROOT.TFile.Open("heff.root")
+#emuefficiencymap = emuefficiencyfile.Get("heff")
 
 # function for calculating the strip number from a coordinate, for MuonTagger / RPC
 def StripX(x):
@@ -48,7 +48,7 @@ def StripY(y):
         strip_y = 0
     return int(strip_y)
 
-class MufluxDigi:
+class CharmDigi:
     " convert FairSHiP MC hits / digitized hits to measurements"
     def __init__(self,fout):
 
@@ -62,6 +62,8 @@ class MufluxDigi:
         # event header
         self.header  = ROOT.FairEventHeader()
         self.eventHeader  = self.sTree.Branch("ShipEventHeader",self.header,32000,1)
+        self.digiEmu = ROOT.TClonesArray("EmuBaseTrk")
+        self.digiEmuBranch = self.sTree.Branch("EmuBaseTrks",self.digiEmu,32000,1)
         self.digiMufluxSpectrometer    = ROOT.TClonesArray("MufluxSpectrometerHit")
         self.digiMufluxSpectrometerBranch   = self.sTree.Branch("Digi_MufluxSpectrometerHits",self.digiMufluxSpectrometer,32000,1)
         self.digiLateMufluxSpectrometer    = ROOT.TClonesArray("MufluxSpectrometerHit")
@@ -87,8 +89,11 @@ class MufluxDigi:
         self.header.SetRunId( self.sTree.MCEventHeader.GetRunID() )
         self.header.SetMCEntryNumber( self.sTree.MCEventHeader.GetEventID() )  # counts from 1
         self.eventHeader.Fill()
+        self.digiEmu.Delete()
         self.digiMufluxSpectrometer.Delete()
         self.digiLateMufluxSpectrometer.Delete()
+        self.digitizeEmulsion()
+        self.digiEmuBranch.Fill()
         self.digitizeMufluxSpectrometer()
         self.digiMufluxSpectrometerBranch.Fill()
         self.digiLateMufluxSpectrometerBranch.Fill()
@@ -105,20 +110,23 @@ class MufluxDigi:
         pottime = ROOT.gRandom.Rndm()*4.8*u.second        
         #retrieving hits in emulsion
         for emupoint in self.sTree.BoxPoint:
-            basetrack = ROOT.EmuBaseTrk(emupoint,self.Tree.t0)
+            basetrack = ROOT.EmuBaseTrk(emupoint.GetDetectorID(),self.sTree.t0)
             # effect of the angular resolution
-            tx = emupoint.GetPX()/emupoint.GetPZ()
-            ty = emupoint.GetPY()/emupoint.GetPZ()
-            tx = tx + grandom.Gaus(0,angres)
-            ty = ty + grandom.Gaus(0,angres)
+            tx = emupoint.GetPx()/emupoint.GetPz()
+            ty = emupoint.GetPy()/emupoint.GetPz()
+            tx = tx + ROOT.gRandom.Gaus(0.,angres)
+            ty = ty + ROOT.gRandom.Gaus(0.,angres)
             # effect of the target mover along x
-            x = emupoint.GetX() + time * targetmoverspeed
+            x = emupoint.GetX() + pottime * targetmoverspeed
             y = emupoint.GetY()
             
             nfilmhit = emupoint.GetDetectorID() #
             pdgcode = emupoint.PdgCode()
-            charge = self.PDG.GetParticle(pdgcode).Charge()
-
+            pdgparticle = self.PDG.GetParticle(pdgcode)     
+            if (pdgparticle):
+             charge = pdgparticle.Charge()
+	    else:
+             charge = 0.
         
 
     def digitizeMuonTagger(self, fake_clustering=False):

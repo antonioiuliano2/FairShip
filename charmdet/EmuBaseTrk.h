@@ -1,6 +1,8 @@
 #ifndef EmuBaseTrk_H
 #define EmuBaseTrk_H
 
+#include "ShipHit.h"
+
 /*! EMUBaseTrk: class to introduce real measurements effects in the simulation of tracks left in emulsion couples */
 
 class EmuBaseTrk: public ShipHit {
@@ -24,8 +26,10 @@ class EmuBaseTrk: public ShipHit {
      void SetTY(Double_t TY){fTY = TY;};
 
      Double_t fx, fy; /*< average positions of the hit left by the track in the emulsion */
-     Doube_t fTX,fTY; /*< angles of the track
+     Double_t fTX,fTY; /*< angles of the track*/
      
 
     ClassDef(EmuBaseTrk,1)
-}
+};
+
+#endif

@@ -63,8 +63,10 @@ iEvent = 0
 builtin.iEvent  = iEvent
 
 # import reco tasks
-import MufluxDigi
-SHiP = MufluxDigi.MufluxDigi(outFile)
+#import MufluxDigi
+#SHiP = MufluxDigi.MufluxDigi(outFile)
+import CharmDigi
+SHiP = CharmDigi.CharmDigi(outFile)
 
 nEvents   = min(SHiP.sTree.GetEntries(),int(options.nEvents))
 # main loop

@@ -381,8 +381,8 @@ Bool_t FixedTargetGenerator::ReadEvent(FairPrimaryGenerator* cpg)
       if (ii<3){im=-1;}
      }
      if (interacted) cpg->AddTrack(id,px,py,pz,x/cm,y/cm,z/cm,im,wanttracking,e,tof,wspill,procID);
-     else cpg->AddTrack(2212,0.,0.,fMom,xOff/cm,yOff/cm,end[2],-1,kTRUE,-1.,0.,1.); //add a proton at the end of the target
-    }    
+    }   
+  if (!interacted) cpg->AddTrack(2212,0.,0.,fMom,xOff/cm,yOff/cm,end[2],-1,kTRUE,-1.,0.,1.); 
   return kTRUE;
 }
 // -------------------------------------------------------------------------
