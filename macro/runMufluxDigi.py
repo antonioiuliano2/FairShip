@@ -25,6 +25,7 @@ shipRoot_conf.configure()
 
 from argparse import ArgumentParser
 parser = ArgumentParser()
+parser.add_argument("-cs", "--CharmdetSetup", type=int, dest='CharmdetSetup',help="setting detector setup", default=0)
 parser.add_argument("-f", "--inputFile", dest="inputFile", help="single input file", required=True)
 parser.add_argument("-g", "--geoFile", dest="geoFile", help="geofile", required=True)
 parser.add_argument("-n", "--nEvents", dest="nEvents", help="number of events to process", default=100000)
@@ -63,10 +64,12 @@ iEvent = 0
 builtin.iEvent  = iEvent
 
 # import reco tasks
-#import MufluxDigi
-#SHiP = MufluxDigi.MufluxDigi(outFile)
-import CharmDigi
-SHiP = CharmDigi.CharmDigi(outFile)
+if options.CharmdetSetup == 0: 
+ import MufluxDigi
+ SHiP = MufluxDigi.MufluxDigi(outFile)
+else:
+ import CharmDigi
+ SHiP = CharmDigi.CharmDigi(outFile)
 
 nEvents   = min(SHiP.sTree.GetEntries(),int(options.nEvents))
 # main loop

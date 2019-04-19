@@ -9,6 +9,10 @@ start = ROOT.TVector3()
 deadChannelsForMC = [10112001, 20112003, 30002041, 30012026, 30102025, 30112013, 30112018, 40012014]
 ineffiency = {1:0.1,2:0.1,3:0.1,4:0.1,5:0.1}
 
+emuefficiency = 0.9
+
+grandom = ROOT.TRandom3()
+
 # defining constants for rpc properties
 STRIP_XWIDTH = 0.8625  # internal STRIP V, WIDTH, in cm
 EXT_STRIP_XWIDTH_L = 0.9625  # nominal (R&L) and Left measured external STRIP V, WIDTH, in cm (beam along z, out from the V plane)
@@ -17,9 +21,6 @@ V_STRIP_OFF = 0.200
 NR_VER_STRIPS = 184
 total_width = (NR_VER_STRIPS - 2) * STRIP_XWIDTH + EXT_STRIP_XWIDTH_L + EXT_STRIP_XWIDTH_R + (NR_VER_STRIPS - 1) * V_STRIP_OFF
 reduced_width = total_width - (EXT_STRIP_XWIDTH_L + EXT_STRIP_XWIDTH_R)
-
-#emuefficiencyfile = ROOT.TFile.Open("heff.root")
-#emuefficiencymap = emuefficiencyfile.Get("heff")
 
 # function for calculating the strip number from a coordinate, for MuonTagger / RPC
 def StripX(x):
@@ -102,32 +103,56 @@ class CharmDigi:
         self.digiMuonTaggerBranch.Fill()
 
     def digitizeEmulsion(self):
+        index = 0
         #casual generator for estimating detector resolution
         energycut = 0.1 #energy cut to form a base track, 100 MeV
         angres = 0.003 #angular resolution assumed to be 3 mrads
         targetmoverspeed = 2.6 
-        grandom = ROOT.TRandom3
-        pottime = ROOT.gRandom.Rndm()*4.8*u.second        
+        pottime = grandom.Uniform()*4.8 #must go from 0 to 12.5 cm       
         #retrieving hits in emulsion
         for emupoint in self.sTree.BoxPoint:
             basetrack = ROOT.EmuBaseTrk(emupoint.GetDetectorID(),self.sTree.t0)
             # effect of the angular resolution
             tx = emupoint.GetPx()/emupoint.GetPz()
             ty = emupoint.GetPy()/emupoint.GetPz()
-            tx = tx + ROOT.gRandom.Gaus(0.,angres)
-            ty = ty + ROOT.gRandom.Gaus(0.,angres)
+            tx = tx + grandom.Gaus(0.,angres)
+            ty = ty + grandom.Gaus(0.,angres)
+            tantheta = pow(pow(tx,2) + pow(ty,2),0.5)
             # effect of the target mover along x
-            x = emupoint.GetX() + pottime * targetmoverspeed
+	    print "x Prima", emupoint.GetX()
+            x = emupoint.GetX() -12.5/2. + pottime * targetmoverspeed
             y = emupoint.GetY()
-            
+            print "x dopo", x
+            basetrack.SetX(x)
+            basetrack.SetY(y)
+            basetrack.SetTX(tx)
+            basetrack.SetTY(ty)
+
             nfilmhit = emupoint.GetDetectorID() #
             pdgcode = emupoint.PdgCode()
             pdgparticle = self.PDG.GetParticle(pdgcode)     
+            
+            basetrack.setValid()
+
             if (pdgparticle):
              charge = pdgparticle.Charge()
 	    else:
              charge = 0.
-        
+
+	    if (charge == 0.): #only charged particles are considered valid
+             basetrack.setInvalid()            
+
+            if (tantheta > 1.): #out of scanning regime
+             basetrack.setInvalid()          
+            
+            prob = grandom.Uniform()
+
+            if (prob > emuefficiency):
+             basetrack.setInvalid()
+
+            #filling in the tclonesarray
+            if index>0 and self.digiEmu.GetSize() == index: self.digiEmu.Expand(index+1000)
+            self.digiEmu[index] = basetrack
 
     def digitizeMuonTagger(self, fake_clustering=False):
 
