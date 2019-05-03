@@ -141,6 +141,9 @@ Pythia8Generator::~Pythia8Generator()
 // -----   Passing the event   ---------------------------------------------
 Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
 {
+  bool interacted;
+  do{
+  interacted = true;
   //Int_t nevents = 1E+04;
   //for (int i ; i < nevents; i++){
   FairMCEventHeader* header = cpg->GetEvent();
@@ -193,14 +196,14 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
     // Mo: nuclear /\ 15.25 cm pion 17.98 cm  f=1.18
     while (prob2int<rndm) {
  //place x,y,z uniform along path
-      zinter = gRandom->Uniform(zinterStart,end[2]);
-    //  zinter = gRandom->Uniform(zinterStart, 200.);
+      //zinter = gRandom->Uniform(zinterStart,end[2]);
+      zinter = gRandom->Uniform(zinterStart, 200.);
       Double_t point[3]={xOff,yOff,zinter};
-      bparam = fMaterialInvestigator->MeanMaterialBudget(start, point, mparam);
-      /* if (zinter > end[2]){
+      if (zinter > end[2]){
+       bparam = fMaterialInvestigator->MeanMaterialBudget(start, point, mparam);
        mparam[8] = mparam[8] + ((zinter - end[2])/17.59); //17.59 cm interaction length of lead
-       point[2] = end[2] - 4.2;
-      }*/
+       point[2] = end[2] - 0.1;
+      }
       Double_t interLength = mparam[8]  * intLengthFactor * 1.7; // 1.7 = interaction length / collision length from PDG Tables 
       TGeoNode *node = gGeoManager->FindNode(point[0],point[1],point[2]);
       TGeoMaterial *mat = 0;
@@ -218,6 +221,7 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
     }
     zinterStart = zinter;
    } 
+   if (zinter > end[2]) interacted = false;
    zinter = zinter*cm;
   }
   for(Int_t c=0; c<2; c++){
@@ -227,7 +231,7 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
     }
     fPythia->event.reset();
     id = (Int_t)hid[0];
-    fPythia->event.append( id, 1, 0, 0, hpx[0],  hpy[0],  hpz[0],  hE[0],  hM[0], 0., 9. );
+    if (interacted) fPythia->event.append( id, 1, 0, 0, hpx[0],  hpy[0],  hpz[0],  hE[0],  hM[0], 0., 9. );
 //simulate displaced vertex, Pythia8 will not do it
     Double_t tau0 = fPythia->particleData.tau0(id); // ctau in mm
     dl = gRandom->Exp(tau0) / hM[0]; // mm/GeV       
@@ -242,7 +246,7 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
      y=0.;
      z=zinter;
      id=mid[0];
-     cpg->AddTrack(id,px,py,pz,x/cm,y/cm,z/cm,-1,false);
+    if (interacted) cpg->AddTrack(id,px,py,pz,x/cm,y/cm,z/cm,-1,false);
      addedParticles +=1;
     }
     for(Int_t ii=1; ii<fPythia->event.size(); ii++){
@@ -269,7 +273,7 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
      if (ii==1){im = 0;}
     // if (zinter < end[2]) cpg->AddTrack(id,px,py,pz,x/cm,y/cm,z/cm,im,wanttracking,e,tof,1.);
     // else cpg->AddTrack(id,px,py,pz,x/cm,y/cm,z/cm,im,wanttracking,e,tof,-1.);
-     cpg->AddTrack(id,px,py,pz,x/cm,y/cm,z/cm,im,wanttracking,e,tof,1.);
+       if (interacted) cpg->AddTrack(id,px,py,pz,x/cm,y/cm,z/cm,im,wanttracking,e,tof,1.);
      addedParticles+=1;
     } 
     key+=addedParticles-1; // pythia counts from 1
@@ -283,12 +287,13 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
     if (mE[0] == 0){
      lx = true;
      fn++;
-     cpg->AddTrack((Int_t)hid[0],hpx[0],hpy[0],hpz[0],(mpx[0]+fPythia->event[0].xProd())/cm,
+       if (interacted) cpg->AddTrack((Int_t)hid[0],hpx[0],hpy[0],hpz[0],(mpx[0]+fPythia->event[0].xProd())/cm,
                                                       (mpy[0]+fPythia->event[0].yProd())/cm,
                                                       (mpz[0]+fPythia->event[0].zProd())/cm+zinter/cm,-1,true);
      // mpx,mpy,mpz are the vertex coordinates with respect to charm hadron, first particle in Pythia is (system) 
    }
-  } 
+  }
+}while(!interacted);
    //}
   return kTRUE;
 }

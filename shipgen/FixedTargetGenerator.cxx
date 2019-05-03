@@ -293,7 +293,7 @@ Bool_t FixedTargetGenerator::ReadEvent(FairPrimaryGenerator* cpg)
       Double_t point[3]={xOff,yOff,zinter};
       if (zinter > end[2]){ //target end, using the whole target for mean material budget
        bparam = fMaterialInvestigator->MeanMaterialBudget(start, end, mparam);
-       //mparam[8] = mparam[8] + ((zinter - end[2])/17.59); //17.59 cm interaction length of lead
+       mparam[8] = mparam[8] + ((zinter - end[2])/17.59); //17.59 cm interaction length of lead
        point[2] = end[2] - 0.1;
       }
       else bparam = fMaterialInvestigator->MeanMaterialBudget(start, point, mparam);

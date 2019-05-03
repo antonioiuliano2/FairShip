@@ -102,8 +102,8 @@ with ConfigRegistry.register_config("basic") as c:
     c.Box.gausbeam = True
 
     c.Box.beamx = 0 *u.cm #beam was lowered during charm exposure
-    c.Box.beamy = -1.0*u.cm
-
+    c.Box.beamy = 0.0*u.cm
+    #c.Box.beamy = -1.0*u.cm need to find effective value, 0 for now
     c.Box.Julytarget = True
     c.Box.GapPostTargetTh = 0.73 * u.cm #distance between end of the emulsion target and start of pixel box (Pixel origin)     
     c.Box.RunNumber =  cTarget #run configuration for charm
