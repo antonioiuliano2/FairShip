@@ -75,7 +75,7 @@ fTTPointCollection(new TClonesArray("TTPoint"))
 {
 }
 
-TargetTracker::TargetTracker(const char* name, Bool_t Active,const char* Title)
+TargetTracker::TargetTracker(const char* name, Double_t TTX, Double_t TTY, Double_t TTZ, Bool_t Active,const char* Title)
 : FairDetector(name, true, ktauTT),
   fTrackID(-1),
 fVolumeID(-1),
@@ -86,6 +86,9 @@ fLength(-1.),
 fELoss(-1),
 fTTPointCollection(new TClonesArray("TTPoint"))
 {
+  TTrackerX = TTX;
+  TTrackerY = TTY;
+  TTrackerZ = TTZ;
 }
 
 TargetTracker::~TargetTracker()
@@ -122,6 +125,23 @@ Int_t TargetTracker::InitMedium(const char* name)
     return geoBuild->createMedium(ShipMedium);
 }
 
+void TargetTracker::SetSciFiParam(Double_t scifimat_width_, Double_t scifimat_hor_, Double_t scifimat_vert_, 
+                                    Double_t scifimat_z_, Double_t support_z_, Double_t honeycomb_z_)
+{
+  scifimat_width = scifimat_width_;
+  scifimat_hor = scifimat_hor_;
+  scifimat_vert = scifimat_vert_;
+  scifimat_z = scifimat_z_;
+  support_z = support_z_; 
+  honeycomb_z = honeycomb_z_;  
+}
+
+void TargetTracker::SetNumberSciFi(Int_t n_hor_planes_, Int_t n_vert_planes_)
+{
+  n_hor_planes = n_hor_planes_;
+  n_vert_planes = n_vert_planes_;
+}
+
 void TargetTracker::SetTargetTrackerParam(Double_t TTX, Double_t TTY, Double_t TTZ)
 {
     TTrackerX = TTX;
@@ -149,30 +169,91 @@ void TargetTracker::SetDesign(Int_t Design)
   fDesign = Design;
 }
 
-
 void TargetTracker::ConstructGeometry()
 {
-
   InitMedium("TTmedium");
-  TGeoMedium *medium =gGeoManager->GetMedium("TTmedium");
-  TGeoVolume *volTarget=gGeoManager->GetVolume("volTarget");
+  TGeoMedium *TTmedium = gGeoManager->GetMedium("TTmedium");
 
-  TGeoBBox *TTBox = new TGeoBBox("TTBox",TTrackerX/2, TTrackerY/2, TTrackerZ/2);
-    TGeoVolume *volTT = new TGeoVolume("TargetTracker",TTBox,medium);
-    volTT->SetLineColor(kBlue - 1);
-    AddSensitiveVolume(volTT);
+  InitMedium("vacuum");
+  TGeoMedium *vacuum = gGeoManager->GetMedium("vacuum");
 
-    Double_t d_tt = -ZDimension/2 + TTrackerZ/2;
-    Double_t zpos = 0;
-    Int_t n = 0;
-    
-    for(int l = 0; l < fNTT; l++)
-      {
-	volTarget->AddNode(volTT,n,new TGeoTranslation(0,0, d_tt + l*(TTrackerZ +CellWidth)));
-	zpos = d_tt+l*(TTrackerZ +CellWidth);
-	n++;
-      }
+  InitMedium("CarbonComposite");
+  TGeoMedium *CarbonComposite = gGeoManager->GetMedium("CarbonComposite");
+
+  InitMedium("SciFiMat");
+  TGeoMedium *SciFiMat = gGeoManager->GetMedium("SciFiMat");
+
+  InitMedium("Airex");
+  TGeoMedium *Airex = gGeoManager->GetMedium("Airex");
+  
+  //Target Tracker 
+  TGeoVolume *volTarget = gGeoManager->GetVolume("volTarget");
+
+  TGeoBBox* TT_box = new TGeoBBox("TT_box", TTrackerX / 2, TTrackerY / 2, TTrackerZ / 2);
+  TGeoVolume* TT_volume = new TGeoVolume("TT", TT_box, vacuum);
+  TT_volume->SetLineColor(kBlue - 1);
+  //TT_volume->SetTransparency(1);
+  TT_volume->SetVisibility(1);
+  TT_volume->SetVisDaughters(1);
+
+  //Support Carbon Composite
+  TGeoBBox* TT_support_box = new TGeoBBox("TT_support_box", TTrackerX / 2, TTrackerY / 2, support_z / 2);
+  TGeoVolume* TT_support_volume = new TGeoVolume("TT_support", TT_support_box, CarbonComposite);
+  TT_support_volume->SetLineColor(kGray - 2);
+  TT_support_volume->SetVisibility(1);
+
+  //Honeycomb Airex (or Nomex)
+  TGeoBBox* TT_honeycomb_box = new TGeoBBox("TT_honeycomb_box", TTrackerX / 2, TTrackerY / 2, honeycomb_z / 2);
+  TGeoVolume* TT_honeycomb_volume = new TGeoVolume("TT_honeycomb", TT_honeycomb_box, Airex);
+  TT_honeycomb_volume->SetLineColor(kYellow);
+  TT_honeycomb_volume->SetVisibility(1);
+  
+  //SciFi mats for X and Y 
+  TGeoBBox* TT_scifimat_hor_box = new TGeoBBox("TT_scifimat_hor_box", scifimat_hor / 2, scifimat_width / 2, scifimat_z / 2);
+  TGeoVolume* TT_scifimat_hor_volume = new TGeoVolume("TT_scifimat_hor", TT_scifimat_hor_box, SciFiMat);
+  TT_scifimat_hor_volume->SetLineColor(kCyan-9);
+
+  TGeoBBox* TT_scifimat_vert_box = new TGeoBBox("TT_scifimat_vert_box", scifimat_width / 2, scifimat_vert / 2, scifimat_z / 2);
+  TGeoVolume* TT_scifimat_vert_volume = new TGeoVolume("TT_scifimat_vert", TT_scifimat_vert_box, SciFiMat);
+  TT_scifimat_vert_volume->SetLineColor(kGreen-7);
+  
+  //SciFi planes
+  TGeoBBox* TT_scifi_plane_hor_box = new TGeoBBox("TT_scifi_plane_hor_box", TTrackerX / 2, TTrackerY / 2, scifimat_z / 2);
+  TGeoVolume* TT_scifi_plane_hor_volume = new TGeoVolume("TT_scifi_plane_hor", TT_scifi_plane_hor_box, SciFiMat);
+  TT_scifi_plane_hor_volume->SetVisibility(1);
+
+  TGeoBBox* TT_scifi_plane_vert_box = new TGeoBBox("TT_scifi_plane_vert_box", TTrackerX / 2, TTrackerY / 2, scifimat_z / 2);
+  TGeoVolume* TT_scifi_plane_vert_volume = new TGeoVolume("TT_scifi_plane_vert", TT_scifi_plane_vert_box, SciFiMat);
+  TT_scifi_plane_vert_volume->SetVisibility(1);
+
+  //Add SciFi mat as sensitive unit
+  AddSensitiveVolume(TT_scifimat_hor_volume);
+  AddSensitiveVolume(TT_scifimat_vert_volume);
+
+  //Creating physical volumes and multiply 
+  for (int i = 0; i < n_hor_planes; i++){
+    TT_scifi_plane_hor_volume->AddNode(TT_scifimat_hor_volume, i, new TGeoTranslation(0, (-(n_hor_planes-1)/2.0 + i)*scifimat_width, 0));
+  }
+  for (int i = 0; i < n_vert_planes; i++){
+    TT_scifi_plane_vert_volume->AddNode(TT_scifimat_vert_volume, 100+i, new TGeoTranslation((-(n_vert_planes-1)/2.0 + i)*scifimat_width, 0, 0));
+  }
+
+  TT_volume->AddNode(TT_support_volume,          0, new TGeoTranslation(0, 0, -TTrackerZ/2 + support_z/2));
+  TT_volume->AddNode(TT_scifi_plane_hor_volume,  0, new TGeoTranslation(0, 0, -TTrackerZ/2 + support_z + scifimat_z/2));
+  TT_volume->AddNode(TT_scifi_plane_vert_volume, 0, new TGeoTranslation(0, 0, -TTrackerZ/2 + support_z + scifimat_z + scifimat_z/2));
+  TT_volume->AddNode(TT_honeycomb_volume,        0, new TGeoTranslation(0, 0, -TTrackerZ/2 + support_z + 2*scifimat_z + honeycomb_z/2));
+  TT_volume->AddNode(TT_support_volume,          1, new TGeoTranslation(0, 0, -TTrackerZ/2 + support_z + 2*scifimat_z + honeycomb_z + support_z/2));
+
+  Double_t first_tt_position = -ZDimension / 2 + TTrackerZ / 2;
+  //Insert here the exact first position  
+
+  //fNTT - number of TT walls 
+  for (int l = 0; l < fNTT; ++l) 
+  {
+    volTarget->AddNode(TT_volume, 1000+l, new TGeoTranslation(0, 0, first_tt_position + l * (TTrackerZ + CellWidth)));
+  } 
 }
+
 
 Bool_t TargetTracker::ProcessHits(FairVolume* vol)
 {
