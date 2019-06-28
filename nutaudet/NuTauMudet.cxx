@@ -519,14 +519,22 @@ void NuTauMudet::ConstructGeometry()
       UpperSupport->SetName("MUDETUPSUPPORT");
       TGeoBBox *LowerSupport = new TGeoBBox(fLowSuppX/2., fLowSuppY/2.,fZFe/2.);
       LowerSupport->SetName("MUDETLOWSUPPORT");
+      TGeoBBox *LateralSupport = new TGeoBBox(fLowSuppX/2., fLowSuppY/2., fZFe/2.);
+      LateralSupport->SetName("MUDETLATERALSUPPORT");
       //support layers, for thin layers downstream
       TGeoBBox *UpperSupport1 = new TGeoBBox(fUpSuppX/2., fUpSuppY/2.,fZFethin/2.);
       UpperSupport1->SetName("MUDETUPSUPPORT1");
       TGeoBBox *LowerSupport1 = new TGeoBBox(fLowSuppX/2., fLowSuppY/2.,fZFethin/2.);
       LowerSupport1->SetName("MUDETLOWSUPPORT1");
+      TGeoBBox *LateralSupport1 = new TGeoBBox(fLowSuppX/2., fLowSuppY/2.,fZFethin/2.);
+      LateralSupport1->SetName("MUDETLATERALSUPPORT1");
       //Translations (left is considered from the beam, positive x)
       TGeoTranslation * upright = new TGeoTranslation("MuDetupright",-fXFe/2.+fUpSuppX/2.,fYFe/2+fUpSuppY/2.,0);
       TGeoTranslation * upleft = new TGeoTranslation("MuDetupleft",+fXFe/2.-fUpSuppX/2.,fYFe/2+fUpSuppY/2.,0); 
+      TGeoTranslation * lateralupleft = new TGeoTranslation("MuDetlateralupleft",+fXFe/2.+fLowSuppX/2.,fYFe/2-fLowSuppY/2.,0); 
+      TGeoTranslation * lateralupright = new TGeoTranslation("MuDetlateralupright",-fXFe/2.-fLowSuppX/2.,fYFe/2-fLowSuppY/2.,0); 
+      TGeoTranslation * laterallowleft = new TGeoTranslation("MuDetlaterallowleft",+fXFe/2.+fLowSuppX/2.,-fYFe/2+fLowSuppY/2.,0); 
+      TGeoTranslation * laterallowright = new TGeoTranslation("MuDetlaterallowright",-fXFe/2.-fLowSuppX/2.,-fYFe/2+fLowSuppY/2.,0); 
       TGeoTranslation * lowright = new TGeoTranslation("MuDetlowright",-fXFe/2.+fLowSuppX/2.,-fYFe/2-fLowSuppY/2.,0); 
       TGeoTranslation * lowleft = new TGeoTranslation("MuDetlowleft",+fXFe/2.-fLowSuppX/2.,-fYFe/2-fLowSuppY/2.,0);
       //necessary to put SetName, otherwise it will not find them
@@ -539,8 +547,17 @@ void NuTauMudet::ConstructGeometry()
       lowleft->SetName("MuDetlowleft");
       lowleft->RegisterYourself();
 
-      TGeoCompositeShape * SupportedIronLayer = new TGeoCompositeShape("SupportedIronLayer","MUDETTRIANGCUT+MUDETUPSUPPORT:MuDetupright+MUDETUPSUPPORT:MuDetupleft+MUDETLOWSUPPORT:MuDetlowright+MUDETLOWSUPPORT:MuDetlowleft");
-      TGeoCompositeShape * SupportedIronLayer1 = new TGeoCompositeShape("SupportedIronLayer1","MUDETTRIANGCUT1+MUDETUPSUPPORT1:MuDetupright+MUDETUPSUPPORT1:MuDetupleft+MUDETLOWSUPPORT1:MuDetlowright+MUDETLOWSUPPORT1:MuDetlowleft");
+      lateralupleft->SetName("MuDetlateralupleft");
+      lateralupleft->RegisterYourself();
+      lateralupright->SetName("MuDetlateralupright");
+      lateralupright->RegisterYourself();
+      laterallowleft->SetName("MuDetlaterallowleft");
+      laterallowleft->RegisterYourself();
+      laterallowright->SetName("MuDetlaterallowright");
+      laterallowright->RegisterYourself();
+      //building composite shapes
+      TGeoCompositeShape * SupportedIronLayer = new TGeoCompositeShape("SupportedIronLayer","MUDETTRIANGCUT+MUDETUPSUPPORT:MuDetupright+MUDETUPSUPPORT:MuDetupleft+MUDETLOWSUPPORT:MuDetlowright+MUDETLOWSUPPORT:MuDetlowleft+MUDETLATERALSUPPORT:MuDetlateralupleft+MUDETLATERALSUPPORT:MuDetlateralupright+MUDETLATERALSUPPORT:MuDetlaterallowleft+MUDETLATERALSUPPORT:MuDetlaterallowright");
+      TGeoCompositeShape * SupportedIronLayer1 = new TGeoCompositeShape("SupportedIronLayer1","MUDETTRIANGCUT1+MUDETUPSUPPORT1:MuDetupright+MUDETUPSUPPORT1:MuDetupleft+MUDETLOWSUPPORT1:MuDetlowright+MUDETLOWSUPPORT1:MuDetlowleft+MUDETLOWSUPPORT:MuDetlowleft+MUDETLATERALSUPPORT1:MuDetlateralupleft+MUDETLATERALSUPPORT1:MuDetlateralupright+MUDETLATERALSUPPORT:MuDetlaterallowleft+MUDETLATERALSUPPORT:MuDetlaterallowright");
 
       TGeoVolume *MudetIronLayer = new TGeoVolume("MudetIronLayer", SupportedIronLayer, Iron);
       MudetIronLayer->SetLineColor(kGray);
