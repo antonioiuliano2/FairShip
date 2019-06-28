@@ -192,12 +192,14 @@ void NuTauMudet::SetNRpcInTagger(Int_t NmuRpc)
   fNmuRpc = NmuRpc;
 }
 
-void NuTauMudet::SetSupportTransverseDimensions(Double_t UpperSupportX, Double_t UpperSupportY, Double_t LowerSupportX, Double_t LowerSupportY)
+void NuTauMudet::SetSupportTransverseDimensions(Double_t UpperSupportX, Double_t UpperSupportY, Double_t LowerSupportX, Double_t LowerSupportY, Double_t LateralSupportX, Double_t LateralSupportY)
 {
   fUpSuppX = UpperSupportX;
   fUpSuppY = UpperSupportY;
   fLowSuppX = LowerSupportX;
   fLowSuppY = LowerSupportY;
+  fLatSuppX = LateralSupportX;
+  fLatSuppY = LateralSupportY;
 }
 
 void NuTauMudet::SetLateralCutSize(Double_t CutHeight , Double_t CutLength){
@@ -519,14 +521,14 @@ void NuTauMudet::ConstructGeometry()
       UpperSupport->SetName("MUDETUPSUPPORT");
       TGeoBBox *LowerSupport = new TGeoBBox(fLowSuppX/2., fLowSuppY/2.,fZFe/2.);
       LowerSupport->SetName("MUDETLOWSUPPORT");
-      TGeoBBox *LateralSupport = new TGeoBBox(fLowSuppX/2., fLowSuppY/2., fZFe/2.);
+      TGeoBBox *LateralSupport = new TGeoBBox(fLatSuppX/2., fLatSuppY/2., fZFe/2.);
       LateralSupport->SetName("MUDETLATERALSUPPORT");
       //support layers, for thin layers downstream
-      TGeoBBox *UpperSupport1 = new TGeoBBox(fUpSuppX/2., fUpSuppY/2.,fZFethin/2.);
+      TGeoBBox *UpperSupport1 = new TGeoBBox(fUpSuppX/2., fUpSuppY/2.,fZFethin/2.); //The 1 shapes have less z thickness
       UpperSupport1->SetName("MUDETUPSUPPORT1");
       TGeoBBox *LowerSupport1 = new TGeoBBox(fLowSuppX/2., fLowSuppY/2.,fZFethin/2.);
       LowerSupport1->SetName("MUDETLOWSUPPORT1");
-      TGeoBBox *LateralSupport1 = new TGeoBBox(fLowSuppX/2., fLowSuppY/2.,fZFethin/2.);
+      TGeoBBox *LateralSupport1 = new TGeoBBox(fLatSuppX/2., fLatSuppY/2.,fZFethin/2.);
       LateralSupport1->SetName("MUDETLATERALSUPPORT1");
       //Translations (left is considered from the beam, positive x)
       TGeoTranslation * upright = new TGeoTranslation("MuDetupright",-fXFe/2.+fUpSuppX/2.,fYFe/2+fUpSuppY/2.,0);
@@ -555,9 +557,11 @@ void NuTauMudet::ConstructGeometry()
       laterallowleft->RegisterYourself();
       laterallowright->SetName("MuDetlaterallowright");
       laterallowright->RegisterYourself();
-      //building composite shapes
-      TGeoCompositeShape * SupportedIronLayer = new TGeoCompositeShape("SupportedIronLayer","MUDETTRIANGCUT+MUDETUPSUPPORT:MuDetupright+MUDETUPSUPPORT:MuDetupleft+MUDETLOWSUPPORT:MuDetlowright+MUDETLOWSUPPORT:MuDetlowleft+MUDETLATERALSUPPORT:MuDetlateralupleft+MUDETLATERALSUPPORT:MuDetlateralupright+MUDETLATERALSUPPORT:MuDetlaterallowleft+MUDETLATERALSUPPORT:MuDetlaterallowright");
-      TGeoCompositeShape * SupportedIronLayer1 = new TGeoCompositeShape("SupportedIronLayer1","MUDETTRIANGCUT1+MUDETUPSUPPORT1:MuDetupright+MUDETUPSUPPORT1:MuDetupleft+MUDETLOWSUPPORT1:MuDetlowright+MUDETLOWSUPPORT1:MuDetlowleft+MUDETLOWSUPPORT:MuDetlowleft+MUDETLATERALSUPPORT1:MuDetlateralupleft+MUDETLATERALSUPPORT1:MuDetlateralupright+MUDETLATERALSUPPORT:MuDetlaterallowleft+MUDETLATERALSUPPORT:MuDetlaterallowright");
+      //building composite shapes, writing compositions as TString first to improve readibility
+      TString *supportaddition = new TString("MUDETTRIANGCUT+MUDETUPSUPPORT:MuDetupright+MUDETUPSUPPORT:MuDetupleft+MUDETLOWSUPPORT:MuDetlowright+MUDETLOWSUPPORT:MuDetlowleft+MUDETLATERALSUPPORT:MuDetlateralupleft+MUDETLATERALSUPPORT:MuDetlateralupright+MUDETLATERALSUPPORT:MuDetlaterallowleft+MUDETLATERALSUPPORT:MuDetlaterallowright");
+      TString *supportaddition1 = new TString("MUDETTRIANGCUT1+MUDETUPSUPPORT1:MuDetupright+MUDETUPSUPPORT1:MuDetupleft+MUDETLOWSUPPORT1:MuDetlowright+MUDETLOWSUPPORT1:MuDetlowleft+MUDETLOWSUPPORT:MuDetlowleft+MUDETLATERALSUPPORT1:MuDetlateralupleft+MUDETLATERALSUPPORT1:MuDetlateralupright+MUDETLATERALSUPPORT1:MuDetlaterallowleft+MUDETLATERALSUPPORT1:MuDetlaterallowright");
+      TGeoCompositeShape * SupportedIronLayer = new TGeoCompositeShape("SupportedIronLayer",supportaddition->Data());
+      TGeoCompositeShape * SupportedIronLayer1 = new TGeoCompositeShape("SupportedIronLayer1",supportaddition1->Data());
 
       TGeoVolume *MudetIronLayer = new TGeoVolume("MudetIronLayer", SupportedIronLayer, Iron);
       MudetIronLayer->SetLineColor(kGray);

@@ -609,10 +609,12 @@ with ConfigRegistry.register_config("basic") as c:
         c.tauMudet.YRpc = c.tauMudet.YFe
         c.tauMudet.ZRpc = 7.*u.cm
         #support structure
-        c.tauMudet.UpperSupportY = 34 * u.cm
         c.tauMudet.UpperSupportX = 34 * u.cm
-        c.tauMudet.LowerSupportY = 34 * u.cm
+        c.tauMudet.UpperSupportY = 34 * u.cm
         c.tauMudet.LowerSupportX = 34 * u.cm
+        c.tauMudet.LowerSupportY = 34 * u.cm
+        c.tauMudet.LateralSupportX = 34 * u.cm
+        c.tauMudet.LateralSupportY = 34 * u.cm
 
         c.tauMudet.Xtot = c.tauMudet.XFe
         c.tauMudet.Ytot = c.tauMudet.YFe + c.tauMudet.UpperSupportY + c.tauMudet.LowerSupportY #now we need to include also supports.
