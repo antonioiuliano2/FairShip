@@ -339,6 +339,7 @@ def makeMomDistributions(run=0):
    fileList.append( os.environ['EOSSHIP'] + x[x.find('/eos'):])
  # all RT files with tracks
  for fname in fileList:
+    if not fname.find('sys')<0: continue
     if os.path.isfile('histos-analysis-'+fname[fname.rfind('/')+1:]): continue
     cmd = "python "+pathToMacro+"drifttubeMonitoring.py -c anaResiduals -f "+fname+' &'
     print 'momentum analysis:', cmd
@@ -349,6 +350,8 @@ def makeMomDistributions(run=0):
         time.sleep(10)
  print "finished all the tasks."
 
+zeroField = ['2199','2200','2201']
+noRPC = ['2144','2154','2192','2210','2217','2218','2235','2236','2237','2240','2241','2243','2291','2345','2359']
 def massProduction(keyword = 'RUN_8000_23',fnames=[],merge=False):
  pathToMacro = "$FAIRSHIP/charmdet/"
  eospathReco = '/eos/experiment/ship/user/odurhan/muflux-recodata/'
@@ -365,13 +368,16 @@ def massProduction(keyword = 'RUN_8000_23',fnames=[],merge=False):
   for x in fnames:
    if x.find(keyword)<0: continue
    run = x[x.rfind('/')+1:]
-   if not run in os.listdir('.'):
-     temp2 = subprocess.check_output("xrdfs "+os.environ['EOSSHIP']+" ls -l "+eospathReco+run,shell=True)
-     if temp2.find('.root')<0: continue
-     os.system('mkdir '+run)
-     os.chdir(run)
-     makeMomDistributions(run)
-     os.chdir('../')
+   if not run in os.listdir('.'): os.system('mkdir '+run)
+   temp2 = subprocess.check_output("xrdfs "+os.environ['EOSSHIP']+" ls -l "+eospathReco+run,shell=True)
+   if temp2.find('.root')<0: continue
+   skip = False
+   for x in zeroField:
+       if not run.find(x)<0: skip = True
+   if skip: continue
+   os.chdir(run)
+   makeMomDistributions(run)
+   os.chdir('../')
 def massProductionAlignment(keyword = 'RUN_8000_2395',fnames=[],merge=False):
   pathToMacro = "$FAIRSHIP/charmdet/"
   eospathReco = '/eos/experiment/ship/user/odurhan/muflux-recodata/'
@@ -461,5 +467,30 @@ def pot():
  keys.sort()
  for k in keys: print k,':',scalerStat[k]
 
+def makeDTEfficiency(merge=False):
+ cmd = "hadd -f DTEff.root "
+ for fname in os.listdir('.'):
+  if not merge and fname.find('SPILL')==0:
+   cmd = "python "+pathToMacro+"drifttubeMonitoring.py -c DTeffWithRPCTracks -f "+fname+' &'
+   os.system(cmd)
+   time.sleep(10)
+   while 1>0:
+        if count_python_processes('drifttubeMonitoring')<ncpus: break 
+        time.sleep(10)
+  elif merge and fname.find('histos-DTEff')==0: 
+   cmd+=fname+' '
+ if merge: os.system(cmd)
+ print "finished all the tasks."
+ 
+
+def importMomDistr(keyword = 'RUN_8000_2'):
+  pathHistos = '/media/truf/disk2/home/truf/ShipSoft/ship-ubuntu-1710-64/'
+  temp = os.listdir(pathHistos)
+  for x in temp:
+   if x.find(keyword)<0: continue
+   run = x
+   if not run in os.listdir('.'):
+     os.system('mkdir '+run)
+   os.system('cp '+pathHistos+run+'/momDistributions.root '+run)
 
 
