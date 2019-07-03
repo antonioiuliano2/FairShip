@@ -233,10 +233,12 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
      cpg->AddTrack(id,px,py,pz,x/cm,y/cm,z/cm,-1,false);
      addedParticles +=1;
     }
+    Int_t idsig[14] = {411, 421, 431,4122,4132,4232,4332,4412,4414,4422,4424,4432,4434,4444};
     for(Int_t ii=1; ii<fPythia->event.size(); ii++){
      id = fPythia->event[ii].id(); 
      Bool_t wanttracking=false;
-     if (TMath::Abs(id) == 411 || TMath::Abs(id)==421 || TMath::Abs(id)==431) wanttracking= true; //TESTING CHARMED HADRON TRACKING
+     Int_t *ischarm = std::find(std::begin(idsig), std::end(idsig), TMath::Abs(id));
+     if (ischarm!=std::end(idsig)) wanttracking= true; //TESTING CHARMED HADRON TRACKING
      if(fPythia->event[ii].isFinal()){ wanttracking=true; }
      if (ii>1){
       z  = fPythia->event[ii].zProd()+dl*fPythia->event[1].pz()+zinter;
