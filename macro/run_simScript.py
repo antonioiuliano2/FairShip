@@ -345,6 +345,7 @@ if simEngine == "Pythia8":
   P8gen.UseExternalFile(inputFile, firstEvent)
   if ship_geo.MufluxSpectrometer.muflux == False :
      P8gen.SetTarget("volTarget_1",0.,0.) # will distribute PV inside target, beam offset x=y=0.
+     run.SetPythiaDecayer("DecayConfigNuAge.C") #testing decayer
   else: 
      print "ERROR: charmonly option should not be used for the muonflux measurement"
      1/0

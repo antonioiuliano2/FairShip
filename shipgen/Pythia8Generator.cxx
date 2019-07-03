@@ -236,6 +236,7 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
     for(Int_t ii=1; ii<fPythia->event.size(); ii++){
      id = fPythia->event[ii].id(); 
      Bool_t wanttracking=false;
+     if (TMath::Abs(id) == 411 || TMath::Abs(id)==421 || TMath::Abs(id)==431) wanttracking= true; //TESTING CHARMED HADRON TRACKING
      if(fPythia->event[ii].isFinal()){ wanttracking=true; }
      if (ii>1){
       z  = fPythia->event[ii].zProd()+dl*fPythia->event[1].pz()+zinter;
@@ -255,8 +256,10 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
      im = fPythia->event[ii].mother1()+key;
 
      if (ii==1){im = 0;}
-     cpg->AddTrack(id,px,py,pz,x/cm,y/cm,z/cm,im,wanttracking,e,tof,1.);
-     addedParticles+=1;
+     if (ii<=1){ 
+      cpg->AddTrack(id,px,py,pz,x/cm,y/cm,z/cm,im,wanttracking,e,tof,1.); //ii > 1 are decay daughters
+      addedParticles+=1;
+     }
     } 
     key+=addedParticles-1; // pythia counts from 1
   } 
