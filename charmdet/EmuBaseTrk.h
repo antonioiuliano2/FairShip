@@ -15,12 +15,16 @@ class EmuBaseTrk: public ShipHit {
      Double_t GetY() {return fy;};
      Double_t GetTX() {return fTX;};
      Double_t GetTY() {return fTY;};
+     Int_t GetMCTrackID() {return fMCTrackID;};
+     Int_t GetNFilm() {return fNFilm;};
 
      //modifiers
      void SetX(Double_t x){fx = x;};
      void SetY(Double_t y){fy = y;};
      void SetTX(Double_t TX){fTX = TX;};
      void SetTY(Double_t TY){fTY = TY;};
+     void SetMCTrackID(Int_t MCTrackID){fMCTrackID = MCTrackID;};
+     void SetNFilm(Int_t NFilm){fNFilm = NFilm;};
 
      void setInvalid() { flag = 0; };
      void setValid() { flag = 1; };
@@ -30,7 +34,8 @@ class EmuBaseTrk: public ShipHit {
 
      Double_t fx, fy; /*< average positions of the hit left by the track in the emulsion */
      Double_t fTX,fTY; /*< angles of the track*/
-     
+     Int_t fMCTrackID;/*<MonteCarlo ID of the track which left the hit in emulsion*/
+     Int_t fNFilm; /*<Number of emulsion plate where base track is present*/
 
     ClassDef(EmuBaseTrk,1)
     int flag;
