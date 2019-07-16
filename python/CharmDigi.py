@@ -31,7 +31,8 @@ class CharmDigi:
 
     def digitize(self):
 
-        self.sTree.t0 = ROOT.gRandom.Rndm()*1*u.microsecond
+        #self.sTree.t0 = ROOT.gRandom.Rndm()*1*u.microsecond
+        self.sTree.t0 = grandom.Uniform()*4.8
         self.header.SetEventTime( self.sTree.t0 )
         self.header.SetRunId( self.sTree.MCEventHeader.GetRunID() )
         self.header.SetMCEntryNumber( self.sTree.MCEventHeader.GetEventID() )  # counts from 1
@@ -46,7 +47,8 @@ class CharmDigi:
         energycut = 0.1 #energy cut to form a base track, 100 MeV
         angres = 0.003 #angular resolution assumed to be 3 mrads
         targetmoverspeed = 2.6 
-        pottime = grandom.Uniform()*4.8 #must go from 0 to 12.5 cm       
+        #pottime = grandom.Uniform()*4.8 #must go from 0 to 12.5 cm    
+        pottime = self.sTree.t0   
         #retrieving hits in emulsion
         for emupoint in self.sTree.BoxPoint:
             basetrack = ROOT.EmuBaseTrk(emupoint.GetDetectorID(),self.sTree.t0)
@@ -91,8 +93,9 @@ class CharmDigi:
 
             #filling in the tclonesarray
             if index>0 and self.digiEmu.GetSize() == index: self.digiEmu.Expand(index+1000)
-            if nfilmhit < 100 :self.digiEmu[index] = basetrack #only one of two emulsions volume per film
-
+            if nfilmhit < 100 :
+             self.digiEmu[index] = basetrack #only one of two emulsions volume per film
+             index = index + 1
     def finish(self):
         print 'finished writing tree'
         self.sTree.Write()
