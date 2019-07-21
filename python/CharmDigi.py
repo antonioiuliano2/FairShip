@@ -2,8 +2,6 @@ import os
 import ROOT
 import shipunit as u
 
-emuefficiency = 0.9
-
 grandom = ROOT.TRandom3()
 
 class CharmDigi:
@@ -32,23 +30,26 @@ class CharmDigi:
     def digitize(self):
 
         #self.sTree.t0 = ROOT.gRandom.Rndm()*1*u.microsecond
-        self.sTree.t0 = grandom.Uniform()*4.8
+        nspill = grandom.Uniform(0,4)   
+        pottime = grandom.Uniform()*4.8     
+        self.sTree.t0 = nspill*100 + pottime
         self.header.SetEventTime( self.sTree.t0 )
         self.header.SetRunId( self.sTree.MCEventHeader.GetRunID() )
         self.header.SetMCEntryNumber( self.sTree.MCEventHeader.GetEventID() )  # counts from 1
         self.eventHeader.Fill()
         self.digiEmu.Delete()
-        self.digitizeEmulsion()
+        self.digitizeEmulsion(nspill, pottime)
         self.digiEmuBranch.Fill()
 
-    def digitizeEmulsion(self):
+    def digitizeEmulsion(self,nspill,pottime):
         index = 0
+        spilldy = 2.0
         #casual generator for estimating detector resolution
         energycut = 0.1 #energy cut to form a base track, 100 MeV
-        angres = 0.003 #angular resolution assumed to be 3 mrads
+        angres = 0. #angular resolution assumed to be 3 mrads
+        emuefficiency = 1.0
         targetmoverspeed = 2.6 
-        #pottime = grandom.Uniform()*4.8 #must go from 0 to 12.5 cm    
-        pottime = self.sTree.t0   
+         
         #retrieving hits in emulsion
         for emupoint in self.sTree.BoxPoint:
             basetrack = ROOT.EmuBaseTrk(emupoint.GetDetectorID(),self.sTree.t0)
@@ -60,7 +61,7 @@ class CharmDigi:
             tantheta = pow(pow(tx,2) + pow(ty,2),0.5)
             # effect of the target mover along x
             x = emupoint.GetX() -12.5/2. + pottime * targetmoverspeed
-            y = emupoint.GetY()
+            y = emupoint.GetY() - 8.9/2. + nspill * spilldy
             basetrack.SetX(x)
             basetrack.SetY(y)
             basetrack.SetTX(tx)
