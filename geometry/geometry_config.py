@@ -618,9 +618,7 @@ with ConfigRegistry.register_config("basic") as c:
 
         c.tauMudet.Xtot = c.tauMudet.XFe + c.tauMudet.UpperSupportX + c.tauMudet.LowerSupportX #now we need to include also supports.
         c.tauMudet.Ytot = c.tauMudet.YFe + c.tauMudet.UpperSupportY + c.tauMudet.LowerSupportY #now we need to include also supports.
-        c.tauMudet.deltax = 0* u.cm #size differences between MuonFilter and VetoTagger layers
-        c.tauMudet.deltay = 80* u.cm
-        c.tauMudet.Ztot = (c.tauMudet.NRpc+c.tauMudet.NmuRpc)*c.tauMudet.ZRpc+c.tauMudet.NFethick*c.tauMudet.ZFethick + c.tauMudet.NFethin*c.tauMudet.ZFethin
+        c.tauMudet.Ztot = c.tauMudet.NRpc*c.tauMudet.ZRpc+c.tauMudet.NFethick*c.tauMudet.ZFethick + c.tauMudet.NFethin*c.tauMudet.ZFethin
         #c.tauMudet.zMudetC = -c.decayVolume.length/2. - c.tauMudet.Ztot/2
         c.tauMudet.zMudetC = c.Chamber1.z -c.chambers.Tub1length-10*u.cm - c.tauMudet.Ztot/2
         #lateral cuts

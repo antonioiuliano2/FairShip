@@ -25,7 +25,6 @@ class NuTauMudet:public FairDetector
     void SetDesign(Int_t Design);
     void SetTotDimensions(Double_t X, Double_t Y, Double_t Z);
     void SetFeDimensions(Double_t X, Double_t Y, Double_t Z, Double_t Zthin=0.);
-    void SetRpcDimDifferences(Double_t deltax, Double_t deltay);
     void SetRpcDimensions(Double_t X, Double_t Y, Double_t Z);
     void SetRpcStripDimensions(Double_t X, Double_t Y, Double_t Z);
     void SetRpcGasDimensions(Double_t X, Double_t Y, Double_t Z);
@@ -33,7 +32,6 @@ class NuTauMudet:public FairDetector
     void SetRpcPETDimensions(Double_t X, Double_t Y, Double_t Z);
     void SetNFeInArm(Int_t N, Int_t Nthin= 0);
     void SetNRpcInArm(Int_t N);
-    void SetNRpcInTagger(Int_t NmuRpc); //for the veto tagger
     void SetZDimensionArm(Double_t Z);
     void SetGapDownstream(Double_t Gap);
     void SetGapMiddle(Double_t Gap);
@@ -119,7 +117,7 @@ protected:
     Double_t fYtot;
     Double_t fZtot; //Dimension of the whole magnetic spectrometr (1st + 2nd arm + HPTs) alogn beam axis
     Int_t fNFe, fNFethin;
-    Int_t fNRpc, fNmuRpc;
+    Int_t fNRpc;
     Double_t fXFe;
     Double_t fXRpc;
     Double_t fYFe;
@@ -144,7 +142,6 @@ protected:
     Double_t fCoilW;
     Int_t fNCoil;
     
-    Double_t fdeltax, fdeltay; //different RPC transverse sizes
     //Dimension for detailed RPC simulation:
     Double_t fXStrip;
     Double_t fYStrip;
@@ -171,7 +168,7 @@ protected:
 
     NuTauMudet(const NuTauMudet&);
     NuTauMudet& operator=(const NuTauMudet&);
-    ClassDef(NuTauMudet,6)
+    ClassDef(NuTauMudet,7)
 
 };
 

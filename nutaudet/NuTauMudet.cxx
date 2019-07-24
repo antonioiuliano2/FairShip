@@ -93,12 +93,6 @@ void NuTauMudet::SetFeDimensions(Double_t X, Double_t Y, Double_t Z, Double_t Zt
   fZFethin = Zthin;
 }
 
-void NuTauMudet::SetRpcDimDifferences(Double_t deltax, Double_t deltay) //now the last RPCs and iron slabs are larger than the others
-{
-  fdeltax = deltax;
-  fdeltay = deltay;
-}
-
 void NuTauMudet::SetRpcDimensions(Double_t X, Double_t Y, Double_t Z)
 {  
   fXRpc = X;
@@ -185,11 +179,6 @@ void NuTauMudet::SetCoilParameters(Double_t CoilH, Double_t CoilW, Int_t N, Doub
   fCoilW = CoilW;
   fCoilGap = CoilG;
   fNCoil = N;
-}
-
-void NuTauMudet::SetNRpcInTagger(Int_t NmuRpc)
-{
-  fNmuRpc = NmuRpc;
 }
 
 void NuTauMudet::SetSupportTransverseDimensions(Double_t UpperSupportX, Double_t UpperSupportY, Double_t LowerSupportX, Double_t LowerSupportY, Double_t LateralSupportX, Double_t LateralSupportY)
@@ -468,19 +457,10 @@ void NuTauMudet::ConstructGeometry()
     {
       Double_t supportasymmetry = fUpSuppY - fLowSuppY; //upper and lower support have different dimensions, so the mother box must be large enough to contain both
       Int_t nr = 1E4;
-      TGeoBBox *LargedetBox = new TGeoBBox("LargedetBox", (fXRpc+fdeltax)/2, (fYRpc+fdeltay)/2, fNmuRpc*fZRpc/2);  
-      TGeoBBox *SmalldetBox = new TGeoBBox("SmalldetBox", fXtot/2, (fYtot+supportasymmetry)/2, (fZtot-fNmuRpc*fZRpc)/2); //solving overlapping with pillars->dividing box to an union of two different boxes
- 
-      TGeoTranslation *translationlarge = new TGeoTranslation(0,0,(fZtot)/2);
-      translationlarge->SetName("translationlarge");
-      translationlarge->RegisterYourself();
-      TGeoTranslation *translationsmall = new TGeoTranslation(0,0,0);
-      translationsmall->SetName("translationsmall");
-      translationsmall->RegisterYourself();
-      TGeoCompositeShape *MudetBox = new TGeoCompositeShape("MudetBox", "LargedetBox:translationlarge + SmalldetBox:translationsmall");
+      TGeoBBox *MudetBox = new TGeoBBox("MudetBox", fXtot/2, (fYtot+supportasymmetry)/2, fZtot/2); //solving overlapping with pillars->dividing box to an union of two different boxes
             
       TGeoVolume *volMudetBox = new TGeoVolume("volTauNuMudet", MudetBox, vacuum);
-      tTauNuDet->AddNode(volMudetBox, 1, new TGeoTranslation(0,0,fZcenter-(fNmuRpc*fZRpc)/2.));
+      tTauNuDet->AddNode(volMudetBox, 1, new TGeoTranslation(0,0,fZcenter));
 
       TGeoBBox *IronLayer = new TGeoBBox("Iron",fXFe/2, fYFe/2, fZFe/2);
       TGeoVolume *volIron = new TGeoVolume("volIron",IronLayer,Iron);
@@ -570,12 +550,12 @@ void NuTauMudet::ConstructGeometry()
 
       for(Int_t i = 0; i < fNFe; i++)
 	{
-          double dz = -fZtot/2+i*fZFe+fZFe/2+i*fZRpc+(fNmuRpc*fZRpc/2);
+          double dz = -fZtot/2+i*fZFe+fZFe/2+i*fZRpc;
           volMudetBox->AddNode(MudetIronLayer,nr + 100 + i, new TGeoTranslation(0, 0, dz));
 	}
       for(Int_t i = 0; i < fNFethin; i++)
 	{	  
-          double dz = -fZtot/2+fNFe*(fZRpc+fZFe)+i*fZFethin+fZFethin/2+i*fZRpc+(fNmuRpc*fZRpc/2);
+          double dz = -fZtot/2+fNFe*(fZRpc+fZFe)+i*fZFethin+fZFethin/2+i*fZRpc;
           volMudetBox->AddNode(MudetIronLayer1,nr + 100 + fNFe + i, new TGeoTranslation(0, 0,dz));
 	}
       //*****************************RPC LAYERS****************************************
@@ -602,43 +582,14 @@ void NuTauMudet::ConstructGeometry()
       volRpc->SetLineColor(kCyan);
       volRpcContainer->AddNode(volRpc,1,new TGeoTranslation(0,0,0));
    
-      TGeoBBox *RpcContainer1 = new TGeoBBox("RpcContainer1", fXRpc/2+fdeltax/2, fYRpc/2+fdeltay/2, fZRpc/2);
-      TGeoVolume *volRpcContainer1 = new TGeoVolume("volRpcContainer1",RpcContainer1,vacuum);
-  
-      TGeoBBox *Strip1  = new TGeoBBox("Strip1",fXStrip/2+fdeltax/2, fYStrip/2+fdeltay/2, fZStrip/2);
-      TGeoVolume *volStrip1  = new TGeoVolume("volStrip1",Strip1,Cu);
-      volStrip1->SetLineColor(kBlue);
-      volRpcContainer1->AddNode(volStrip1,1,new TGeoTranslation (0,0,-3.25*mm));
-      volRpcContainer1->AddNode(volStrip1,2,new TGeoTranslation (0,0,3.25*mm));
-      TGeoBBox *PETinsulator1 = new TGeoBBox("PETinsulator1", fXPet/2+fdeltax/2, fYPet/2+fdeltay/2, fZPet/2);
-      TGeoVolume *volPETinsulator1 = new TGeoVolume("volPETinsulator1", PETinsulator1, bakelite);
-      volPETinsulator1->SetLineColor(kYellow);
-      volRpcContainer1->AddNode(volPETinsulator1,1,new TGeoTranslation(0,0,-3.1*mm));
-      volRpcContainer1->AddNode(volPETinsulator1,2,new TGeoTranslation(0,0, 3.1*mm));
-      TGeoBBox *Electrode1 = new TGeoBBox("Electrode1",fXEle/2+fdeltax/2, fYEle/2+fdeltay/2, fZEle/2);
-      TGeoVolume *volElectrode1 = new TGeoVolume("volElectrode1",Electrode1,bakelite);
-      volElectrode1->SetLineColor(kGreen);
-      volRpcContainer1->AddNode(volElectrode1,1,new TGeoTranslation(0,0,-2*mm));
-      volRpcContainer1->AddNode(volElectrode1,2,new TGeoTranslation(0,0, 2*mm));
-      TGeoBBox *RpcGas1 = new TGeoBBox("RpcGas1", fXGas/2+fdeltax/2, fYGas/2+fdeltay/2, fZGas/2);
-      TGeoVolume *volRpc1 = new TGeoVolume("volRpc1",RpcGas1,RPCmat);
-      volRpc1->SetLineColor(kCyan);
-      volRpcContainer1->AddNode(volRpc1,1,new TGeoTranslation(0,0,0));
-   
       AddSensitiveVolume(volRpc);
-      AddSensitiveVolume(volRpc1);
     
       for(Int_t i = 0; i < fNRpc; i++)
 	{
-         double dz = -fZtot/2 + (i+1)*fZFe + i*fZRpc + fZRpc/2+(fNmuRpc*fZRpc/2);
+         double dz = -fZtot/2 + (i+1)*fZFe + i*fZRpc + fZRpc/2;
          if (i >= fNFe) dz = dz - (i + 1 - fNFe) * (fZFe - fZFethin);
          std::cout<<"Test 1"<<i<<" "<<fNFe<<" "<<dz<<std::endl;
          volMudetBox->AddNode(volRpcContainer,nr + i,new TGeoTranslation(0, 0, dz));          
-	}
-      for(Int_t i = 0; i < fNmuRpc; i++)
-	{
-         double dz = -fZtot/2 + fNFe* fZFe + fNFethin*fZFethin + fNRpc*fZRpc + i*fZRpc + fZRpc/2+(fNmuRpc*fZRpc/2);
-         volMudetBox->AddNode(volRpcContainer1,nr + fNRpc + i,new TGeoTranslation(0, 0, dz));
 	}
     
       TGeoBBox *Pillar1Box = new TGeoBBox(fPillarX/2,fPillarY/2, fPillarZ/2);
