@@ -144,7 +144,7 @@ protected:
     Double_t fCoilW;
     Int_t fNCoil;
     
-    Double_t fdeltax, fdeltay; //different RPC transverse sizes
+    Double_t fTagX, fTagY; //different RPC transverse sizes
     //Dimension for detailed RPC simulation:
     Double_t fXStrip;
     Double_t fYStrip;
