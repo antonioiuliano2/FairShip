@@ -93,10 +93,10 @@ void NuTauMudet::SetFeDimensions(Double_t X, Double_t Y, Double_t Z, Double_t Zt
   fZFethin = Zthin;
 }
 
-void NuTauMudet::SetVetoTaggerTransverseDimensions(Double_t TaggerX, Double_t TaggerY) //now the last RPCs and iron slabs are larger than the others
+void NuTauMudet::SetRpcDimDifferences(Double_t deltax, Double_t deltay) //now the last RPCs and iron slabs are larger than the others
 {
-  fTagX = TaggerX;
-  fTagY = TaggerY;
+  fdeltax = deltax;
+  fdeltay = deltay;
 }
 
 void NuTauMudet::SetRpcDimensions(Double_t X, Double_t Y, Double_t Z)
@@ -482,7 +482,7 @@ void NuTauMudet::ConstructGeometry()
       TGeoVolume *volMudetBox = new TGeoVolume("volTauNuMudet", MudetBox, vacuum);
       tTauNuDet->AddNode(volMudetBox, 1, new TGeoTranslation(0,0,fZcenter-(fNmuRpc*fZRpc)/2.));
 
-      TGeoBBox *IronLayer = new TGeoBBox("Iron",fTagX/2, fTagY/2, fZFe/2);
+      TGeoBBox *IronLayer = new TGeoBBox("Iron",fXFe/2, fYFe/2, fZFe/2);
       TGeoVolume *volIron = new TGeoVolume("volIron",IronLayer,Iron);
       volIron->SetLineColor(kGray);
 
@@ -582,64 +582,45 @@ void NuTauMudet::ConstructGeometry()
       TGeoBBox *RpcContainer = new TGeoBBox("RpcContainer", fXRpc/2, fYRpc/2, fZRpc/2);
       TGeoVolume *volRpcContainer = new TGeoVolume("volRpcContainer",RpcContainer,vacuum);
   
-      TGeoBBox *Strip = new TGeoBBox("Strip",fTagX/2, fTagY/2, fZStrip/2);
+      TGeoBBox *Strip = new TGeoBBox("Strip",fXStrip/2, fYStrip/2, fZStrip/2);
       TGeoVolume *volStrip = new TGeoVolume("volStrip",Strip,Cu);
       volStrip->SetLineColor(kGreen);
       volRpcContainer->AddNode(volStrip,1,new TGeoTranslation (0,0,-3.25*mm));
       volRpcContainer->AddNode(volStrip,2,new TGeoTranslation (0,0,3.25*mm));
-      TGeoBBox *PETinsulator = new TGeoBBox("PETinsulator", fTagX/2, fTagY/2, fZPet/2);
+      TGeoBBox *PETinsulator = new TGeoBBox("PETinsulator", fXPet/2, fYPet/2, fZPet/2);
       TGeoVolume *volPETinsulator = new TGeoVolume("volPETinsulator", PETinsulator, bakelite);
       volPETinsulator->SetLineColor(kYellow);
       volRpcContainer->AddNode(volPETinsulator,1,new TGeoTranslation(0,0,-3.1*mm));
       volRpcContainer->AddNode(volPETinsulator,2,new TGeoTranslation(0,0, 3.1*mm));
-      TGeoBBox *Electrode = new TGeoBBox("Electrode",fTagX/2, fTagY/2, fZEle/2);
+      TGeoBBox *Electrode = new TGeoBBox("Electrode",fXEle/2, fYEle/2, fZEle/2);
       TGeoVolume *volElectrode = new TGeoVolume("volElectrode",Electrode,bakelite);
       volElectrode->SetLineColor(kGreen);
       volRpcContainer->AddNode(volElectrode,1,new TGeoTranslation(0,0,-2*mm));
       volRpcContainer->AddNode(volElectrode,2,new TGeoTranslation(0,0, 2*mm));
-      TGeoBBox *RpcGas = new TGeoBBox("RpcGas", fTagX/2, fTagY/2, fZGas/2);
+      TGeoBBox *RpcGas = new TGeoBBox("RpcGas", fXGas/2, fYGas/2, fZGas/2);
       TGeoVolume *volRpc = new TGeoVolume("volRpc",RpcGas,RPCmat);
       volRpc->SetLineColor(kCyan);
       volRpcContainer->AddNode(volRpc,1,new TGeoTranslation(0,0,0));
    
-<<<<<<< HEAD
       TGeoBBox *RpcContainer1 = new TGeoBBox("RpcContainer1", fXRpc/2+fdeltax/2, fYRpc/2+fdeltay/2, fZRpc/2);
       TGeoVolume *volRpcContainer1 = new TGeoVolume("volRpcContainer1",RpcContainer1,vacuum);
   
       TGeoBBox *Strip1  = new TGeoBBox("Strip1",fXStrip/2+fdeltax/2, fYStrip/2+fdeltay/2, fZStrip/2);
-=======
-      TGeoBBox *RpcContainer1 = new TGeoBBox("RpcContainer1", fXRpc/2, fYRpc/2, fZRpc/2);
-      TGeoVolume *volRpcContainer1 = new TGeoVolume("volRpcContainer1",RpcContainer1,vacuum);
-  
-      TGeoBBox *Strip1  = new TGeoBBox("Strip1",fXStrip/2, fYStrip/2, fZStrip/2);
->>>>>>> nutau
       TGeoVolume *volStrip1  = new TGeoVolume("volStrip1",Strip1,Cu);
       volStrip1->SetLineColor(kBlue);
       volRpcContainer1->AddNode(volStrip1,1,new TGeoTranslation (0,0,-3.25*mm));
       volRpcContainer1->AddNode(volStrip1,2,new TGeoTranslation (0,0,3.25*mm));
-<<<<<<< HEAD
       TGeoBBox *PETinsulator1 = new TGeoBBox("PETinsulator1", fXPet/2+fdeltax/2, fYPet/2+fdeltay/2, fZPet/2);
-=======
-      TGeoBBox *PETinsulator1 = new TGeoBBox("PETinsulator1", fXPet/2, fYPet/2, fZPet/2);
->>>>>>> nutau
       TGeoVolume *volPETinsulator1 = new TGeoVolume("volPETinsulator1", PETinsulator1, bakelite);
       volPETinsulator1->SetLineColor(kYellow);
       volRpcContainer1->AddNode(volPETinsulator1,1,new TGeoTranslation(0,0,-3.1*mm));
       volRpcContainer1->AddNode(volPETinsulator1,2,new TGeoTranslation(0,0, 3.1*mm));
-<<<<<<< HEAD
       TGeoBBox *Electrode1 = new TGeoBBox("Electrode1",fXEle/2+fdeltax/2, fYEle/2+fdeltay/2, fZEle/2);
-=======
-      TGeoBBox *Electrode1 = new TGeoBBox("Electrode1",fXEle/2, fYEle/2, fZEle/2);
->>>>>>> nutau
       TGeoVolume *volElectrode1 = new TGeoVolume("volElectrode1",Electrode1,bakelite);
       volElectrode1->SetLineColor(kGreen);
       volRpcContainer1->AddNode(volElectrode1,1,new TGeoTranslation(0,0,-2*mm));
       volRpcContainer1->AddNode(volElectrode1,2,new TGeoTranslation(0,0, 2*mm));
-<<<<<<< HEAD
       TGeoBBox *RpcGas1 = new TGeoBBox("RpcGas1", fXGas/2+fdeltax/2, fYGas/2+fdeltay/2, fZGas/2);
-=======
-      TGeoBBox *RpcGas1 = new TGeoBBox("RpcGas1", fXGas/2, fYGas/2, fZGas/2);
->>>>>>> nutau
       TGeoVolume *volRpc1 = new TGeoVolume("volRpc1",RpcGas1,RPCmat);
       volRpc1->SetLineColor(kCyan);
       volRpcContainer1->AddNode(volRpc1,1,new TGeoTranslation(0,0,0));

@@ -680,11 +680,10 @@ with ConfigRegistry.register_config("basic") as c:
 
     c.NuTauTarget.nuTargetPassive = nuTargetPassive
 
+    # space for the structure that holds the brick
     c.NuTauTarget.Ydist = 0.0*u.cm
-    
-    c.NuTauTarget.SingleEmFilm = False
+    c.NuTauTarget.SingleEmFilm = True
     c.NuTauTarget.SaveOnlyInBrick = False #save only BoxPoints in the brick where neutrino interacted, memory saver
-
     c.NuTauTarget.EmTh = 0.0070 * u.cm
     c.NuTauTarget.EmX = 40.0 * u.cm
     c.NuTauTarget.EmY = 40.0 * u.cm
@@ -759,16 +758,10 @@ with ConfigRegistry.register_config("basic") as c:
         if nuTauTargetDesign!=3:
             c.NuTauTarget.zdim = c.NuTauTarget.wall* c.NuTauTarget.CellW + (c.NuTauTarget.wall+1)*c.NuTauTT.TTZ
         if nuTauTargetDesign ==3:
-<<<<<<< HEAD
             c.NuTauTarget.zdim = c.NuTauTarget.wall* c.NuTauTarget.CellW + c.NuTauTarget.wall*c.NuTauTT.TTZ
             c.NuTauTarget.zC = c.EmuMagnet.zC - c.NuTauTarget.zdim/2.
             c.tauHPT.TotalDZ = (c.EmuMagnet.Z - c.EmuMagnet.Height1) - c.NuTauTarget.zdim # MagRegion-Target 
             c.tauHPT.distHPT = (c.tauHPT.TotalDZ - c.tauHPT.nHPT * c.tauHPT.DZ) / (c.tauHPT.nHPT - 1)                    
-=======
-            c.NuTauTarget.zdim = c.NuTauTarget.wall* c.NuTauTarget.CellW + (c.NuTauTarget.wall+1)*c.NuTauTT.TTZ
-            c.NuTauTarget.zC = c.EmuMagnet.zC - c.NuTauTarget.zdim/2.   
-            #c.NuTauTarget.zC = c.EmuMagnet.zC - c.EmuMagnet.Z/2 + c.EmuMagnet.Height1/2 + c.NuTauTarget.zdim/2                     
->>>>>>> nutau
 
     if nuTauTargetDesign == 2:  #NEW with NO magnet
         c.NuTauTarget.RohG = 0 * u.cm
