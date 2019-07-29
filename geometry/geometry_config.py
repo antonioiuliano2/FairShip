@@ -16,7 +16,7 @@ if "muShieldDesign" not in globals():
 if "muShieldGeo" not in globals():
     muShieldGeo = None
 if "nuTargetPassive" not in globals():
-    nuTargetPassive = 1
+    nuTargetPassive = 0
 if "nuTauTargetDesign" not in globals():
     nuTauTargetDesign = 0
     if muShieldDesign >= 7: 
