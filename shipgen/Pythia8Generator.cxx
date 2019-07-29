@@ -240,7 +240,7 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
      Int_t *ischarm = std::find(std::begin(idsig), std::end(idsig), TMath::Abs(id));
      if (ischarm!=std::end(idsig)) wanttracking= true; //TESTING CHARMED HADRON TRACKING
      if(fPythia->event[ii].isFinal()){ wanttracking=true; }
-     if (ii>1){
+     if (ii>1){      
       z  = fPythia->event[ii].zProd()+dl*fPythia->event[1].pz()+zinter;
       x  = fPythia->event[ii].xProd()+dl*fPythia->event[1].px();
       y  = fPythia->event[ii].yProd()+dl*fPythia->event[1].py();
@@ -258,10 +258,15 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
      im = fPythia->event[ii].mother1()+key;
 
      if (ii==1){im = 0;}
-     if (ii<=1){ 
+     Int_t motherpdg = fPythia->event[fPythia->event[ii].mother1()].id();
+     ischarm = std::find(std::begin(idsig), std::end(idsig), TMath::Abs(motherpdg));
+     if (ischarm==std::end(idsig)){    
       cpg->AddTrack(id,px,py,pz,x/cm,y/cm,z/cm,im,wanttracking,e,tof,1.); //ii > 1 are decay daughters
       addedParticles+=1;
      }
+     else{
+      std::cout<<"Excluding track: "<<id<<" with mother "<<motherpdg<<std::endl;      
+     } 
     } 
     key+=addedParticles-1; // pythia counts from 1
   } 
