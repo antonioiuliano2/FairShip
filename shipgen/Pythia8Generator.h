@@ -36,6 +36,7 @@ class Pythia8Generator : public FairGenerator
   void SetfFDs(Double_t z) { fFDs = z; };
   void SetTarget(TString s, Double_t x,Double_t y ) { targetName = s; xOff=x; yOff=y; };
   Int_t nrOfRetries(){ return fnRetries; };
+  void doTrackCharm() {fTrackingCharm = kTRUE;};
 
  private:
   
@@ -69,6 +70,7 @@ class Pythia8Generator : public FairGenerator
   Double_t startZ;
   Double_t endZ;
   Double_t maxCrossSection;
+  Bool_t fTrackingCharm;
 };
 
 #endif /* !PNDP8GENERATOR_H */

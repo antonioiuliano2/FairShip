@@ -61,6 +61,7 @@ caloDesign   = globalDesigns[default]['caloDesign'] # 0=ECAL/HCAL TP  1=ECAL/HCA
 strawDesign  = globalDesigns[default]['strawDesign'] # simplistic tracker design,  4=sophisticated straw tube design, horizontal wires (default), 10=2cm straw diameter for 2018 layout
 
 charm        = 0 # !=0 create charm detector instead of SHiP
+TrackingCharm = False #by default charm decays are handled by Pythia6 standalone script
 pID          = 22 # default for the particle gun
 geofile = None
 
@@ -77,7 +78,7 @@ try:
                                    "PG","pID=","Muflux","Pythia6","Pythia8","Genie","MuDIS","Ntuple","Nuage","MuonBack","FollowMuon","FastMuon",\
                                    "Cosmics=","nEvents=", "display", "seed=", "firstEvent=", "phiRandom", "mass=", "couplings=", "coupling=", "epsilon=",\
                                    "output=","tankDesign=","muShieldDesign=","NuRadio","test",\
-                                   "DarkPhoton","RpvSusy","SusyBench=","sameSeed=","charm=","CharmdetSetup=","CharmTarget=","nuTauTargetDesign=","caloDesign=","strawDesign=","Estart=",\
+                                   "DarkPhoton","RpvSusy","SusyBench=","sameSeed=","charm=","CharmdetSetup=","CharmTarget=","TrackingCharm=","nuTauTargetDesign=","caloDesign=","strawDesign=","Estart=",\
                                    "Eend=","production-couplings=","decay-couplings=","dry-run"])
 
 except getopt.GetoptError:
@@ -184,6 +185,8 @@ for o, a in opts:
             CharmdetSetup = int(a)
         if o in ("--CharmTarget",):
             CharmTarget = int(a)
+        if o in ("--TrackingCharm",):
+            TrackingCharm = True
         if o in ("-F",):
             deepCopy = True
         if o in ("--RpvSusy",):
@@ -345,7 +348,10 @@ if simEngine == "Pythia8":
   P8gen.UseExternalFile(inputFile, firstEvent)
   if ship_geo.MufluxSpectrometer.muflux == False :
      P8gen.SetTarget("volTarget_1",0.,0.) # will distribute PV inside target, beam offset x=y=0.
-     run.SetPythiaDecayer("DecayConfigNuAge.C") #testing decayer
+     if TrackingCharm:
+      print "Activating DecayConfigNuage external decayer"
+      run.SetPythiaDecayer("DecayConfigNuAge.C") #decays handled by external decayer
+      P8gen.doTrackCharm()
   else: 
      print "ERROR: charmonly option should not be used for the muonflux measurement"
      1/0
