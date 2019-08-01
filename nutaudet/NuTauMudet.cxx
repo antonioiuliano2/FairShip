@@ -632,7 +632,6 @@ void NuTauMudet::ConstructGeometry()
 	{
          double dz = -fZtot/2 + (i+1)*fZFe + i*fZRpc + fZRpc/2+(fNmuRpc*fZRpc/2);
          if (i >= fNFe) dz = dz - (i + 1 - fNFe) * (fZFe - fZFethin);
-         std::cout<<"Test 1"<<i<<" "<<fNFe<<" "<<dz<<std::endl;
          volMudetBox->AddNode(volRpcContainer,nr + i,new TGeoTranslation(0, 0, dz));          
 	}
       for(Int_t i = 0; i < fNmuRpc; i++)
