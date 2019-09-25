@@ -449,9 +449,8 @@ void Target::ConstructGeometry()
       volCES->SetLineColor(kYellow-10);
       volCES->SetVisibility(kTRUE);
     
-    //  TGeoBBox *RohGap = new TGeoBBox("RohGap", EmulsionX/2, EmulsionY/2, RohacellGap/2);
-    //  TGeoVolume *volRohGap = new TGeoVolume("RohacellGap",RohGap,air); //MEDIUM REPLACED WITH AIR
-      TGeoVolumeAssembly *volRohGap = new TGeoVolumeAssembly("RohacellGap");
+      TGeoBBox *RohGap = new TGeoBBox("RohGap", EmulsionX/2, EmulsionY/2, RohacellGap/2);
+      TGeoVolume *volRohGap = new TGeoVolume("RohacellGap",RohGap,rohacell);
       volRohGap->SetTransparency(1);
       volRohGap->SetLineColor(kYellow);
     
@@ -703,8 +702,7 @@ Bool_t  Target::ProcessHits(FairVolume* vol)
 
     fVolumeID = detID;
 	
-    //not cutting null energy losses anymore
-    //if (fELoss == 0. ) { return kFALSE; }
+    if (fELoss == 0. ) { return kFALSE; }
     TParticle* p=gMC->GetStack()->GetCurrentTrack();
     //Int_t MotherID =gMC->GetStack()->GetCurrentParentTrackNumber();
     Int_t fMotherID =p->GetFirstMother();
