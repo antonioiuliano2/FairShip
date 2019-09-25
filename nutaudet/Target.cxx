@@ -450,7 +450,7 @@ void Target::ConstructGeometry()
       volCES->SetVisibility(kTRUE);
     
       TGeoBBox *RohGap = new TGeoBBox("RohGap", EmulsionX/2, EmulsionY/2, RohacellGap/2);
-      TGeoVolume *volRohGap = new TGeoVolume("RohacellGap",RohGap,rohacell);
+      TGeoVolume *volRohGap = new TGeoVolume("RohacellGap",RohGap,air); //using AIR for CES, not rohacell
       volRohGap->SetTransparency(1);
       volRohGap->SetLineColor(kYellow);
     
