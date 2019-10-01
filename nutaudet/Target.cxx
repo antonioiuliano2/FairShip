@@ -316,6 +316,9 @@ void Target::ConstructGeometry()
   InitMedium("steel");
   TGeoMedium *Steel =gGeoManager->GetMedium("steel");
 
+  InitMedium("air");
+  TGeoMedium *air =gGeoManager->GetMedium("air");
+
 
   Int_t NPlates = number_of_plates; //Number of doublets emulsion + Pb
   Int_t NRohacellGap = 2;
@@ -374,11 +377,12 @@ void Target::ConstructGeometry()
   //
   //Volumes definition
   //
-   
-  TGeoVolumeAssembly *volCell = new TGeoVolumeAssembly("Cell");
+  TGeoBBox *Cell = new TGeoBBox("cell", BrickX/2, BrickY/2, CellWidth/2);
+  TGeoVolume *volCell = new TGeoVolume("Cell",Cell,air);   
     
   //Brick
-  TGeoVolumeAssembly *volBrick = new TGeoVolumeAssembly("Brick");
+  TGeoBBox *Brick = new TGeoBBox("brick", BrickX/2, BrickY/2, BrickZ/2);
+  TGeoVolume *volBrick = new TGeoVolume("Brick",Brick,air);
   volBrick->SetLineColor(kCyan);
   volBrick->SetTransparency(1);   
     
@@ -436,14 +440,14 @@ void Target::ConstructGeometry()
   if(fDesign!=2)
     {    
       //CES
-      TGeoVolumeAssembly *volCES = new TGeoVolumeAssembly("CES");
+      TGeoBBox *CES = new TGeoBBox("ces", EmulsionX/2, EmulsionY/2, CESWidth/2);
+      TGeoVolume *volCES = new TGeoVolume("CES", CES, air);
       volCES->SetTransparency(5);
       volCES->SetLineColor(kYellow-10);
       volCES->SetVisibility(kTRUE);
     
-    //  TGeoBBox *RohGap = new TGeoBBox("RohGap", EmulsionX/2, EmulsionY/2, RohacellGap/2);
-    //  TGeoVolume *volRohGap = new TGeoVolume("RohacellGap",RohGap,air); //MEDIUM REPLACED WITH AIR
-      TGeoVolumeAssembly *volRohGap = new TGeoVolumeAssembly("RohacellGap");
+      TGeoBBox *RohGap = new TGeoBBox("RohGap", EmulsionX/2, EmulsionY/2, RohacellGap/2);
+      TGeoVolume *volRohGap = new TGeoVolume("RohacellGap",RohGap,air); //MEDIUM REPLACED WITH AIR    
       volRohGap->SetTransparency(1);
       volRohGap->SetLineColor(kYellow);
     
@@ -495,8 +499,9 @@ void Target::ConstructGeometry()
     
       volCell->AddNode(volBrick,1,new TGeoTranslation(0,0,-CellWidth/2 + BrickZ/2));
       volCell->AddNode(volCES,1,new TGeoTranslation(0,0,-CellWidth/2 + BrickZ + CESWidth/2));
-    
-      TGeoVolumeAssembly *volRow = new TGeoVolumeAssembly("Row");
+
+      TGeoBBox *Row = new TGeoBBox("row",XDimension/2, BrickY/2, CellWidth/2);
+      TGeoVolume *volRow = new TGeoVolume("Row",Row,air);
       volRow->SetLineColor(20);
     
       Double_t d_cl_x = -WallXDim/2;
@@ -506,11 +511,14 @@ void Target::ConstructGeometry()
 	  d_cl_x += BrickX;
 	}
 
-      TGeoVolumeAssembly *volWall = new TGeoVolumeAssembly("Wall");
+      TGeoBBox *Wall = new TGeoBBox("wall",XDimension/2, YDimension/2, CellWidth/2);
+      TGeoVolume *volWall = new TGeoVolume("Wall",Wall,air);
     
       Double_t d_cl_y = -WallYDim/2;
       for(int k= 0; k< fNRow; k++)
 	{
+    TGeoBBox *Row = new TGeoBBox("row",XDimension/2, BrickY/2, CellWidth/2);
+    TGeoVolume *volRow = new TGeoVolume("Row",Row,air);
 	  volWall->AddNode(volRow,k,new TGeoTranslation(0, d_cl_y + BrickY/2, 0));
         
 	  // 2mm is the distance for the structure that holds the brick
@@ -543,8 +551,8 @@ void Target::ConstructGeometry()
     
       tTauNuDet->AddNode(volTarget,1,new TGeoTranslation(0,0,fCenterZ));
 	
-   
-      TGeoVolumeAssembly *volRow = new TGeoVolumeAssembly("Row");
+      TGeoBBox *Row = new TGeoBBox("row",XDimension/2, BrickY/2, CellWidth/2);
+      TGeoVolume *volRow = new TGeoVolume("Row",Row,air);
       volRow->SetLineColor(20);
     
       Double_t d_cl_x = -WallXDim/2;
@@ -553,7 +561,8 @@ void Target::ConstructGeometry()
 	  volRow->AddNode(volBrick,j,new TGeoTranslation(d_cl_x+BrickX/2, 0, 0));
 	  d_cl_x += BrickX;
 	}
-      TGeoVolumeAssembly *volWall = new TGeoVolumeAssembly("Wall");
+      TGeoBBox *Wall = new TGeoBBox("wall",XDimension/2, YDimension/2, BrickZ/2);
+      TGeoVolume *volWall = new TGeoVolume("Wall",Wall,air);
     
       Double_t d_cl_y = -WallYDim/2;
       for(int k= 0; k< fNRow; k++)
