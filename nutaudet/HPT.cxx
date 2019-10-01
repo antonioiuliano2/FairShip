@@ -246,8 +246,28 @@ void Hpt::ConstructGeometry()
         TGeoVolume *volDT = new TGeoVolume("volDT",DT,HPTmat); 
         volDT->SetLineColor(kBlue-5);
 
+<<<<<<< HEAD
         //////////////////////////////////////////
         //// Creating of SciFi modules in HPT ////   
+=======
+        //The internal size is smaller, so the surrounding detector is divided into two parts  
+        TGeoBBox *SurroundingdetOuter = new TGeoBBox("SurroundingdetOuter",DXMagnetizedRegion/2., fSRHeight/2, DZMagnetizedRegion/2.);
+        TGeoVolume *volSurroundingdetOuter = new TGeoVolume("volSurroundingdetOuter",SurroundingdetOuter, HPTmat);
+        AddSensitiveVolume(volSurroundingdetOuter);
+        volSurroundingdetOuter->SetLineColor(kBlue);
+        tTauNuDet->AddNode(volSurroundingdetOuter,100, new TGeoTranslation(0,+fmagnety/2+fSRHeight/2, fmagnetcenter));
+        tTauNuDet->AddNode(volSurroundingdetOuter,400, new TGeoTranslation(0,-fmagnety/2-fSRHeight/2, fmagnetcenter));
+
+        Double_t SRInnerHeight = DYMagnetizedRegion / 2 - HPTrackerY / 2;
+        TGeoBBox *SurroundingdetInner = new TGeoBBox("SurroundingdetInner",DXMagnetizedRegion/2., SRInnerHeight/2, DZMagnetizedRegion/2.);
+        TGeoVolume *volSurroundingdetInner = new TGeoVolume("volSurroundingdetInner",SurroundingdetInner, HPTmat);
+        AddSensitiveVolume(volSurroundingdetInner);
+        volSurroundingdetInner->SetLineColor(kBlue);
+        volMagRegion->AddNode(volSurroundingdetInner, 200, new TGeoTranslation(0.,+DYMagnetizedRegion/2-SRInnerHeight/2,0.));
+        volMagRegion->AddNode(volSurroundingdetInner, 300, new TGeoTranslation(0.,-DYMagnetizedRegion/2+SRInnerHeight/2,0.));
+
+        // Creating of SciFi modules in HPT   
+>>>>>>> origin/master
         InitMedium("CarbonComposite");
         TGeoMedium *CarbonComposite = gGeoManager->GetMedium("CarbonComposite");
 

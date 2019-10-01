@@ -1,3 +1,5 @@
+from __future__ import print_function
+from __future__ import division
 __author__ = 'Mikhail Hushchyn'
 
 import numpy as np
@@ -68,7 +70,7 @@ def template_matching_pattern_recognition(SmearedHits, ShipGeo):
     recognized_tracks = {}
 
     if len(SmearedHits) > 500:
-        print "Too large hits in the event!"
+        print("Too large hits in the event!")
         return recognized_tracks
 
     min_hits = 3
@@ -204,7 +206,7 @@ def fast_hough_transform_pattern_recognition(SmearedHits, ShipGeo):
     recognized_tracks = {}
 
     if len(SmearedHits) > 500:
-        print "Too large hits in the event!"
+        print("Too large hits in the event!")
         return recognized_tracks
 
     min_hits = 3
@@ -465,7 +467,7 @@ def artificial_retina_pattern_recognition(SmearedHits, ShipGeo):
     recognized_tracks = {}
 
     if len(SmearedHits) > 500:
-        print "Too large hits in the event!"
+        print("Too large hits in the event!")
         return recognized_tracks
 
     min_hits = 3

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import shipunit as u
 import ROOT as r
 from ShipGeoConfig import AttrDict, ConfigRegistry
@@ -75,7 +76,7 @@ with ConfigRegistry.register_config("basic") as c:
     # eventually, the only parameter which needs to be changed when the active shielding lenght changes.
     z4=2438.*u.cm+magnetIncrease+extraVesselLength
     if strawDesign != 4 and strawDesign != 10:
-     print "this design ",strawDesign," is not supported, use strawDesign = 4 or 10"
+     print("this design ",strawDesign," is not supported, use strawDesign = 4 or 10")
      1/0 
     else:
      c.chambers.Length = totalLength
@@ -211,7 +212,7 @@ with ConfigRegistry.register_config("basic") as c:
      c.EcalOption = 2
      c.preshowerOption = 0
     else:
-     print "CaloDesign option wrong -> ",CaloDesign
+     print("CaloDesign option wrong -> ",CaloDesign)
      1/0
 
     presShowerDeltaZ = 0.
@@ -342,7 +343,7 @@ with ConfigRegistry.register_config("basic") as c:
     elif muShieldDesign == 8:
         assert muShieldGeo
         c.muShieldGeo = muShieldGeo
-        print "Load geo"
+        print("Load geo")
         f = r.TFile.Open(muShieldGeo)
         params = r.TVectorD()
         params.Read('params')
@@ -553,8 +554,8 @@ with ConfigRegistry.register_config("basic") as c:
     #Parameters for tau muon detector
     c.tauMudet = AttrDict(z=0*u.cm)
     if nuTauTargetDesign<=2:
-	c.tauMudet.NFe = 12
-    	c.tauMudet.NRpc= 11
+        c.tauMudet.NFe = 12
+        c.tauMudet.NRpc= 11
         if nuTauTargetDesign==0: #TP
             c.tauMudet.YRyoke = 90*u.cm
             c.tauMudet.YRyoke_s = c.tauMudet.YRyoke-30*u.cm
@@ -595,9 +596,9 @@ with ConfigRegistry.register_config("basic") as c:
         c.tauMudet.B = 1.5 * u.tesla
     if nuTauTargetDesign==3:
         scaleMudet=1.
-	c.tauMudet.NFethick = 4 #upstream slabs, more thick
+        c.tauMudet.NFethick = 4 #upstream slabs, more thick
         c.tauMudet.NFethin = 4 #downstream slabs, less thick
-    	c.tauMudet.NRpc= 8
+        c.tauMudet.NRpc= 8
         c.tauMudet.NmuRpc = 3
         
         c.tauMudet.XFe = scaleMudet*1.900*u.m #layer dimensions, excluded supports
