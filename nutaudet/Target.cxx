@@ -319,9 +319,6 @@ void Target::ConstructGeometry()
   InitMedium("steel");
   TGeoMedium *Steel =gGeoManager->GetMedium("steel");
 
-  InitMedium("air");
-  TGeoMedium *air =gGeoManager->GetMedium("air");
-
   Int_t NPlates = number_of_plates; //Number of doublets emulsion + Pb
   Int_t NRohacellGap = 2;
 
@@ -452,7 +449,7 @@ void Target::ConstructGeometry()
       volCES->SetVisibility(kTRUE);
     
       TGeoBBox *RohGap = new TGeoBBox("RohGap", EmulsionX/2, EmulsionY/2, RohacellGap/2);
-      TGeoVolume *volRohGap = new TGeoVolume("RohacellGap",RohGap,air); //MEDIUM REPLACED WITH AIR    
+      TGeoVolume *volRohGap = new TGeoVolume("RohacellGap",RohGap,air); //using AIR for CES, not rohacell
       volRohGap->SetTransparency(1);
       volRohGap->SetLineColor(kYellow);
     
@@ -709,8 +706,7 @@ Bool_t  Target::ProcessHits(FairVolume* vol)
 
     fVolumeID = detID;
 	
-    //not cutting null energy losses anymore
-    //if (fELoss == 0. ) { return kFALSE; }
+    if (fELoss == 0. ) { return kFALSE; }
     TParticle* p=gMC->GetStack()->GetCurrentTrack();
     //Int_t MotherID =gMC->GetStack()->GetCurrentParentTrackNumber();
     Int_t fMotherID =p->GetFirstMother();

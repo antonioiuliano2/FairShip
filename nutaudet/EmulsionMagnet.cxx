@@ -174,10 +174,6 @@ void EmulsionMagnet::ConstructGeometry()
   InitMedium("steel");
   TGeoMedium *Steel = gGeoManager->GetMedium("steel");
 
-  InitMedium("air");
-  TGeoMedium *air = gGeoManager->GetMedium("air");
-
-
   gGeoManager->SetVisLevel(10);
 
   TGeoVolume *tTauNuDet = gGeoManager->GetVolume("tTauNuDet");  
