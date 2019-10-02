@@ -519,8 +519,6 @@ void Target::ConstructGeometry()
       Double_t d_cl_y = -WallYDim/2;
       for(int k= 0; k< fNRow; k++)
 	{
-    TGeoBBox *Row = new TGeoBBox("row",XDimension/2, BrickY/2, CellWidth/2);
-    TGeoVolume *volRow = new TGeoVolume("Row",Row,air);
 	  volWall->AddNode(volRow,k,new TGeoTranslation(0, d_cl_y + BrickY/2, 0));
         
 	  // 2mm is the distance for the structure that holds the brick

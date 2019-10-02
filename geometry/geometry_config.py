@@ -671,7 +671,7 @@ with ConfigRegistry.register_config("basic") as c:
         c.NuTauTarget.col=9
         c.NuTauTarget.wall=20
     if c.NuTauTarget.Design == 3: #One unique magnet, eventually more than one target volume 
-        c.NuTauTarget.n_films = 56 
+        c.NuTauTarget.n_plates = 56 
         c.NuTauTarget.row = 2 #new configuration, four large emulsion films
         c.NuTauTarget.col = 2
         c.NuTauTarget.wall = 19
