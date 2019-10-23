@@ -2,7 +2,6 @@ from __future__ import print_function
 from __future__ import division
 # simple vertex reconstruction with errors
 import ROOT,sys,os
-import global_variables
 import shipunit as u
 import rootUtils as ut
 import numpy as np
@@ -90,7 +89,7 @@ class Task:
    fitStatus = fittedTracks[tr].getFitStatus()
    xx  = fittedTracks[tr].getFittedState()
    pid   = xx.getPDG()
-   if not global_variables.pidProton and abs(pid) == 2212:
+   if not pidProton and abs(pid) == 2212:
      pid = int(math.copysign(211,pid))
    rep   = ROOT.genfit.RKTrackRep(xx.getPDG())  
    state = ROOT.genfit.StateOnPlane(rep)
@@ -131,7 +130,7 @@ class Task:
       step+=1
       if step > 10:  
          ut.reportError("shipVertex::abort iteration, too many steps")
-         if global_variables.debug:
+         if debug: 
           print('abort iteration, too many steps, pos=',newPos[0],newPos[1],newPos[2],' doca=',doca,'z before and dz',zBefore,dz)
          rc = False
          break 

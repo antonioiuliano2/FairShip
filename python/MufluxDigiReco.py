@@ -1,7 +1,5 @@
 from __future__ import print_function
 from builtins import range
-import global_variables
-from global_variables import h
 import os
 import ROOT
 import MufluxPatRec
@@ -97,7 +95,7 @@ class MufluxDigiReco:
          self.header  = ROOT.FairEventHeader()
          self.eventHeader  = self.sTree.Branch("ShipEventHeader",self.header,32000,-1)
          self.fitTrack2MC  = ROOT.std.vector('int')()
-         self.mcLink = self.sTree.Branch("fitTrack2MC" + global_variables.realPR, self.fitTrack2MC, 32000, -1)
+         self.mcLink      = self.sTree.Branch("fitTrack2MC"+realPR,self.fitTrack2MC,32000,-1)
          self.digiMufluxSpectrometer    = ROOT.TClonesArray("MufluxSpectrometerHit")
          self.digiMufluxSpectrometerBranch   = self.sTree.Branch("Digi_MufluxSpectrometerHits",self.digiMufluxSpectrometer,32000,-1)
         #muon taggger
@@ -110,13 +108,13 @@ class MufluxDigiReco:
         # fitted tracks
         self.fGenFitArray = ROOT.TClonesArray("genfit::Track")
         self.fGenFitArray.BypassStreamer(ROOT.kFALSE)
-        self.fitTracks = self.sTree.Branch("FitTracks" + global_variables.realPR, self.fGenFitArray, 32000, -1)
+        self.fitTracks   = self.sTree.Branch("FitTracks"+realPR,  self.fGenFitArray,32000,-1)
 
         self.PDG = ROOT.TDatabasePDG.Instance()
         # for the digitizing and reconstruction step
-        self.v_drift       = global_variables.modules["MufluxSpectrometer"].TubeVdrift()
-        self.sigma_spatial = global_variables.modules["MufluxSpectrometer"].TubeSigmaSpatial()
-        self.viewangle     = global_variables.modules["MufluxSpectrometer"].ViewAngle()
+        self.v_drift       = modules["MufluxSpectrometer"].TubeVdrift()
+        self.sigma_spatial = modules["MufluxSpectrometer"].TubeSigmaSpatial()
+        self.viewangle     = modules["MufluxSpectrometer"].ViewAngle()
 
         # access ShipTree
         self.sTree.GetEvent(0)
@@ -133,7 +131,7 @@ class MufluxDigiReco:
         self.fitter      = ROOT.genfit.DAF()
         self.fitter.setMaxIterations(20)
 
-        if global_variables.debug:
+        if debug:
 
             # self.fitter.setDebugLvl(1) # produces lot of printout
             output_dir = 'pics/'
@@ -329,7 +327,7 @@ class MufluxDigiReco:
         t0 = 0.
         key = -1
         SmearedHits = []
-        v_drift = global_variables.modules["MufluxSpectrometer"].TubeVdrift()
+        v_drift = modules["MufluxSpectrometer"].TubeVdrift()
         z1 = stop.z()
         for aDigi in self.digiMufluxSpectrometer:
             key+=1
@@ -362,7 +360,7 @@ class MufluxDigiReco:
             detID = ahit.GetDetectorID()
             top = ROOT.TVector3()
             bot = ROOT.TVector3()
-            global_variables.modules["MufluxSpectrometer"].TubeEndPoints(detID, bot, top)
+            modules["MufluxSpectrometer"].TubeEndPoints(detID,bot,top)
             # MufluxSpectrometerHit::MufluxSpectrometerEndPoints(TVector3 &vbot, TVector3 &vtop)
             #distance to wire, and smear it.
             dw  = ahit.dist2Wire()
@@ -432,7 +430,7 @@ class MufluxDigiReco:
         # Taken from charmdet/drifttubeMonitoring.py
         # rt relation, drift time to distance, drift time?
         tMinAndTmax = {1:[587,1860],2:[587,1860],3:[610,2300],4:[610,2100]}
-        R = global_variables.ShipGeo.MufluxSpectrometer.InnerTubeDiameter/2. #  = 3.63*u.cm
+        R = ShipGeo.MufluxSpectrometer.InnerTubeDiameter/2. #  = 3.63*u.cm
         # parabola
         if function == 'parabola' or 'rtTDC'+str(s)+'000_x' not in h:
             p1p2 = {1:[688.,7.01],2:[688.,7.01],3:[923.,4.41],4:[819.,0.995]}
@@ -458,7 +456,7 @@ class MufluxDigiReco:
             top = ROOT.TVector3()
             bot = ROOT.TVector3()
             bot, top = self.correctAlignment(ahit)
-            # global_variables.modules["MufluxSpectrometer"].TubeEndPoints(detID, bot, top)
+            # modules["MufluxSpectrometer"].TubeEndPoints(detID,bot,top)
             # ahit.MufluxSpectrometerEndPoints(bot,top)
             # MufluxSpectrometerHit::MufluxSpectrometerEndPoints(TVector3 &vbot, TVector3 &vtop)
             # distance to wire.
@@ -1196,11 +1194,11 @@ class MufluxDigiReco:
 
         # hit smearing
         if self.sTree.GetBranch("MufluxSpectrometerPoint"):
-            if global_variables.withT0:
+            if withT0:
                 self.SmearedHits = self.withT0Estimate()
                 self.TaggerHits = self.muonTaggerHits_mc()
             else:
-                self.SmearedHits = self.smearHits(global_variables.withNoStrawSmearing)
+                self.SmearedHits = self.smearHits(withNoStrawSmearing)
                 self.TaggerHits = self.muonTaggerHits_mc()
         elif self.sTree.GetBranch("Digi_MufluxSpectrometerHits"):
             self.SmearedHits = self.smearHits_realData()
@@ -1209,7 +1207,7 @@ class MufluxDigiReco:
             print('No branches "MufluxSpectrometer" or "Digi_MufluxSpectrometerHits".')
             return nTrack
 
-        if global_variables.realPR:
+        if realPR:
 
             # Do real PatRec
             track_hits = MufluxPatRec.execute(self.SmearedHits, self.TaggerHits, withNTaggerHits, withDist2Wire)
@@ -1343,7 +1341,7 @@ class MufluxDigiReco:
             # approximate covariance
             covM = ROOT.TMatrixDSym(6)
             resolution = self.sigma_spatial
-            if global_variables.withT0:
+            if withT0:
                 resolution = resolution*1.4 # worse resolution due to t0 estimate
             for i in range(3):
                 covM[i][i] = resolution*resolution
@@ -1396,7 +1394,7 @@ class MufluxDigiReco:
             # approximate covariance
             covM = ROOT.TMatrixDSym(6)
             resolution = self.sigma_spatial
-            if global_variables.withT0:
+            if withT0:
                 resolution = resolution*1.4 # worse resolution due to t0 estimate
             for i in range(3):
                 covM[i][i] = resolution*resolution
@@ -1447,7 +1445,7 @@ class MufluxDigiReco:
             # approximate covariance
             covM = ROOT.TMatrixDSym(6)
             resolution = self.sigma_spatial
-            if global_variables.withT0:
+            if withT0:
                 resolution = resolution*1.4 # worse resolution due to t0 estimate
             for i in range(3):
                 covM[i][i] = resolution*resolution
@@ -1475,7 +1473,7 @@ class MufluxDigiReco:
                 theTrack.insertPoint(tp)  # add point to Track
             trackCandidates_noT4.append([theTrack,atrack])
 
-        if global_variables.debug:
+        if debug:
 
             z_hits_y = []
             x_hits_y = []
@@ -1996,11 +1994,11 @@ class MufluxDigiReco:
 
             # make track persistent
             nTrack   = self.fGenFitArray.GetEntries()
-            if not global_variables.debug:
+            if not debug:
                 theTrack.prune("CFL")  #  http://sourceforge.net/p/genfit/code/HEAD/tree/trunk/core/include/Track.h#l280
             self.fGenFitArray[nTrack] = theTrack
             self.fitTrack2MC.push_back(atrack)
-            if global_variables.debug:
+            if debug:
                 print('save track',theTrack,chi2,nM,fitStatus.isFitConverged())
 
         self.fitTracks.Fill()
@@ -2013,5 +2011,4 @@ class MufluxDigiReco:
         self.sTree.Write()
         ut.errorSummary()
         ut.writeHists(h,"recohists.root")
-        # if global_variables.realPR:
-        #     ut.writeHists(shipPatRec.h,"recohists_patrec.root")
+        # if realPR: ut.writeHists(shipPatRec.h,"recohists_patrec.root")

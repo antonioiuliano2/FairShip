@@ -79,13 +79,8 @@ Bool_t DPPythia8Generator::Init()
      fTree->SetBranchAddress("mE",&mE);
     */ 
   }
-<<<<<<< HEAD
- else if (!fpbrem){ 
-    if ( debug ){cout<<"Beam Momentum "<<fMom<<endl;}
-=======
   else if (!fpbrem){ 
     if ( debug ){std::cout<<"Beam Momentum "<<fMom<<std::endl;}
->>>>>>> official/master
     fPythia->settings.mode("Beams:idA",  fId);
     fPythia->settings.mode("Beams:idB",  2212);
     fPythia->settings.mode("Beams:frameType",  2);
@@ -95,14 +90,14 @@ Bool_t DPPythia8Generator::Init()
     if (fdy) fPythia->settings.parm("PhaseSpace:mHatMin",fDPminM);
 
   }
- else {
+  else {
     if (!fpbremPDF) {
       //std::cout << " Failed in retrieving dark photon PDF for production by proton bremstrahlung! Exiting..." << std::endl;
       fLogger->Fatal(MESSAGE_ORIGIN, "Failed in retrieving dark photon PDF for production by proton bremstrahlung!");
       return kFALSE;
     }
   }
- /*if (fHadDecay) {
+  /*if (fHadDecay) {
     std::cout << " ******************************** " << std::endl
 	      << " ** Initialise Pythia for e+e-->hadrons " << std::endl
 	      << " ******************************** " << std::endl
@@ -184,7 +179,7 @@ Bool_t DPPythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
 	 fPythia->event.append( (Int_t)hid[0], 1, 0, 0, hpx[0],  hpy[0],  hpz[0],  hE[0],  hM[0], 0., 9. );
        */
      }
-    //bit for proton brem
+     //bit for proton brem
      if (fpbrem){
        fPythia->event.reset();
        double dpmom = 0;
@@ -278,7 +273,7 @@ Bool_t DPPythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
 	   Rsq = dx*dx+dy*dy;
 	 }
        }
-      if (fextFile && *fextFile){
+       if (fextFile && *fextFile){
 	 // take grand mother particle from input file, to know if primary or secondary production
 	 //cpg->AddTrack((Int_t)mid[0],mpx[0],mpy[0],mpz[0],xm/cm+dx,ym/cm+dy,zm/cm,-1,false,mE[0],0.,1.);
 	 //cpg->AddTrack((Int_t)fPythia->event[im].id(),pmx,pmy,pmz,xm/cm+dx,ym/cm+dy,zm/cm,0,false,em,tm/cm/c_light,w); // convert pythia's (x,y,z[mm], t[mm/c]) to ([cm], [s])
@@ -353,15 +348,9 @@ Bool_t DPPythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
      px =fPythia->event[k].px();  
      py =fPythia->event[k].py();  
      e  =fPythia->event[k].e();  
-<<<<<<< HEAD
-    if (fextFile && *fextFile){im+=1;};
-    cpg->AddTrack((Int_t)fPythia->event[k].id(),px,py,pz,xS/cm,yS/cm,zS/cm,im,wanttracking,e,tS/cm/c_light,w);
-     // cout <<k<< " insert pdg =" <<fPythia->event[k].id() << " pz = " << pz << " [GeV] zS = " << zS << " [mm] tS = " << tS << "[mm/c]" <<  endl;
-=======
      if (fextFile && *fextFile){im+=1;};
      cpg->AddTrack((Int_t)fPythia->event[k].id(),px,py,pz,xS/cm,yS/cm,zS/cm,im,wanttracking,e,tS/cm/c_light,w);
      // std::cout <<k<< " insert pdg =" <<fPythia->event[k].id() << " pz = " << pz << " [GeV] zS = " << zS << " [mm] tS = " << tS << "[mm/c]" <<  std::endl;
->>>>>>> official/master
    }
    return kTRUE;
 }

@@ -4,7 +4,6 @@
 #17-04-2015 comments to EvH
 
 from __future__ import print_function
-import global_variables
 import shipPatRec_prev 
 import ROOT,os,sys,getopt
 import shipDet_conf
@@ -27,7 +26,7 @@ parser.add_option("-t","--threeprong", dest="tp", help="threeprong=1 mumunu deca
 (options,args)=parser.parse_args()
 
 shipPatRec_prev.cheated=bool(options.chtd)
-global_variables.debug = (int(options.dbg) == 1)
+shipPatRec_prev.debug = int(options.dbg)
 inputFile = options.input
 shipPatRec_prev.geoFile = options.geometry
 shipPatRec_prev.monitor=bool(options.mntr)
@@ -125,7 +124,7 @@ SHbranch       = sTree.Branch("SmearedHits",SmearedHits,32000,-1)
 fitTracks_PR      = sTree.Branch("FitTracks_PR",  fGenFitArray_PR,32000,-1) 
 mcLink_PR      = sTree.Branch("fitTrack2MC_PR",fitTrack2MC_PR,32000,-1)
  
-if global_variables.debug:
+if shipPatRec_prev.debug==1:
   print("Straw tracker geometry parameters (cm)")
   print("--------------------------------------")
   print("Strawlength            :",2*shipPatRec_prev.ship_geo.strawtubes.StrawLength)
@@ -156,16 +155,10 @@ def EventLoop(SmearedHits):
   if shipPatRec_prev.monitor==True: 
      shipPatRec_prev.ReconstructibleMCTracks=shipPatRec_prev.getReconstructibleTracks(n,sTree,sGeo)
      if len(shipPatRec_prev.ReconstructibleMCTracks)!=shipPatRec_prev.reconstructiblerequired : 
-        if global_variables.debug:
-          print(
-              "Number of reconstructible tracks =", len(shipPatRec_prev.ReconstructibleMCTracks),
-              "but number of reconstructible required=", shipPatRec_prev.reconstructiblerequired,
-              ". Rejecting event."
-              )
+        if shipPatRec_prev.debug==1: print("Number of reconstructible tracks =",len(shipPatRec_prev.ReconstructibleMCTracks),"but number of reconstructible required=",shipPatRec_prev.reconstructiblerequired,". Rejecting event.")
         continue
 
-     if global_variables.debug:
-       print("Reconstructible track ids", shipPatRec_prev.ReconstructibleMCTracks)
+     if shipPatRec_prev.debug==1: print("Reconstructible track ids",shipPatRec_prev.ReconstructibleMCTracks)
      
      
   #n = current event number, False=wire endpoints, True=MC truth
@@ -187,7 +180,7 @@ def EventLoop(SmearedHits):
   SHbranch.Fill()  
     
     
- if global_variables.debug: 
+ if shipPatRec_prev.debug==1: 
    print(shipPatRec_prev.falsenegative,"matched tracks with wrong negative charge from deflection.")
    print(shipPatRec_prev.falsepositive,"matched tracks with wrong positive charge from deflection.")
    print(shipPatRec_prev.morethan500,"events with more than 500 hits.")  
@@ -195,7 +188,7 @@ def EventLoop(SmearedHits):
   
  return   
             
-if global_variables.debug:
+if shipPatRec_prev.debug==1:
   if shipPatRec_prev.threeprong==1:
     debugrootfile = ROOT.TFile(str(shipPatRec_prev.reconstructiblerequired)+"track-debug-mumunu-"+str(nEvents)+".root","RECREATE")   
   else:  

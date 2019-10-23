@@ -3,13 +3,12 @@ from __future__ import division
 __author__ = 'Mikhail Hushchyn'
 
 import numpy as np
-import global_variables
 
 # Globals
 ReconstructibleMCTracks = []
 theTracks = []
 
-r_scale = global_variables.ShipGeo.strawtubes.InnerStrawDiameter / 1.975
+r_scale = ShipGeo.strawtubes.InnerStrawDiameter / 1.975
 
 def initialize(fgeo):
     pass

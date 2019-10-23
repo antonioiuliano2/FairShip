@@ -19,7 +19,7 @@ def mem_monitor():
     print("memory: virtuell = %5.2F MB  physical = %5.2F MB"%(vmsize/1.0E3,pmsize/1.0E3))
 
 import ROOT,os,sys
-import global_variables
+import __builtin__ as builtin
 import rootUtils as ut
 import shipunit as u
 import shipRoot_conf
@@ -46,7 +46,8 @@ parser.add_argument("-dy",               dest="dy", help="Max height of tank", r
 parser.add_argument("--Debug",           dest="Debug", help="Switch on debugging", required=False, action="store_true")
 
 options = parser.parse_args()
-vertexing = not options.noVertexing
+if options.noVertexing: vertexing = False
+else: vertexing = True
  
 if options.EcalDebugDraw: ROOT.gSystem.Load("libASImage")
 
@@ -59,9 +60,8 @@ if not options.dy:
   except:
     dy = None
 
-print('configured to process ', options.nEvents, ' events from ', options.inputFile,
-      ' starting with event ', options.firstEvent, ' with option Yheight = ' ,dy,
-      ' with vertexing', vertexing, ' and real pattern reco ', options.realPR)
+print('configured to process ',options.nEvents,' events from ' ,options.inputFile, \
+      ' starting with event ',options.firstEvent, ' with option Yheight = ',dy,' with vertexing',vertexing,' and real pattern reco ',options.realPR)
 if not options.inputFile.find('_rec.root') < 0: 
   outFile   = options.inputFile
   options.inputFile = outFile.replace('_rec.root','.root') 
@@ -113,20 +113,21 @@ if hasattr(ShipGeo.Bfield,"fieldMap"):
   fieldMaker = geomGeant4.addVMCFields(ShipGeo, '', True,withVirtualMC = False)
 
 # make global variables
-global_variables.debug = options.Debug
-global_variables.fieldMaker = fieldMaker
-global_variables.pidProton = pidProton
-global_variables.withT0 = options.withT0
-global_variables.realPR = options.realPR
-global_variables.vertexing = vertexing
-global_variables.ecalGeoFile = ecalGeoFile
-global_variables.ShipGeo = ShipGeo
-global_variables.modules = modules
-global_variables.EcalDebugDraw = options.EcalDebugDraw
-global_variables.withNoStrawSmearing = options.withNoStrawSmearing
-global_variables.h = h
-global_variables.log = log
-global_variables.iEvent = 0
+builtin.debug    = options.Debug
+builtin.fieldMaker = fieldMaker
+builtin.pidProton = pidProton
+builtin.withT0 = options.withT0
+builtin.realPR = options.realPR
+builtin.vertexing = vertexing
+builtin.ecalGeoFile = ecalGeoFile
+builtin.ShipGeo = ShipGeo
+builtin.modules = modules
+builtin.EcalDebugDraw  = options.EcalDebugDraw
+builtin.withNoStrawSmearing = options.withNoStrawSmearing
+builtin.h    = h
+builtin.log  = log
+iEvent = 0
+builtin.iEvent  = iEvent
 
 # import reco tasks
 import shipDigiReco
@@ -134,13 +135,12 @@ import shipDigiReco
 SHiP = shipDigiReco.ShipDigiReco(outFile,fgeo)
 options.nEvents   = min(SHiP.sTree.GetEntries(),options.nEvents)
 # main loop
-for global_variables.iEvent in range(options.firstEvent, options.nEvents):
-    if global_variables.iEvent % 1000 == 0 or global_variables.debug:
-        print('event ', global_variables.iEvent)
-    rc = SHiP.sTree.GetEvent(global_variables.iEvent)
-    SHiP.digitize()
-    SHiP.reconstruct()
+for iEvent in range(options.firstEvent, options.nEvents):
+ if iEvent%1000 == 0 or options.Debug: print('event ',iEvent)
+ rc    = SHiP.sTree.GetEvent(iEvent) 
+ SHiP.digitize()
+ SHiP.reconstruct()
  # memory monitoring
- # mem_monitor()
+ # mem_monitor() 
 # end loop over events
 SHiP.finish()
