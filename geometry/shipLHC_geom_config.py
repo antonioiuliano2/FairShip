@@ -9,8 +9,8 @@ with ConfigRegistry.register_config("basic") as c:
 
 	c.EmulsionDet = AttrDict(z=0*u.cm)
 	c.EmulsionDet.zC = 0*u.m
-	c.EmulsionDet.row=4
-        c.EmulsionDet.col=4
+	c.EmulsionDet.row=5
+        c.EmulsionDet.col=3
         c.EmulsionDet.wall=12
 	c.EmulsionDet.target = 1  #number of neutrino target volumes
 	c.EmulsionDet.n_plates = 56
@@ -24,6 +24,8 @@ with ConfigRegistry.register_config("basic") as c:
 	c.EmulsionDet.AllPW = c.EmulsionDet.LeadTh + c.EmulsionDet.EPlW
 	c.EmulsionDet.BrX = 12.9 * u.cm
 	c.EmulsionDet.BrY = 10.5 * u.cm
+	c.EmulsionDet.BrX = c.EmulsionDet.BrY
+        c.EmulsionDet.BrY = c.EmulsionDet.BrX
 	c.EmulsionDet.BrPackZ = 0.1045 * u.cm
 	c.EmulsionDet.BrPackX = c.EmulsionDet.BrX - c.EmulsionDet.EmX
 	c.EmulsionDet.BrPackY = c.EmulsionDet.BrY - c.EmulsionDet.EmY
