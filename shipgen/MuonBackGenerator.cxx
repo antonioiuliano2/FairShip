@@ -1,7 +1,9 @@
 #include <math.h>
+#include "TSystem.h"
 #include "TROOT.h"
 #include "TRandom.h"
 #include "TFile.h"
+#include "TVector.h"
 #include "FairPrimaryGenerator.h"
 #include "MuonBackGenerator.h"
 #include "TDatabasePDG.h"               // for TDatabasePDG
@@ -10,11 +12,14 @@
 #include "ShipMCTrack.h"                
 #include "TMCProcess.h"
 #include <algorithm>
+#include <unordered_map>
 
 // read events from Pythia8/Geant4 base simulation (only target + hadron absorber
 
 // -----   Default constructor   -------------------------------------------
-MuonBackGenerator::MuonBackGenerator() {}
+MuonBackGenerator::MuonBackGenerator() {
+ followMuons = true;
+}
 // -------------------------------------------------------------------------
 // -----   Default constructor   -------------------------------------------
 Bool_t MuonBackGenerator::Init(const char* fileName) {
@@ -25,19 +30,20 @@ Bool_t MuonBackGenerator::Init(const char* fileName, const int firstEvent, const
   fLogger = FairLogger::GetLogger();
   fLogger->Info(MESSAGE_ORIGIN,"Opening input file %s",fileName);
   if (0 == strncmp("/eos",fileName,4) ) {
-     TString tmp = "root://eoslhcb.cern.ch/";
+     TString tmp = gSystem->Getenv("EOSSHIP");
      tmp+=fileName;
      fInputFile  = TFile::Open(tmp); 
   }else{
   fInputFile  = new TFile(fileName);
   }
   if (fInputFile->IsZombie()) {
-    fLogger->Fatal(MESSAGE_ORIGIN, "Error opening the Signal file");
+    fLogger->Fatal(MESSAGE_ORIGIN, "Error opening the Signal file:",fInputFile);
   }
   fn = firstEvent;
   fPhiRandomize = fl;
   fSameSeed = 0;
   fsmearBeam = 0; // default no beam smearing, use SetSmearBeam(sb) if different, sb [cm]
+  fdownScaleDiMuon = kFALSE; // only needed for muflux simulation
   fTree = (TTree *)fInputFile->Get("pythia8-Geant4");
   if (fTree){
    fNevents = fTree->GetEntries();
@@ -80,21 +86,36 @@ MuonBackGenerator::~MuonBackGenerator()
 {
 }
 // -------------------------------------------------------------------------
+Bool_t MuonBackGenerator::checkDiMuon(Int_t muIndex){
+   Bool_t check = false;
+   ShipMCTrack* mu = (ShipMCTrack*)MCTrack->At(muIndex);
+   TString pName = mu->GetProcName();
+   if ( strncmp("Hadronic inelastic",    pName.Data(),18)==0 ||
+        strncmp("Positron annihilation" ,pName.Data(),21)==0 ||
+        strncmp("Lepton pair production",pName.Data(),22)==0){
+           check = true;}
+   Int_t Pcode = TMath::Abs( ((ShipMCTrack*)MCTrack->At(mu->GetMotherId()))->GetPdgCode());
+   if (Pcode==221 || Pcode==223 || Pcode==333 || Pcode==113 || Pcode == 331){  
+           check = true;}
+   return check;
+}
 
 // -----   Passing the event   ---------------------------------------------
 Bool_t MuonBackGenerator::ReadEvent(FairPrimaryGenerator* cpg)
 {
   TDatabasePDG* pdgBase = TDatabasePDG::Instance();
-  Double_t mass,e,tof,phi,dx,dy;
-  std::vector<int> muList;
-
+  Double_t mass,e,tof,phi;
+  Double_t dx = 0, dy = 0;
+  std::unordered_map<int, int> muList;
+  std::unordered_map<int, std::vector<int>> moList;
   while (fn<fNevents) {
    fTree->GetEntry(fn);
    muList.clear(); 
+   moList.clear(); 
    fn++;
    if (fn%100000==0)  {fLogger->Info(MESSAGE_ORIGIN,"reading event %i",fn);}
 // test if we have a muon, don't look at neutrinos:
-   if (abs(int(id))==13) {
+   if (TMath::Abs(int(id))==13) {
         mass = pdgBase->GetParticle(id)->Mass();
         e = TMath::Sqrt( px*px+py*py+pz*pz+mass*mass );
         tof = 0;
@@ -103,14 +124,40 @@ Bool_t MuonBackGenerator::ReadEvent(FairPrimaryGenerator* cpg)
      Bool_t found = false;
      for (int i = 0; i < vetoPoints->GetEntries(); i++) {
          vetoPoint *v = (vetoPoint*)vetoPoints->At(i); 
-         if (abs(v->PdgCode())==13){found = true;
-           muList.push_back(v->GetTrackID());
-            } 
-     }                     
+         Int_t abspid = TMath::Abs(v->PdgCode()); 
+         if (abspid==13 or (not followMuons and abspid!=12 and abspid!=14) ){
+          found = true;
+          Int_t muIndex = v->GetTrackID();
+          if (!fdownScaleDiMuon) {muList.insert( { muIndex,i }); }
+          else if (abspid==13 ){
+             if ( checkDiMuon(muIndex) ){
+                  moList[ ((ShipMCTrack*)MCTrack->At(muIndex))->GetMotherId()].push_back(i);
+             }
+             else{
+                  muList.insert( { muIndex,i });
+            }
+         }
+        }
+      }
+// reject muon if comes from boosted channel
+
+      std::unordered_map<int, std::vector<int>>::iterator it = moList.begin();
+      while( it!=moList.end()){
+        if (gRandom->Uniform(0.,1.)>0.99){
+          std::vector<int> list = it->second;
+          for ( Int_t i=0;i < list.size(); i++){
+             vetoPoint *v = (vetoPoint*)vetoPoints->At(list.at(i)); 
+             Int_t muIndex = v->GetTrackID();
+             muList.insert( { muIndex,i });
+          }
+        }
+       it++;
+      }
+     if (!found) {fLogger->Warning(MESSAGE_ORIGIN, "no muon found %i",fn-1);}
      if (found) {break;}
    }
   }
-  if (fn==fNevents){ 
+  if (fn>fNevents-1){ 
      fLogger->Info(MESSAGE_ORIGIN,"End of file reached %i",fNevents);
      return kFALSE;
   } 
@@ -120,37 +167,16 @@ Bool_t MuonBackGenerator::ReadEvent(FairPrimaryGenerator* cpg)
     gRandom->SetSeed(theSeed);
   }
   if (fPhiRandomize){phi = gRandom->Uniform(0.,2.) * TMath::Pi();}
-  if (fsmearBeam>0){
-    Double_t test = fsmearBeam*fsmearBeam;
-    Double_t Rsq  = test + 1.;
-    while(Rsq>test){
-     dx = gRandom->Uniform(-1.,1.) * fsmearBeam;
-     dy = gRandom->Uniform(-1.,1.) * fsmearBeam;
-     Rsq = dx*dx+dy*dy;
-    }
-   }
+  if (fsmearBeam > 0) {
+     Double_t r = fsmearBeam + 0.8 * gRandom->Gaus();
+     Double_t _phi = gRandom->Uniform(0., 2.) * TMath::Pi();
+     dx = r * TMath::Cos(_phi);
+     dy = r * TMath::Sin(_phi);
+  }
   if (id==-1){
-     std::vector<int> partList;
-     for (int k = 0; k < vetoPoints->GetEntries(); k++) {
-         vetoPoint *v = (vetoPoint*)vetoPoints->At(k); 
-         if (abs(v->PdgCode())==13){
-            partList.push_back(v->GetTrackID());
-            ShipMCTrack* track =  (ShipMCTrack*)MCTrack->At(v->GetTrackID());
-            Int_t mother = track->GetMotherId();
-            while (mother>0){
-              track = (ShipMCTrack*)(MCTrack->At(mother));  
-              mother = track->GetMotherId();
-              partList.push_back(mother);
-            }
-         }  
-     }
-     for (unsigned i = MCTrack->GetEntries(); i-- > 0; ){
-       Bool_t wanted = false;
-       if(std::find(partList.begin(), partList.end(), i) != partList.end()) {
-         wanted = true;
-       } 
-       if (!wanted){continue;}
+     for (unsigned i = 0; i< MCTrack->GetEntries();  i++ ){
        ShipMCTrack* track = (ShipMCTrack*)MCTrack->At(i);
+       Int_t abspid = TMath::Abs(track->GetPdgCode());
        px = track->GetPx();
        py = track->GetPy();
        pz = track->GetPz();
@@ -160,20 +186,37 @@ Bool_t MuonBackGenerator::ReadEvent(FairPrimaryGenerator* cpg)
         px = pt*TMath::Cos(phi+phi0);
         py = pt*TMath::Sin(phi+phi0);
        }
-       vx = track->GetStartX()+dx; 
-       vy = track->GetStartY()+dy; 
-       vz = track->GetStartZ(); 
-       tof =  track->GetStartT();
+       vx = track->GetStartX()+dx;
+       vy = track->GetStartY()+dy;
+       vz = track->GetStartZ();
+       tof =  track->GetStartT()/1E9; // convert back from ns to sec;
        e = track->GetEnergy();
        Bool_t wanttracking = false; // only transport muons
-       if(std::find(muList.begin(), muList.end(), i) != muList.end()) {
-         wanttracking = true;
+       for (std::pair<int, int> element : muList){
+         if (element.first==i){
+          wanttracking = true;
+          if (not followMuons){
+           vetoPoint* v = (vetoPoint*)vetoPoints->At(element.second);
+           TVector3 lpv = v->LastPoint();
+           TVector3 lmv = v->LastMom();
+           if (abspid == 22){ e=lmv.Mag();}
+           else{ e = TMath::Sqrt(lmv.Mag2()+(track->GetMass())*(track->GetMass()));}
+           px = lmv[0];
+           py = lmv[1];
+           pz = lmv[2];
+           vx = lpv[0];
+           vy = lpv[1];
+           vz = lpv[2];
+           tof =  v->GetTime()/1E9; // convert back from ns to sec
+          }
+          break;
+        }
        }
-       cpg->AddTrack(track->GetPdgCode(),px,py,pz,vx,vy,vz,-1.,wanttracking,e,tof,track->GetWeight(),(TMCProcess)track->GetProcID());
-     } 
+       cpg->AddTrack(track->GetPdgCode(),px,py,pz,vx,vy,vz,track->GetMotherId(),wanttracking,e,tof,track->GetWeight(),(TMCProcess)track->GetProcID());
+     }
   }else{
-    vx = vx + dx/100.;  
-    vy = vy + dy/100.; 
+    vx += dx/100.;
+    vy += dy/100.;
     if (fPhiRandomize){
      Double_t pt  = TMath::Sqrt( px*px+py*py );
      px = pt*TMath::Cos(phi);

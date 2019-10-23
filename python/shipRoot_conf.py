@@ -1,10 +1,11 @@
+from __future__ import print_function
 import ROOT, atexit, sys, os
-from pythia8_conf import addHNLtoROOT
+from pythia8_conf_utils import addHNLtoROOT
 from pythia8darkphoton_conf import addDPtoROOT
 
 # Try to check if config has been executed...
-if os.environ.get('Linux_Flavour_','') == '':
-   print "Do first: source config.[c]sh"
+if os.environ.get('FAIRSHIP_ROOT','') == '' and os.environ.get('Linux_Flavour_','') == '' :
+   print("Do first: source config.[c]sh")
    quit()
 
 # When on Darwin load all needed shared libs as DYLD_LIBRARY_PATH is not
@@ -36,12 +37,18 @@ if sys.platform == 'darwin':
 else:
     ROOT.gSystem.Load("libPythia6")
     ROOT.gSystem.Load("libpythia8")
+    ROOT.gSystem.Load("libG4clhep")
 ROOT.gInterpreter.ProcessLine('typedef double Double32_t')
 
 #-----prepare python exit-----------------------------------------------
 def pyExit():
    x = sys.modules['__main__']
-   if hasattr(x,'run'): del x.run
+   if hasattr(x,'run'): 
+        del x.run
+        print("make suicid, until better solution found to ROOT/genfit interference")
+        for f in ROOT.gROOT.GetListOfFiles(): 
+         if f.IsWritable() and f.IsOpen(): f.Close()
+        os.system('kill '+str(os.getpid()))
    if hasattr(x,'fMan'): del x.fMan
    if hasattr(x,'fRun'): del x.fRun
    pass
@@ -67,9 +74,10 @@ def configure(darkphoton=None):
    pdg.AddParticle('chi_1c[3S1(8)]'    ,'chi_1c[3S1(8)]'  ,3.71066,False,0.0,     0, 'Meson', 9940023)
    pdg.AddParticle('chi_2c[3S1(8)]'    ,'chi_2c[3S1(8)]'  ,3.75620,False,0.0,     0, 'Meson', 9940005)
    pdg.AddParticle('Upsilon[3S1(8)]'   ,'Upsilon[3S1(8)]' ,9.66030,False,0.0,     0, 'Meson', 9950003)
-
+   atexit.register(pyExit)
+   if darkphoton==0: return # will be added by pythia8_conf
    if (darkphoton):
       addDPtoROOT()
    else:
       addHNLtoROOT()
-   atexit.register(pyExit)
+

@@ -1,11 +1,16 @@
+from __future__ import print_function
+from __future__ import division
 import ROOT
 import shipunit as u
 
 minNdf = 20
 parallelToZ = ROOT.TVector3(0., 0., 1.) 
 top = ROOT.gGeoManager.GetTopVolume()
-z_ecal = top.GetNode('Ecal_1').GetMatrix().GetTranslation()[2]
-
+if top.GetNode('Ecal_1'): z_ecal = top.GetNode('Ecal_1').GetMatrix().GetTranslation()[2]
+elif top.GetNode('SplitCalDetector_1'):    z_ecal = top.GetNode('SplitCalDetector_1').GetMatrix().GetTranslation()[2]
+else:
+  print("TrackExtraploate tool: Error, no calo present")
+  z_ecal = 100*u.m
 def extrapolateToPlane(fT,z):
 # etrapolate to a plane perpendicular to beam direction (z)
   rc,pos,mom = False,None,None

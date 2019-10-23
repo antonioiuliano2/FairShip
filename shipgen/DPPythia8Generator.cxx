@@ -1,10 +1,5 @@
-//The plan: take input file with DP kinematics and PDF
-//throw random number according to pdf and choose DP ???
-//use Pythia to decay the DP ???
-
-
-
 #include <math.h>
+#include "TSystem.h"
 #include "TROOT.h"
 #include "TMath.h"
 #include "FairPrimaryGenerator.h"
@@ -13,8 +8,7 @@
 #include "Pythia8/Pythia.h"
 const Double_t cm = 10.; // pythia units are mm
 const Double_t c_light = 2.99792458e+10; // speed of light in cm/sec (c_light   = 2.99792458e+8 * m/s)
-const Bool_t debug = true;
-using namespace Pythia8;
+const Int_t debug = 1;
 
 // -----   Default constructor   -------------------------------------------
 DPPythia8Generator::DPPythia8Generator() 
@@ -28,6 +22,8 @@ DPPythia8Generator::DPPythia8Generator()
   fFDs        = 7.7/10.4;    // correction for Pythia6 to match measured Ds production
   fpbrem = kFALSE;
   fpbremPDF = 0;
+  fdy = kFALSE;
+  fDPminM = 0.5;
   fextFile    = "";
   fInputFile  = NULL;
   fnRetries   = 0;
@@ -41,7 +37,6 @@ DPPythia8Generator::DPPythia8Generator()
 // -----   Default constructor   -------------------------------------------
 Bool_t DPPythia8Generator::Init() 
 {
-  if ( debug ){List(9900015);}
   fLogger = FairLogger::GetLogger();
   if (fUseRandom1) fRandomEngine = new PyTr1Rng();
   if (fUseRandom3) fRandomEngine = new PyTr3Rng();
@@ -50,11 +45,11 @@ Bool_t DPPythia8Generator::Init()
   fn = 0;
   if (fextFile && *fextFile){
     /*if (0 == strncmp("/eos",fextFile,4) ) {
-     char stupidCpp[100];
-     strcpy(stupidCpp,"root://eoslhcb.cern.ch/");
-     strcat(stupidCpp,fextFile);
-     fLogger->Info(MESSAGE_ORIGIN,"Open external file with charm or beauty hadrons on eos: %s",stupidCpp);
-     fInputFile  = TFile::Open(stupidCpp); 
+     if (0 == strncmp("/eos",fextFile,4) ) {
+     TString tmp = gSystem->Getenv("EOSSHIP");
+     tmp+=fextFile;
+     fInputFile  = TFile::Open(tmp); 
+     fLogger->Info(MESSAGE_ORIGIN,""Open external file with charm or beauty hadrons on eos: %s",tmp->Data());
      if (!fInputFile) {
       fLogger->Fatal(MESSAGE_ORIGIN, "Error opening input file. You may have forgotten to provide a krb5 token. Try kinit username@lxplus.cern.ch");
       return kFALSE; }
@@ -84,17 +79,26 @@ Bool_t DPPythia8Generator::Init()
      fTree->SetBranchAddress("mE",&mE);
     */ 
   }
+<<<<<<< HEAD
  else if (!fpbrem){ 
     if ( debug ){cout<<"Beam Momentum "<<fMom<<endl;}
+=======
+  else if (!fpbrem){ 
+    if ( debug ){std::cout<<"Beam Momentum "<<fMom<<std::endl;}
+>>>>>>> official/master
     fPythia->settings.mode("Beams:idA",  fId);
     fPythia->settings.mode("Beams:idB",  2212);
     fPythia->settings.mode("Beams:frameType",  2);
     fPythia->settings.parm("Beams:eA",fMom);
     fPythia->settings.parm("Beams:eB",0.);
+
+    if (fdy) fPythia->settings.parm("PhaseSpace:mHatMin",fDPminM);
+
   }
  else {
     if (!fpbremPDF) {
-      std::cout << " Failed in retrieving dark photon PDF for production by proton bremstrahlung! Exiting..." << std::endl;
+      //std::cout << " Failed in retrieving dark photon PDF for production by proton bremstrahlung! Exiting..." << std::endl;
+      fLogger->Fatal(MESSAGE_ORIGIN, "Failed in retrieving dark photon PDF for production by proton bremstrahlung!");
       return kFALSE;
     }
   }
@@ -115,13 +119,25 @@ Bool_t DPPythia8Generator::Init()
     }*/
   TDatabasePDG* pdgBase = TDatabasePDG::Instance();
   Double_t root_ctau = pdgBase->GetParticle(fDP)->Lifetime();
-  if ( debug ){cout<<"tau root "<<root_ctau<< "[s] ctau root = " << root_ctau*3e10 << "[cm]"<<endl;}
+  //fPythia->particleData.readString("4900023:useBreitWigner = false");
+  if ( debug ){
+    std::cout<<"Final particle parameters for PDGID " << fDP << ":" << std::endl;
+    List(fDP);
+  }
+  if ( debug ){std::cout<<"tau root PDG database "<<root_ctau<< "[s] ctau root = " << root_ctau*3e10 << "[cm]"<<std::endl;}
   fctau = fPythia->particleData.tau0(fDP); //* 3.3333e-12
-  if ( debug ){cout<<"ctau pythia "<<fctau<<"[mm]"<<endl;}
-  if ( debug ){List(9900015);}
-  fPythia->init();
-  //if (fHadDecay) fPythiaHadDecay->init();
+  if ( debug ){std::cout<<"ctau pythia "<<fctau<<"[mm]"<<std::endl;}
+  int initPass = fPythia->init();
+  if ( debug ){std::cout<<"Pythia initialisation bool: " << initPass << std::endl;}
+
+  if (!initPass) {
+    fLogger->Fatal(MESSAGE_ORIGIN, "Pythia initialisation failed");
+    return kFALSE;
+  }
+
   return kTRUE;
+  //if (fHadDecay) fPythiaHadDecay->init();
+  //return kTRUE;
 }
 // -------------------------------------------------------------------------
 
@@ -143,7 +159,7 @@ Bool_t DPPythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
 // recalculate decay time 
 // weight event with exp(-t_ship/tau_DP) / exp(-t_pythia/tau_DP) 
 
-   int iDP = 0; // index of the chosen DP (the 1st one), also ensures that at least 1 DP is produced
+   int iDP = 0; // index of the chosen DP, also ensures that at least 1 DP is produced
    std::vector<int> dec_chain; // pythia indices of the particles to be stored on the stack
    std::vector<int> dpvec; // pythia indices of DP particles
    bool hadDecay = false;
@@ -161,7 +177,7 @@ Bool_t DPPythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
 	 else {
 	 Double_t rnr = gRandom->Uniform(0,1);
 	 if( rnr<fFDs ) { x = false; };
-	 //cout<<"what is x "<<x<<" id "<<int(fabs(hid[0]))<<" rnr " << rnr <<" "<< fFDs <<endl ;
+	 //std::cout<<"what is x "<<x<<" id "<<int(fabs(hid[0]))<<" rnr " << rnr <<" "<< fFDs <<std::endl ;
 	 }
 	 }          
 	 fPythia->event.reset();
@@ -178,18 +194,19 @@ Bool_t DPPythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
        double dpe = sqrt(dpmom*dpmom+dpm*dpm);
        double phiin = 2. * M_PI * gRandom->Rndm();
        
-       std::cout << " Adding DP gun with p " 
+       if ( debug > 1){std::cout << " Adding DP gun with p " 
 		 << dpmom 
 		 << " m " << dpm
 		 << " e " << dpe
-		 << " theta,phi " << thetain << "," << phiin << std::endl << std::flush;
+		 << " theta,phi " << thetain << "," << phiin << std::endl << std::flush;}
        fPythia->event.append( fDP, 1, 0, 0, dpmom * sin(thetain) * cos(phiin), dpmom * sin(thetain) * sin(phiin), dpmom * cos(thetain), dpe, dpm); 
      }
 
-     fPythia->next();
+     if (!fPythia->next()) fLogger->Fatal(MESSAGE_ORIGIN, "fPythia->next() failed");
+
      //fPythia->event.list();
      for(int i=0; i<fPythia->event.size(); i++){
-       // find first DP
+       // find all DP
        if (abs(fPythia->event[i].id())==fDP){
 	 dpvec.push_back( i );
        }
@@ -201,8 +218,10 @@ Bool_t DPPythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
        //fPythia->event.list();
        fnRetries+=1; // can happen if phasespace does not allow meson to decay to DP
      }else{
-       int r =  int( gRandom->Uniform(0,iDP) );
-       // cout << " ----> debug 2 " << r  <<  endl;
+       //for mesons, could have more than one ... but for DY prod, need to take the last one...
+       //int r =  int( gRandom->Uniform(0,iDP) );
+       int r =  iDP-1;
+       // std::cout << " ----> debug 2 " << r  <<  std::endl;
        int i =  dpvec[r];
        // production vertex
        zp =fPythia->event[i].zProd();
@@ -271,8 +290,8 @@ Bool_t DPPythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
        // bookkeep the indices of stored particles
        dec_chain.push_back( im );
        dec_chain.push_back(  i );
-       //cout << endl << " insert mother pdg=" <<fPythia->event[im].id() << " pmz = " << pmz << " [GeV],  zm = " << zm << " [mm] tm = " << tm << " [mm/c]" << endl;
-       //cout << " ----> insert DP =" << fDP << " pz = " << pz << " [GeV] zp = " << zp << " [mm] tp = " << tp << " [mm/c]" << endl;
+       if (debug>1) std::cout << std::endl << " insert mother id " << im << " pdg=" <<fPythia->event[im].id() << " pmz = " << pmz << " [GeV],  zm = " << zm << " [mm] tm = " << tm << " [mm/c]" << std::endl;
+       if (debug>1) std::cout << " ----> insert DP id " << i << " pdg=" << fDP << " pz = " << pz << " [GeV] zp = " << zp << " [mm] tp = " << tp << " [mm/c]" << std::endl;
        iDP = i; 
      }
    } while ( iDP == 0 ); // ----------- avoid rare empty events w/o any DP's produced
@@ -282,11 +301,11 @@ Bool_t DPPythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
    }
    fShipEventNr += 1;
    // fill a container with pythia indices of the DP decay chain
-   //cout << "Filling daughter particles" << std::endl;
+   if (debug>1) std::cout << "Filling daughter particles" << std::endl;
    //if (!hadDecay){
      for(int k=0; k<fPythia->event.size(); k++){
        // if daughter of DP, copy
-       //cout <<k<< " pdg =" <<fPythia->event[k].id() << " mum " << fPythia->event[k].mother1() << std::endl;
+       if (debug>1) std::cout <<k<< " pdg =" <<fPythia->event[k].id() << " mum " << fPythia->event[k].mother1() << std::endl;
        im =fPythia->event[k].mother1();
        while (im>0){
 	 if ( im == iDP ){break;} // pick the decay products of only 1 chosen DP
@@ -294,10 +313,10 @@ Bool_t DPPythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
 	 else {im =fPythia->event[im].mother1();}
        }
        if (im < 1) {
-	 //cout << "reject" << std::endl;
+	 if (debug>1) std::cout << "reject" << std::endl;
 	 continue;
        }
-       //std::cout << "accept" << std::endl;
+       if (debug>1) std::cout << "accept" << std::endl;
        dec_chain.push_back( k );
      }
      //}
@@ -334,9 +353,15 @@ Bool_t DPPythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
      px =fPythia->event[k].px();  
      py =fPythia->event[k].py();  
      e  =fPythia->event[k].e();  
+<<<<<<< HEAD
     if (fextFile && *fextFile){im+=1;};
     cpg->AddTrack((Int_t)fPythia->event[k].id(),px,py,pz,xS/cm,yS/cm,zS/cm,im,wanttracking,e,tS/cm/c_light,w);
      // cout <<k<< " insert pdg =" <<fPythia->event[k].id() << " pz = " << pz << " [GeV] zS = " << zS << " [mm] tS = " << tS << "[mm/c]" <<  endl;
+=======
+     if (fextFile && *fextFile){im+=1;};
+     cpg->AddTrack((Int_t)fPythia->event[k].id(),px,py,pz,xS/cm,yS/cm,zS/cm,im,wanttracking,e,tS/cm/c_light,w);
+     // std::cout <<k<< " insert pdg =" <<fPythia->event[k].id() << " pz = " << pz << " [GeV] zS = " << zS << " [mm] tS = " << tS << "[mm/c]" <<  std::endl;
+>>>>>>> official/master
    }
    return kTRUE;
 }
@@ -345,7 +370,7 @@ void DPPythia8Generator::SetParameters(char* par)
 {
   // Set Parameters
    fPythia->readString(par);
-    if ( debug ){cout<<"fPythia->readString(\""<<par<<"\")"<<endl;}
+    if ( debug ){std::cout<<"fPythia->readString(\""<<par<<"\")"<<std::endl;}
 } 
 
 // -------------------------------------------------------------------------

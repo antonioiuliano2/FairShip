@@ -1,3 +1,5 @@
+from __future__ import print_function
+from __future__ import division
 import ROOT
 import shipunit as u
 def MCPointPrintOut(x):
@@ -18,6 +20,13 @@ def MCTrackPrintOut(x):
 def vetoHitPrintOut(x):
   txt = '("vetoHit") detID:%7i  ADC:%5.2F TDC:%5.2F'%(x.GetDetectorID(),x.GetADC(),x.GetTDC())
   return txt
+def muonHitPrintOut(x):
+  txt = '("muonHit") detID:%7i  TDC:%5.2F  isValid:%r'%(x.GetDetectorID(),x.GetDigi(),x.isValid())
+  return txt
+def TimeDetHitPrintOut(x):
+  t = x.GetMeasurements()
+  txt = '("TimeDetHit") detID:%7i  TDC1:%5.2F TDC2:%5.2F  isValid:%r'%(x.GetDetectorID(),t[0],t[1],x.isValid())
+  return txt
 def FitTrackPrintOut(x):
   st = x.getFitStatus()
   if st.isFitConverged():
@@ -32,7 +41,7 @@ def TParticlePrintOut(x):
   txt = '("TParticle") %s  P:%5.2FGeV/c VxZ:%5.2Fm'%(x.GetName(),x.P(),x.Vz()/u.m)
   return txt
 def ShipParticlePrintOut(x):
-  txt = '("ShipParticle") %s  P:%5.2FGeV/c VxZ:%5.2Fm'%(x.GetName(),x.P(),x.Vz()/u.m)
+  txt = '("ShipParticle") %s M:%5.2FGeV/c2 P:%5.2FGeV/c VxZ:%5.2Fm'%(x.GetName(),x.GetMass(),x.P(),x.Vz()/u.m)
   return txt
 def ecalReconstructedPrintOut(cl):
   txt = '("EcalCluster") E:%5.2FGeV/c X:%5.2Fm Y:%5.2Fm'%(cl.RecoE(),cl.X()/u.m,cl.Y()/u.m)
@@ -43,7 +52,7 @@ def ecalClusterPrintOut(cl):
 def Dump(x):
   k=0
   for obj in x: 
-    print k,obj.__repr__()
+    print(k,obj.__repr__())
     k+=1 
   
 def TVector3PrintOut(x):
@@ -75,4 +84,6 @@ ROOT.ecalReconstructed.__repr__ = ecalReconstructedPrintOut
 ROOT.ecalCluster.__repr__ = ecalClusterPrintOut
 ROOT.TEvePointSet.__repr__ = TEvePointSetPrintOut
 ROOT.vetoHit.__repr__ = vetoHitPrintOut
+ROOT.muonHit.__repr__ = muonHitPrintOut
+ROOT.TimeDetHit.__repr__ = TimeDetHitPrintOut
 ROOT.TLorentzVector.__repr__ = TLorentzVectorPrintOut

@@ -1,4 +1,5 @@
 # utility to simulate response of the veto systems
+from __future__ import division
 import ROOT
 import shipunit as u
 from array import array
@@ -6,7 +7,6 @@ from array import array
 class Task:
  "initialize and give response of the veto systems"
  def __init__(self,t):
-  self.UVTefficiency = 0.999 # Upstream Veto tagger: 99.9% efficiency picked up from TP
   self.SBTefficiency = 0.99  # Surrounding Background tagger: 99% efficiency picked up from TP
   self.SVTefficiency = 0.995 # Straw Veto tagger: guestimate, including dead channels
   self.random = ROOT.TRandom()
@@ -23,20 +23,28 @@ class Task:
    detList[i] = nm
   return detList 
 
- def SBT_decision(self,mcParticle=None):
+ def SBT_plastic_decision(self,mcParticle=None):
+    SBT_decision(self,mcParticle,detector='plastic')
+ def SBT_liquid_decision(self,mcParticle=None):
+    SBT_decision(self,mcParticle,detector='liquid')
+ 
+ def SBT_decision(self,mcParticle=None,detector='liquid'):
   # if mcParticle >0, only count hits with this particle
   # if mcParticle <0, do not count hits with this particle
   hitSegments = 0
   index = -1
+  fdetector = detector=='liquid'
   for aDigi in self.sTree.Digi_SBTHits:
      index+=1 
+     detID    = aDigi.GetDetectorID()
+     if fdetector and detID > 999999:continue
+     if not fdetector and not detID > 999999:continue 
      if mcParticle:
         found = False
         for mcP in self.sTree.digiSBT2MC[index]: 
          if mcParticle>0 and mcParticle != mcP : found=True
          if mcParticle<0 and abs(mcParticle) == mcP : found=True
         if found: continue
-     detID    = aDigi.GetDetectorID()
      position = aDigi.GetXYZ()
      ELoss    = aDigi.GetEloss()
      if aDigi.isValid(): hitSegments += 1 #threshold of 45 MeV per segment
@@ -44,21 +52,6 @@ class Task:
   veto = self.random.Rndm() > w
   #print 'SBT :',hitSegments
   return veto, w, hitSegments
- def UVT_decision(self,mcParticle=None):
-  nHits = 0
-  for ahit in self.sTree.vetoPoint:
-     detID   = ahit.GetDetectorID()
-     if detID>100000: continue  # this is a LiSc detector
-     if mcParticle: 
-        if mcParticle>0 and mcParticle != ahit.GetTrackID() : continue
-        if mcParticle<0 and abs(mcParticle) == ahit.GetTrackID() : continue
-     detName = self.detList[detID]
-     if not detName == "VetoTimeDet": continue
-     nHits+=1
-  w = (1-self.UVTefficiency)**nHits
-  veto = self.random.Rndm() > w
-  #print 'UVT :',nHits
-  return veto, w,nHits
  def SVT_decision(self,mcParticle=None):
   nHits = 0
   for ahit in self.sTree.strawtubesPoint:
@@ -154,6 +147,7 @@ class Task:
 # import shipVeto
 # veto = shipVeto.Task(sTree)
 # veto,w = veto.SBT_decision()
+# or for plastic veto,w = veto.SBT_decision(detector='plastic')
 # if veto: continue # reject event
 # or
 # continue using weight w 

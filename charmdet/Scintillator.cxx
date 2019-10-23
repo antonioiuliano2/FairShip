@@ -6,7 +6,7 @@
 #include "TGeoManager.h"
 #include "FairRun.h"                    // for FairRun
 #include "FairRuntimeDb.h"              // for FairRuntimeDb
-#include "Riosfwd.h"                    // for ostream
+#include <iosfwd>                    // for ostream
 #include "TList.h"                      // for TListIter, TList (ptr only)
 #include "TObjArray.h"                  // for TObjArray
 #include "TString.h"                    // for TString
@@ -118,6 +118,29 @@ void Scintillator::SetScoring1XY(Float_t Scoring1X, Float_t Scoring1Y)
      fScoring1Y = Scoring1Y;    //! height of 1st scintillator
 }
 
+void Scintillator::SetDistT1(Float_t DistT1)
+{
+     fDistT1 = DistT1;    //! distance from scintillator to center of first tube
+}
+
+void Scintillator::SetDistT2(Float_t DistT2)
+{
+     fDistT2 = DistT2;    //! distance from scintillator 2 to center of last tube
+}
+
+void Scintillator::SetS_T1coords(Float_t S_T1_x, Float_t S_T1_y)
+{
+     fS_T1_x = S_T1_x;    //! x origin of S_T1
+     fS_T1_y = S_T1_y;    //! y origin of S_T1
+}
+
+void Scintillator::SetS_T2coords(Float_t S_T2_x, Float_t S_T2_y)
+{
+     fS_T2_x = S_T2_x;    //! x origin of S_T2
+     fS_T2_y = S_T2_y;    //! y origin of S_T2     
+}
+
+
 
 //
 void Scintillator::ConstructGeometry()
@@ -137,8 +160,8 @@ void Scintillator::ConstructGeometry()
     Double_t eps=0.0001;
     Double_t epsS=0.00001;
 
-    TGeoBBox *scoring1box = new TGeoBBox("AfterAbsorberBox",fScoring1X/2.+0.25,fScoring1Y/2.+0.25,0.5);    
-    TGeoBBox *scoring2box = new TGeoBBox("AfterMagnetBox",fScoring1X/2.+0.25,fScoring1Y/2.+0.25,0.5);
+    TGeoBBox *scoring1box = new TGeoBBox("T1Box",fScoring1X/2.,fScoring1Y/2.,1.25);    
+    TGeoBBox *scoring2box = new TGeoBBox("T2Box",fScoring1X/2.,fScoring1Y/2.,1.25);
     TGeoVolume *scintillator1 = new TGeoVolume("SA",scoring1box,Sens);
     scintillator1->SetLineColor(kRed);
     scintillator1->SetVisibility(kTRUE);
@@ -151,8 +174,8 @@ void Scintillator::ConstructGeometry()
     //Add a sensitive plane after the absorber 
     AddSensitiveVolume(scintillator1);
     AddSensitiveVolume(scintillator2);
-    top->AddNode(scintillator1,6,new TGeoTranslation(0,0,2.51)); 
-    top->AddNode(scintillator2,7,new TGeoTranslation(0,0,568.));     	
+    top->AddNode(scintillator1,6,new TGeoTranslation(0,0,fDistT1)); 
+    top->AddNode(scintillator2,7,new TGeoTranslation(0,0,fDistT2));     	
 
 }
 

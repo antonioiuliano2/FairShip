@@ -25,6 +25,12 @@ class Scintillator:public FairDetector
     void ConstructGeometry();
 
     void SetScoring1XY(Float_t Scoring1X, Float_t Scoring1Y);
+    
+    void SetDistT1(Float_t DistT1);
+    void SetDistT2(Float_t DistT2);
+    void SetS_T1coords(Float_t S_T1_x, Float_t S_T1_y);   
+    void SetS_T2coords(Float_t S_T2_x, Float_t S_T2_y);     
+    
     //
     /**      Initialization of the detector is done here    */
     virtual void Initialize();
@@ -84,7 +90,13 @@ private:
              
     Float_t     fScoring1X;            //width of 1st scintillator
     Float_t     fScoring1Y;            //height of 1st scintillator
-    
+    Float_t     fDistT1;            //distance from scintillator to center of first tube   
+    Float_t     fDistT2;            //distance from scintillator 2 to center of last tube   
+    Float_t     fS_T1_x;            //
+    Float_t     fS_T1_y;            //  
+    Float_t     fS_T2_x;            //
+    Float_t     fS_T2_y;            //      
+       
     /** container for data points */
     TClonesArray*  fScintillatorPointCollection;
     

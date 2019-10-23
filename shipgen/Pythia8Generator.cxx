@@ -1,11 +1,11 @@
 #include <math.h>
+#include "TSystem.h"
 #include "TROOT.h"
 #include "FairPrimaryGenerator.h"
 #include "TGeoNode.h"
 #include "TGeoVolume.h"
 #include <TGeoManager.h>
 #include "TGeoBBox.h"
-#include "Pythia8/Pythia.h"
 #include "TMath.h"
 #include "Pythia8Generator.h"
 #include "HNLPythia8Generator.h"
@@ -13,8 +13,6 @@ const Double_t cm = 10.; // pythia units are mm
 const Double_t c_light = 2.99792458e+10; // speed of light in cm/sec (c_light   = 2.99792458e+8 * m/s)
 Int_t counter = 0;
 const Double_t mbarn = 1E-3*1E-24*TMath::Na(); // cm^2 * Avogadro
-
-using namespace Pythia8;
 
 // -----   Default constructor   -------------------------------------------
 Pythia8Generator::Pythia8Generator() 
@@ -40,11 +38,10 @@ Bool_t Pythia8Generator::Init()
   if (fUseRandom3) fRandomEngine = new PyTr3Rng();
   if (fextFile && *fextFile) {
     if (0 == strncmp("/eos",fextFile,4) ) {
-     char stupidCpp[100];
-     strcpy(stupidCpp,"root://eoslhcb.cern.ch/");
-     strcat(stupidCpp,fextFile);
-     fLogger->Info(MESSAGE_ORIGIN,"Open external file with charm or beauty hadrons on eos: %s",stupidCpp);
-     fInputFile  = TFile::Open(stupidCpp); 
+     TString tmp = gSystem->Getenv("EOSSHIP");
+     tmp+=fextFile;
+     fInputFile  = TFile::Open(tmp); 
+     fLogger->Info(MESSAGE_ORIGIN,"Open external file with charm or beauty hadrons on eos: %s",tmp.Data());
      if (!fInputFile) {
       fLogger->Fatal(MESSAGE_ORIGIN, "Error opening input file. You may have forgotten to provide a krb5 token. Try kinit username@lxplus.cern.ch");
       return kFALSE; }
@@ -90,9 +87,9 @@ Bool_t Pythia8Generator::Init()
      Int_t n = 1;
      while(n!=0){
       n = fPythia->particleData.nextId(n);
-      ParticleDataEntry* p = fPythia->particleData.particleDataEntryPtr(n);
+      Pythia8::ParticleDataEntry* p = fPythia->particleData.particleDataEntryPtr(n);
       if (p->tau0()>1){
-      string particle = std::to_string(n)+":mayDecay = false";
+      std::string particle = std::to_string(n)+":mayDecay = false";
       fPythia->readString(particle);
       fLogger->Info(MESSAGE_ORIGIN,"Made %s stable for Pythia, should decay in Geant4",p->name().c_str());
       }
@@ -179,7 +176,7 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
 // simulate more downstream interaction points for interactions down in the cascade
    Int_t nInter = ck[0]; if (nInter>16){nInter=16;}
    for( Int_t nI=0; nI<nInter; nI++){
-    if (!subprocCodes[nI]<90){continue;}  //if process is not inelastic, go to next
+    // if (!subprocCodes[nI]<90){continue;}  //if process is not inelastic, go to next. Changed by taking now collision length
     prob2int = -1.;   
     Int_t intLengthFactor = 1; // for nucleons
     if (TMath::Abs(ancestors[nI]) < 1000){intLengthFactor = 1.16;} // for mesons 
@@ -191,7 +188,7 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
       zinter = gRandom->Uniform(zinterStart,end[2]);
       Double_t point[3]={xOff,yOff,zinter};
       bparam = fMaterialInvestigator->MeanMaterialBudget(start, point, mparam);
-      Double_t interLength = mparam[8]  * intLengthFactor ; 
+      Double_t interLength = mparam[8]  * intLengthFactor * 1.7; // 1.7 = interaction length / collision length from PDG Tables 
       TGeoNode *node = gGeoManager->FindNode(point[0],point[1],point[2]);
       TGeoMaterial *mat = 0;
       if (node && !gGeoManager->IsOutside()) {
@@ -242,12 +239,12 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
       z  = fPythia->event[ii].zProd()+dl*fPythia->event[1].pz()+zinter;
       x  = fPythia->event[ii].xProd()+dl*fPythia->event[1].px();
       y  = fPythia->event[ii].yProd()+dl*fPythia->event[1].py();
-      tof = fPythia->event[ii].tProd()+dl*fPythia->event[1].e()/cm/c_light;
+      tof = fPythia->event[ii].tProd()/ (10*c_light) + dl*fPythia->event[1].e()/cm/c_light;
      }else{
       z  = fPythia->event[ii].zProd()+zinter;
       x  = fPythia->event[ii].xProd();
       y  = fPythia->event[ii].yProd();
-      tof = fPythia->event[ii].tProd();
+      tof = fPythia->event[ii].tProd() / (10*c_light) ; // to go from mm to s
      }
      pz = fPythia->event[ii].pz();
      px = fPythia->event[ii].px();  

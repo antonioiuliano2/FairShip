@@ -3,13 +3,14 @@
 #include "TGeoManager.h"
 #include "FairRun.h"                    // for FairRun
 #include "FairRuntimeDb.h"              // for FairRuntimeDb
-#include "Riosfwd.h"                    // for ostream
+#include <iosfwd>                    // for ostream
 #include "TList.h"                      // for TListIter, TList (ptr only)
 #include "TObjArray.h"                  // for TObjArray
 #include "TString.h"                    // for TString
 
 #include "TGeoBBox.h"
 #include "TGeoTrd1.h"
+#include "TGeoSphere.h"
 #include "TGeoCompositeShape.h"
 #include "TGeoTube.h"
 #include "TGeoMaterial.h"
@@ -33,6 +34,9 @@
 #include "ShipDetectorList.h"
 #include "ShipUnit.h"
 #include "ShipStack.h"
+
+#include "TGeoTrd2.h" 
+#include "TGeoCompositeShape.h"
 
 #include "TGeoUniformMagField.h"
 #include "TVector3.h"
@@ -98,6 +102,16 @@ void EmulsionMagnet::SetCoilParameters(Double_t Radius, Double_t height1, Double
   fCoilDist = Distance;
 }
 
+void EmulsionMagnet::SetCoilParameters(Double_t X, Double_t Y, Double_t height1, Double_t height2, Double_t Thickness)
+{
+  fCoilX = X;
+  fCoilY = Y;
+  // cout << "fCoilX = "<< fCoilX<< "    fCoilY = "<<fCoilY<<endl;
+  fCoilH1 = height1; //upper(left)
+  fCoilH2 = height2; //lowe(right)
+  fCoilThickness = Thickness;
+}
+
 void EmulsionMagnet::SetMagneticField(Double_t B)
 {
   fField=B;
@@ -110,6 +124,16 @@ void EmulsionMagnet::SetPillarDimensions(Double_t X, Double_t Y, Double_t Z)
   fPillarZ=Z;
 }
 
+void EmulsionMagnet::SetCutDimensions(Double_t CutLength, Double_t CutHeight)
+{
+  fCutLength = CutLength;
+  fCutHeight = CutHeight;
+}
+
+void EmulsionMagnet::SetConstantField(Bool_t EmuMagnetConstField)
+{
+  fConstField = EmuMagnetConstField;
+}
 
 Int_t EmulsionMagnet::InitMedium(const char* name)
 {
@@ -135,9 +159,9 @@ void EmulsionMagnet::ConstructGeometry()
 {
   TGeoVolume *top=gGeoManager->GetTopVolume();
     
-  InitMedium("vacuum");
-  TGeoMedium *vacuum =gGeoManager->GetMedium("vacuum");
-    
+  InitMedium("air");
+  TGeoMedium *air =gGeoManager->GetMedium("air");  
+
   InitMedium("iron");
   TGeoMedium *Fe =gGeoManager->GetMedium("iron");
     
@@ -150,7 +174,6 @@ void EmulsionMagnet::ConstructGeometry()
   InitMedium("steel");
   TGeoMedium *Steel = gGeoManager->GetMedium("steel");
 
-
   gGeoManager->SetVisLevel(10);
 
   TGeoVolume *tTauNuDet = gGeoManager->GetVolume("tTauNuDet");  
@@ -161,8 +184,7 @@ void EmulsionMagnet::ConstructGeometry()
       TGeoUniformMagField *magField1 = new TGeoUniformMagField(0.,-fField,0.); //magnetic field in Magnet pillars
       TGeoUniformMagField *magField2 = new TGeoUniformMagField(0.,fField,0.); //magnetic field in target
 
-      TGeoBBox *MagnetBox = new TGeoBBox(fMagnetX/2, fMagnetY/2, fMagnetZ/2);
-      TGeoVolume *MagnetVol = new TGeoVolume("Goliath",MagnetBox,vacuum);
+      TGeoVolumeAssembly *MagnetVol = new TGeoVolumeAssembly("Goliath");
       tTauNuDet->AddNode(MagnetVol,1,new TGeoTranslation(0,0,fCenterZ));
       
       //Iron basis on which the coils are placed
@@ -372,8 +394,7 @@ void EmulsionMagnet::ConstructGeometry()
       TGeoUniformMagField *magField1 = new TGeoUniformMagField(-fField,0.,0.); //magnetic field in Magnet pillars
       TGeoUniformMagField *magField2 = new TGeoUniformMagField(fField,0.,0.); //magnetic field in target
       
-      TGeoBBox *MagnetBox = new TGeoBBox(fMagnetX/2, fMagnetY/2, fMagnetZ/2);
-      TGeoVolume *MagnetVol = new TGeoVolume("Davide",MagnetBox,vacuum);
+      TGeoVolumeAssembly *MagnetVol = new TGeoVolumeAssembly("Davide");
       tTauNuDet->AddNode(MagnetVol,1,new TGeoTranslation(0,0,fCenterZ));
     
       //The -0.01*mm is only for drawing reasons
@@ -428,6 +449,168 @@ void EmulsionMagnet::ConstructGeometry()
       tTauNuDet->AddNode(PillarVol,2, new TGeoTranslation(fMagnetX/2-fPillarX/2,-fMagnetY/2-fPillarY/2, fCenterZ-fMagnetZ/2+fPillarZ/2));
       tTauNuDet->AddNode(PillarVol,3, new TGeoTranslation(-fMagnetX/2+fPillarX/2,-fMagnetY/2-fPillarY/2, fCenterZ+fMagnetZ/2-fPillarZ/2));
       tTauNuDet->AddNode(PillarVol,4, new TGeoTranslation(fMagnetX/2-fPillarX/2,-fMagnetY/2-fPillarY/2, fCenterZ+fMagnetZ/2-fPillarZ/2));
+    }
+
+   if(fDesign==3) //NEW with magnet
+    {
+      //Box for Magnet
+      TGeoVolumeAssembly *MagnetVol = new TGeoVolumeAssembly("NudetMagnet");
+      tTauNuDet->AddNode(MagnetVol,1,new TGeoTranslation(0,0,fCenterZ));
+
+      TGeoBBox *BaseBox = new TGeoBBox(fBaseX/2,fBaseY/2,fBaseZ/2);
+      TGeoVolume *BaseVol = new TGeoVolume("BaseVol",BaseBox,Fe);
+      BaseVol->SetLineColor(kRed);
+      TGeoBBox *LateralBox = new TGeoBBox(fColumnX/2,fColumnY/2,fColumnZ/2);
+
+      //prepare for triangolar cuts
+      LateralBox->SetName("L");
+      Double_t delta = 0.1; //to avoid border effects in the cuts (cut is not visualized in viewer, I do not know if it can affect simulation)
+      TGeoTrd2  * Model= new TGeoTrd2("Model",fCutHeight/2,0, (fColumnZ+delta)/2,(fColumnZ+delta)/2,(fCutLength+delta)/2); //length and height are not x and y here, because it will be rotated!
+      Model->SetName("T");
+
+      const Double_t SemiLateralBoxHeight =(fColumnY - fCutHeight)/2;
+
+      //we need different volumes to place different magnetic fields
+      TGeoBBox *SemiLateralBox = new TGeoBBox("SemiLateralBox",(fColumnX)/2, SemiLateralBoxHeight /2, fColumnZ/2);           
+      TGeoVolume *volUpLateral = new TGeoVolume("volUpLateral",SemiLateralBox,Fe); //up and down refer to the magnetic field verse
+     
+      TGeoVolume *volDownLateral = new TGeoVolume("volDownLateral",SemiLateralBox,Fe);       
+      SemiLateralBox->SetName("S");       
+      volUpLateral->SetLineColor(kRed);
+      volDownLateral->SetLineColor(kRed);
+
+      const Double_t MidBoxHeight = fCutHeight/2;
+
+      TGeoBBox *MidLateralBox = new TGeoBBox("MidLateralBox",fColumnX/2, MidBoxHeight/2, fColumnZ/2); 
+      MidLateralBox->SetName("M");
+
+     //some boolean operations for triangular cuts
+
+      TGeoRotation rot("rot",90,90,0);
+      TGeoRotation rot1("rot1",-90,90,0);
+      const TGeoTranslation trans("trans",-fColumnX/2.+ fCutLength/2,0,0);
+      TGeoCombiTrans* comb = new TGeoCombiTrans(trans,rot);
+      comb->SetName("comb");
+      comb->RegisterYourself(); 
+      TGeoCompositeShape *cut = new TGeoCompositeShape("CUT", "L-T:comb");
+
+
+      TGeoTranslation* transcuttop = new TGeoTranslation("transcuttop",0, fCutHeight/2 + SemiLateralBoxHeight/2 ,0); //top and bottom refer to their geometrical positions
+      TGeoTranslation* transcuttop1 = new TGeoTranslation("transcuttop1",0, MidBoxHeight/2 ,0);
+      TGeoTranslation* transcutbottom = new TGeoTranslation("transcutbottom",0, - fCutHeight/2 - SemiLateralBoxHeight/2  ,0);
+      TGeoTranslation* transcutbottom1 = new TGeoTranslation("transcutbottom1",0, -MidBoxHeight/2 ,0);
+ 
+      transcuttop->RegisterYourself();
+      transcuttop1->RegisterYourself();
+      transcutbottom->RegisterYourself();    
+      transcutbottom1->RegisterYourself();  
+
+      TGeoCompositeShape *cuttop = new TGeoCompositeShape("CUTTOP", "CUT - (S:transcuttop) - (S:transcutbottom)"); //triangular cut in the right lateral wall
+      TGeoVolume *volcuttop = new TGeoVolume("volcuttop", cuttop, Fe);
+      volcuttop->SetLineColor(kRed);  
+
+      const TGeoTranslation transleft("transleft",+fColumnX/2.- fCutLength/2,0,0);
+      TGeoCombiTrans* combleft = new TGeoCombiTrans(transleft,rot1);
+      combleft->SetName("combleft");
+      combleft->RegisterYourself();
+      TGeoCompositeShape *cutleft;
+      cutleft = new TGeoCompositeShape("CUTLEFT", "L-T:combleft");        
+      TGeoCompositeShape *cuttopleft = new TGeoCompositeShape("CUTTOPLEFT", "CUTLEFT - (S:transcuttop) - (S:transcutbottom)"); //triangular cut in the left lateral wall
+      TGeoVolume *volcuttopleft = new TGeoVolume("volcuttopleft", cuttopleft, Fe);
+      volcuttopleft->SetLineColor(kRed);
+
+      //composite coil
+      TGeoBBox *OutcoilBox = new TGeoBBox("OC", fCoilX/2, fCoilH1/2,fMagnetZ/2-fCoilH1/2);
+      TGeoBBox *IncoilBox = new TGeoBBox("IC", fCoilX/2,fCoilH2/2,(fMagnetZ-fCoilH1)/2);
+
+      //circular arcs (first two options are radii, not half radii!)
+      Double_t OuterRadius = fCoilY + fCoilThickness;
+
+      TGeoTubeSeg *Coillateraltuberightdown = new TGeoTubeSeg("Coillateraltuberightdown",fCoilThickness,OuterRadius, fCoilX/2,90,180);
+      TGeoTubeSeg *Coillateraltuberighttup = new TGeoTubeSeg("Coillateraltuberightup",fCoilThickness,OuterRadius, fCoilX/2,0,90);
+      TGeoTubeSeg *Coillateraltubeleftup = new TGeoTubeSeg("Coillateraltubeleftup",fCoilThickness,OuterRadius, fCoilX/2,270,360);
+      TGeoTubeSeg *Coillateraltubeleftdown = new TGeoTubeSeg("Coillateraltubeleftdown",fCoilThickness,OuterRadius, fCoilX/2,180,270);
+
+      TGeoBBox *Coillateralcenter = new TGeoBBox("Coillateralcenter",fCoilX/2., (fCoilH2-2*fCoilThickness)/2, fCoilY/2.);      
+
+      TGeoRotation rottube("rottube",90,90,0);
+      //transformations to combine them
+      const TGeoTranslation transtube("transtube",0.,-(fCoilH2-2*fCoilThickness)/2, -fCoilThickness-fCoilY/2);
+      const TGeoTranslation transtube1("transtube1",0.,(fCoilH2-2*fCoilThickness)/2, -fCoilThickness-fCoilY/2);
+      const TGeoTranslation transtube2("transtube2",0.,-(fCoilH2-2*fCoilThickness)/2,+fCoilThickness+fCoilY/2);
+      const TGeoTranslation transtube3("transtube3",0.,(fCoilH2-2*fCoilThickness)/2,+fCoilThickness+fCoilY/2);
+      TGeoCombiTrans* combination = new TGeoCombiTrans(transtube,rottube);
+      TGeoCombiTrans* combination1 = new TGeoCombiTrans(transtube1,rottube);
+      TGeoCombiTrans* combination2 = new TGeoCombiTrans(transtube2,rottube);
+      TGeoCombiTrans* combination3 = new TGeoCombiTrans(transtube3,rottube);
+
+      combination->SetName("combination");
+      combination->RegisterYourself();  
+      combination1->SetName("combination1");
+      combination1->RegisterYourself(); 
+      combination2->SetName("combination2");
+      combination2->RegisterYourself();
+      combination3->SetName("combination3");
+      combination3->RegisterYourself();
+      //adding the shapes and making the volumes
+      TGeoCompositeShape * CoilRight = new TGeoCompositeShape("CoilRight","Coillateraltuberightdown:combination+Coillateraltuberightup:combination1+Coillateralcenter");
+      TGeoVolume *CoilVolright = new TGeoVolume("CoilVolright",CoilRight,Cu);
+
+      TGeoCompositeShape * CoilLeft = new TGeoCompositeShape("CoilLeft","Coillateraltubeleftdown:combination2+Coillateraltubeleftup:combination3+Coillateralcenter");
+      TGeoVolume *CoilVolleft = new TGeoVolume("CoilVolleft",CoilLeft,Cu);
+
+
+
+      TGeoBBox *Coil = new TGeoBBox("Coil", fCoilX/2,fCoilY/2, (fMagnetZ-2*OuterRadius)/2); //two times the external radius
+      TGeoVolume *CoilVol = new TGeoVolume("CoilVol",Coil, Cu);
+
+      //adding obtained volumes
+
+      MagnetVol->AddNode(BaseVol,1, new TGeoTranslation(0,-fMagnetY/2+fBaseY/2,0));
+      MagnetVol->AddNode(BaseVol,2, new TGeoTranslation(0,fMagnetY/2-fBaseY/2,0));   
+  
+      MagnetVol->AddNode(volUpLateral, 1, new TGeoTranslation(-fMagnetX/2+fColumnX/2, (fCutHeight + (fColumnY - fCutHeight)/2)/2 ,0));
+      MagnetVol->AddNode(volDownLateral, 1, new TGeoTranslation(-fMagnetX/2+fColumnX/2, (-fCutHeight - (fColumnY - fCutHeight)/2)/2,0));
+      MagnetVol->AddNode(volcuttop, 1, new TGeoTranslation(-fMagnetX/2+fColumnX/2, 0, 0));
+
+      MagnetVol->AddNode(volUpLateral, 2, new TGeoTranslation(fMagnetX/2-fColumnX/2, (-fCutHeight - (fColumnY - fCutHeight)/2)/2 ,0));
+      MagnetVol->AddNode(volDownLateral, 2, new TGeoTranslation(fMagnetX/2-fColumnX/2, (+fCutHeight + (fColumnY - fCutHeight)/2)/2,0));
+      MagnetVol->AddNode(volcuttopleft,2, new TGeoTranslation(fMagnetX/2-fColumnX/2,0,0));
+     
+      CoilVolleft->SetLineColor(kGreen);
+      MagnetVol->AddNode(CoilVolleft,1,new TGeoTranslation(0,0,-fMagnetZ/2.+fCoilY/2.));
+      CoilVolright->SetLineColor(kGreen);
+      MagnetVol->AddNode(CoilVolright,1,new TGeoTranslation(0,0,+fMagnetZ/2.-fCoilY/2.));
+      CoilVol->SetLineColor(kGreen);
+      MagnetVol->AddNode(CoilVol,1,new TGeoTranslation(0,(fCoilH1+fCoilH2)/4,0));
+      MagnetVol->AddNode(CoilVol,2,new TGeoTranslation(0,-(fCoilH1+fCoilH2)/4,0));
+
+      //magnetized region
+
+      TGeoVolume *volMagRegion = new TGeoVolume("volMagRegion",IncoilBox, air);
+      MagnetVol->AddNode(volMagRegion, 1, new TGeoTranslation(0,0,0));
+
+      //pillars for the magnet
+      TGeoBBox *PillarBox = new TGeoBBox(fPillarX/2,fPillarY/2, fPillarZ/2);
+      TGeoVolume *PillarVol = new TGeoVolume("PillarVol",PillarBox,Steel);
+      PillarVol->SetLineColor(kGreen+3);
+      tTauNuDet->AddNode(PillarVol,1, new TGeoTranslation(-fMagnetX/2+fPillarX/2,-fMagnetY/2-fPillarY/2, fCenterZ-fMagnetZ/2+fPillarZ/2));
+      tTauNuDet->AddNode(PillarVol,2, new TGeoTranslation(fMagnetX/2-fPillarX/2,-fMagnetY/2-fPillarY/2, fCenterZ-fMagnetZ/2+fPillarZ/2));
+      tTauNuDet->AddNode(PillarVol,3, new TGeoTranslation(-fMagnetX/2+fPillarX/2,-fMagnetY/2-fPillarY/2, fCenterZ+fMagnetZ/2-fPillarZ/2));
+      tTauNuDet->AddNode(PillarVol,4, new TGeoTranslation(fMagnetX/2-fPillarX/2,-fMagnetY/2-fPillarY/2, fCenterZ+fMagnetZ/2-fPillarZ/2));
+
+
+      if (fConstField){ //adding magnetic field if not implemented from nudet field map
+      TGeoUniformMagField *magField1 = new TGeoUniformMagField(-fField,0.,0.); //magnetic field in Magnet pillars
+      TGeoUniformMagField *magField2 = new TGeoUniformMagField(fField,0.,0.); //magnetic field in target
+      TGeoUniformMagField *magField1y = new TGeoUniformMagField(0.,-fField,0.); //down return magnetic field along y
+      TGeoUniformMagField *magField2y = new TGeoUniformMagField(0.,fField,0.); //up return magnetic field along y 
+
+      BaseVol->SetField(magField1);
+      volUpLateral->SetField(magField2y);
+      volDownLateral->SetField(magField1y);
+      volMagRegion->SetField(magField2);
+      }
     }
 }
 

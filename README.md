@@ -2,152 +2,105 @@
 
 ## Introduction
 
-FairShip is the software framework for the SHiP experiment which is based on FairRoot. To use this software you need to install three packages: FairSoft, FairRoot and FairShip. The first two
-pacakges are quite stable and you don't have to modify them. They will be updated
-infrequently only when the FairRoot team releases a new version. In such a case you will be
-warned and you have to rebuild them. All packages are managed in Git and GitHub. Please
-read [the Git tutorial for SHiP](https://github.com/ShipSoft/FairShip/wiki/Git-Tutorial-for-SHiP) first, even if you already know Git, as it explains how development is done on GitHub.
+FairShip is the software framework for the SHiP experiment which is based on
+FairRoot. The dependencies of FairShip are tracked and installed using
+[alibuild](https://alisw.github.io/alibuild/).
 
-## Prerequisites
+All packages are managed in Git and GitHub. Please read [the Git tutorial for
+SHiP](https://github.com/ShipSoft/FairShip/wiki/Git-Tutorial-for-SHiP) first,
+even if you already know Git, as it explains how development is done on GitHub.
 
-All needed pre-requisites are provided by the FairSoft package, see below.
+## Build Instructions using CVMFS
 
-Additionally for developers:
-  * clang-format (to format code according to our style guide)
-  * clang-tidy (to check coding conventions -- mostly naming rules which are not covered by `cpplint`)
-
-## Build Instructions
-0. If you work on lxplus, or on SLC6 and have access to /cvmfs/ship.cern.ch, define enviroment varaibles:
+1. Download the FairShip software
     ```bash
-    export SHIPSOFT=/cvmfs/ship.cern.ch/ShipSoft
-    export FAIRROOTPATH=${SHIPSOFT}/FairRootInst
-    export SIMPATH=${SHIPSOFT}/FairSoftInst
-    ```    
-    move to step 4.
-
-1. In case you use SLC6 where the GitHub cert is missing, first do (only once):
-
-    ```bash
-    mkdir ~/certs
-    curl http://curl.haxx.se/ca/cacert.pem -o ~/certs/cacert.pem
-    git config --global http.sslcainfo ~/certs/cacert.pem
+    git clone https://github.com/ShipSoft/FairShip.git
     ```
 
-2. Install [FairSoft]
-
+2. Make sure you can access the SHiP CVMFS Repository
     ```bash
-    mkdir ~/ShipSoft    [ or where ever you like to place the software ]
-    cd ~/ShipSoft
-    git clone https://github.com/ShipSoft/FairSoft.git
-    cd FairSoft
-    cat DEPENDENCIES
-    # Make sure all the required dependencies are installed
-    ./configure.sh
-    # Accept ShipSoft default
-    # Experts can fine-tune if they like
+    ls /cvmfs/ship.cern.ch
+    ```
+3. Source the setUp script
+    ```bash
+    source /cvmfs/ship.cern.ch/SHiP-2018/latest/setUp.sh
     ```
 
-3. Install [FairRoot]
-
+4. Build the software using aliBuild
     ```bash
-    cd ~/ShipSoft
-    git clone  https://github.com/ShipSoft/FairRoot.git
-    cd FairRoot
-    ./configure.sh
+    aliBuild build FairShip --default fairship-2018 --always-prefer-system --config-dir $SHIPDIST
     ```
 
-4. Install the [SHiP](https://github.com/ShipSoft/FairShip.git) software:
+If you exit your shell session and you want to go back working on it, make sure to re-execute the third step.
 
+To load the FairShip environment, after you build the software you can simply use:
+
+5. Load the environment
     ```bash
-    cd ~/ShipSoft
+    alienv enter FairShip/latest
+    ```
+
+However, this won't work if you are using HTCondor. In such case you can do:
+
+```bash
+eval alienv load FairShip/latest
+```
+
+## Docker Instructions
+1. Build an docker image from a Dockerfile:
+    ```bash
     git clone https://github.com/ShipSoft/FairShip.git
     cd FairShip
-    ./configure.sh
-    ```
-
-    To only compile FairShip, e.g. after the initial install and after having edited files, do:
-
+    docker build -t fairship .
+    ``` 
+2. Run the FairShip docker image:
     ```bash
-    cd ~/ShipSoft/FairShipRun
-    make
-    ```
+    docker run -i -t --rm fairship /bin/bash
+    ``` 
+3. Advanced docker run options:
+    ```bash
+    docker run -i -t --rm \
+    -e DISPLAY=unix$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -v /local_workdir:/image_workdir \
+    fairship /bin/bash
+    ``` 
+    Line ```-e DISPLAY=unix$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix``` forwards graphics from the image to your local system         (similar to ssh -X). Line ```-v /local_workdir:/image_workdir``` shares ```/local_workdir``` directory on the local system with ```/image_workdir``` directory on the docker image system.
 
 ## Run Instructions
 
-Before running the [SHiP](https://github.com/ShipSoft/FairShip.git) software, set the necessary environment by doing:
+Set up the bulk of the environment from CVMFS.
 
-    ```bash
-    source ~/ShipSoft/FairShipRun/config.[c]sh
-    ```
+```bash
+source /cvmfs/ship.cern.ch/SHiP-2018/latest/setUp.sh
+```
 
-Or if you work on lxplus, after logon, you have to do, for bash users:
+Load your local FairShip environment.
 
-    ```bash
-    export xxx ~/myship    [ or where ever you like to place the software ]
-    export SHIPSOFT=/cvmfs/ship.cern.ch/ShipSoft/gcc62
-    export SIMPATH=$SHIPSOFT/FairSoftInst
-    export FAIRROOTPATH=$SHIPSOFT/FairRootInst
-    export FAIRSHIP=$xxx/FairShip
-    source $xxx/FairShipRun/config.sh
-    ```
-
-And for csh users:
-
-    ```bash
-    setenv xxx ~/myship    [ or where ever you like to place the software ]
-    setenv SHIPSOFT /cvmfs/ship.cern.ch/ShipSoft/gcc62
-    setenv SIMPATH      ${SHIPSOFT}/FairSoftInst
-    setenv FAIRROOTPATH ${SHIPSOFT}/FairRootInst
-    setenv FAIRSHIP ${xxx}/FairShip
-    source ${xxx}/FairShipRun/config.csh
-    ```
+```bash
+alibuild/alienv enter (--shellrc) FairShip/latest
+```    
 
 Now you can for example simulate some events, run reconstruction and analysis:
 
-    ```bash
-    python $FAIRSHIP/macro/run_simScript.py
-    >> Macro finished succesfully.
-    >> Output file is  ship.conical.Pythia8-TGeant4.root
+```bash
+python $FAIRSHIP/macro/run_simScript.py
+>> Macro finished succesfully.
+>> Output file is  ship.conical.Pythia8-TGeant4.root
 
-    python $FAIRSHIP/macro/ShipReco.py -f ship.conical.Pythia8-TGeant4.root -g geofile_full.conical.Pythia8-TGeant4.root
-    >> finishing pyExit
+python $FAIRSHIP/macro/ShipReco.py -f ship.conical.Pythia8-TGeant4.root -g geofile_full.conical.Pythia8-TGeant4.root
+>> finishing pyExit
 
-    python -i $FAIRSHIP/macro/ShipAna.py -f ship.10.0.Pythia8-TGeant4_rec.root -g geofile_full.conical.Pythia8-TGeant4.root
-    >> finished making plots
-    ```
+python -i $FAIRSHIP/macro/ShipAna.py -f ship.conical.Pythia8-TGeant4_rec.root -g geofile_full.conical.Pythia8-TGeant4.root
+>> finished making plots
+```
 
 Run the event display:
 
-    ```bash
-    python -i $FAIRSHIP/macro/eventDisplay.py -f ship.10.0.Pythia8-TGeant4_rec.root -g geofile_full.conical.Pythia8-TGeant4.root
-    // use SHiP Event Display GUI
-    Use quit() or Ctrl-D (i.e. EOF) to exit
-    ```
-
-## Running Previous Versions
-
-Some git hints on how to run previously tagged versions:
-
-    ```bash
-    mkdir $SHIPSOFT/v1
-    cd $SHIPSOFT/v1
-    git clone -b dev https://github.com/ShipSoft/FairSoft.git
-    cd $SHIPSOFT/v1/FairSoft
-    git checkout -b v1-00 v1-00
-    ./configure.sh
-    cd $SHIPSOFT/v1
-    git clone -b dev https://github.com/ShipSoft/FairRoot.git
-    cd $SHIPSOFT/v1/FairRoot
-    git checkout -b v1-00 v1-00
-    ./configure.sh
-    cd $SHIPSOFT/v1
-    git clone https://github.com/ShipSoft/FairShip.git
-    cd FairShip
-    git checkout -b v1-00 v1-00
-    ./configure.sh
-    cd ../FairShipRun
-    source config.sh
-    ```
+```bash
+python -i $FAIRSHIP/macro/eventDisplay.py -f ship.conical.Pythia8-TGeant4_rec.root -g geofile_full.conical.Pythia8-TGeant4.root
+// use SHiP Event Display GUI
+Use quit() or Ctrl-D (i.e. EOF) to exit
+```
 
 ## Contributing Code
 

@@ -1,4 +1,5 @@
 #include <math.h>
+#include "TSystem.h"
 #include "TROOT.h"
 #include "TMath.h"
 #include "FairPrimaryGenerator.h"
@@ -7,7 +8,7 @@
 const Double_t cm = 10.; // pythia units are mm
 const Double_t c_light = 2.99792458e+10; // speed of light in cm/sec (c_light   = 2.99792458e+8 * m/s)
 const Bool_t debug = false;
-using namespace Pythia8;
+//using namespace Pythia8;
 
 // -----   Default constructor   -------------------------------------------
 HNLPythia8Generator::HNLPythia8Generator()
@@ -36,12 +37,20 @@ Bool_t HNLPythia8Generator::Init()
   fPythia->setRndmEnginePtr(fRandomEngine);
   fn = 0;
   if (fextFile && *fextFile) {
+<<<<<<< HEAD
     if (0 == strncmp("/eos",fextFile,4) ) {
      char stupidCpp[100];
      strcpy(stupidCpp,"root://eoslhcb.cern.ch/");
      strcat(stupidCpp,fextFile);
      fLogger->Info(MESSAGE_ORIGIN,"Open external file with charm or beauty hadrons on eos: %s",stupidCpp);
     fInputFile  = TFile::Open(stupidCpp);
+=======
+     if (0 == strncmp("/eos",fextFile,4) ) {
+     TString tmp = gSystem->Getenv("EOSSHIP");
+     tmp+=fextFile;
+     fInputFile  = TFile::Open(tmp); 
+     fLogger->Info(MESSAGE_ORIGIN,"Open external file with charm or beauty hadrons on eos: %s",tmp.Data());
+>>>>>>> official/master
      if (!fInputFile) {
       fLogger->Fatal(MESSAGE_ORIGIN, "Error opening input file. You may have forgotten to provide a krb5 token. Try kinit username@lxplus.cern.ch");
       return kFALSE; }
@@ -69,8 +78,13 @@ Bool_t HNLPythia8Generator::Init()
      fTree->SetBranchAddress("mpy",&mpy);
      fTree->SetBranchAddress("mpz",&mpz);
      fTree->SetBranchAddress("mE",&mE);
+<<<<<<< HEAD
  }else{
      if ( debug ){cout<<"Beam Momentum "<<fMom<<endl;}
+=======
+  }else{
+     if ( debug ){std::cout<<"Beam Momentum "<<fMom<<std::endl;}
+>>>>>>> official/master
      fPythia->settings.mode("Beams:idA",  fId);
      fPythia->settings.mode("Beams:idB",  2212);
      fPythia->settings.mode("Beams:frameType",  2);
@@ -79,9 +93,9 @@ Bool_t HNLPythia8Generator::Init()
   }
   TDatabasePDG* pdgBase = TDatabasePDG::Instance();
   Double_t root_ctau = pdgBase->GetParticle(fHNL)->Lifetime();
-  if ( debug ){cout<<"tau root "<<root_ctau<< "[s] ctau root = " << root_ctau*3e10 << "[cm]"<<endl;}
+  if ( debug ){std::cout<<"tau root "<<root_ctau<< "[s] ctau root = " << root_ctau*3e10 << "[cm]"<<std::endl;}
   fctau = fPythia->particleData.tau0(fHNL); //* 3.3333e-12
-  if ( debug ){cout<<"ctau pythia "<<fctau<<"[mm]"<<endl;}
+  if ( debug ){std::cout<<"ctau pythia "<<fctau<<"[mm]"<<std::endl;}
   if ( debug ){List(9900015);}
   fPythia->init();
   return kTRUE;
@@ -121,7 +135,7 @@ Bool_t HNLPythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
      else {
        Double_t rnr = gRandom->Uniform(0,1);
        if( rnr<fFDs ) { x = false; };
-       //cout<<"what is x "<<x<<" id "<<int(fabs(hid[0]))<<" rnr " << rnr <<" "<< fFDs <<endl ;
+       //cout<<"what is x "<<x<<" id "<<int(fabs(hid[0]))<<" rnr " << rnr <<" "<< fFDs <<std::endl ;
      }
    }
    fPythia->event.reset();
@@ -246,7 +260,7 @@ Bool_t HNLPythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
      e  =fPythia->event[k].e();
      if (fextFile && *fextFile) {im+=1;}
      cpg->AddTrack((Int_t)fPythia->event[k].id(),px,py,pz,xS/cm,yS/cm,zS/cm,im,wanttracking,e,tS/cm/c_light,w);
-     // cout <<k<< " insert pdg =" <<fPythia->event[k].id() << " pz = " << pz << " [GeV] zS = " << zS << " [mm] tS = " << tS << "[mm/c]" <<  endl;
+     // std::cout <<k<< " insert pdg =" <<fPythia->event[k].id() << " pz = " << pz << " [GeV] zS = " << zS << " [mm] tS = " << tS << "[mm/c]" <<  endl;
   }
   return kTRUE;
 }
@@ -255,7 +269,7 @@ void HNLPythia8Generator::SetParameters(char* par)
 {
   // Set Parameters
    fPythia->readString(par);
-    if ( debug ){cout<<"fPythia->readString(\""<<par<<"\")"<<endl;}
+    if ( debug ){std::cout<<"fPythia->readString(\""<<par<<"\")"<<std::endl;}
 }
 // -------------------------------------------------------------------------
 

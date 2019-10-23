@@ -6,20 +6,24 @@
 # and ShipRoot.
 
 # Check if cmake has the required version
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6.0 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.9.4 FATAL_ERROR)
+
+foreach(p
+  CMP0028 # double colon for imported and alias targets
+  CMP0074 # use _ROOT env variables
+  )
+  if(POLICY ${p})
+  cmake_policy(SET ${p} NEW)
+  endif()
+endforeach()
 
 # Set name of our project to "ShipRoot". Has to be done
 # after check of cmake version since this is a new feature                  
 project(ShipRoot)
 
-If($ENV{HOSTNAME} MATCHES "cern")
-  MESSAGE("discovered lxplus: take gcc6.2 from lcg")
-  execute_process(COMMAND source /cvmfs/sft.cern.ch/lcg/external/gcc/6.2/x86_64-slc6-gcc62-opt/setup.sh)
-  SET(GCCVERSION "x86_64-slc6-gcc62-opt")
-  SET(LCGVERSION "LCG_87")
-EndIf()
 FIND_PATH(FAIRBASE NAMES FairRun.h  PATHS
   ${CMAKE_SOURCE_DIR}/base/steer
+  ${FAIRBASE}
   NO_DEFAULT_PATH
 )
 
@@ -110,7 +114,7 @@ ENDIF(NOT UNIX)
 
 # Check if FairSoft is available, defines SIMPATH
 IF(NOT DEFINED ENV{SIMPATH})
-   MESSAGE(FATAL_ERROR "You did not define the environment variable SIMPATH which is nedded to find the external packages. Please set this variable and execute cmake again.") 
+   MESSAGE(STATUS "You did not define the environment variable SIMPATH. Using aliBuild recipe.") 
 ENDIF(NOT DEFINED ENV{SIMPATH})
 
 SET(SIMPATH $ENV{SIMPATH})
@@ -128,7 +132,7 @@ CHECK_EXTERNAL_PACKAGE_INSTALL_DIR()
 # For example the framework can run without GEANT4, but ROOT is
 # mandatory
 
-find_package(ROOT 5.34.00 REQUIRED)
+find_package(ROOT 6.10.06 REQUIRED)
 find_package(Pythia8 REQUIRED)
 find_package(EvtGen REQUIRED)
 find_package(GENERATORS REQUIRED)
@@ -138,16 +142,28 @@ find_package(GEANT4DATA)
 find_package(GEANT4VMC)
 find_package(HEPMC)
 
- Set(Boost_NO_SYSTEM_PATHS TRUE)
+IF(DEFINED ${BOOST_ROOT})
+  Set(Boost_NO_SYSTEM_PATHS TRUE)
   Set(Boost_NO_BOOST_CMAKE TRUE)
+ENDIF(DEFINED ${BOOST_ROOT})
 #  set(Boost_DEBUG TRUE)
-  If(${ROOT_LIBRARY_DIR} MATCHES /lib/root)
-    set(BOOST_ROOT ${SIMPATH})
-    set(GSL_DIR ${SIMPATH})
-  Else(${ROOT_LIBRARY_DIR} MATCHES /lib/root)
-    set(BOOST_ROOT ${SIMPATH}/basics/boost)
-    set(GSL_DIR ${SIMPATH}/basics/gsl)
-  EndIf(${ROOT_LIBRARY_DIR} MATCHES /lib/root)
+  IF(DEFINED ENV{SIMPATH})
+    If(${ROOT_LIBRARY_DIR} MATCHES /lib/root)
+      set(BOOST_ROOT ${SIMPATH})
+      set(GSL_DIR ${SIMPATH})
+    Else(${ROOT_LIBRARY_DIR} MATCHES /lib/root)
+      set(BOOST_ROOT ${SIMPATH}/basics/boost)
+      set(GSL_DIR ${SIMPATH}/basics/gsl)
+    EndIf(${ROOT_LIBRARY_DIR} MATCHES /lib/root)
+  ELSE(DEFINED ENV{SIMPATH})
+    IF(DEFINED ${BOOST_ROOT})
+      set(BOOST_ROOT $ENV{BOOST_ROOT})
+    ENDIF(DEFINED ${BOOST_ROOT})
+    IF(DEFINED $ENV{GSL_ROOT})
+      set(GSL_DIR $ENV{GSL_ROOT})
+    ENDIF(DEFINED $ENV{GSL_ROOT})
+  ENDIF(DEFINED ENV{SIMPATH})
+
   Message("-- Looking for Boost ...")
   # If an older version of boost is found both of the variables below are
   # cached and in a second cmake run, a good boost version is found even 
@@ -260,8 +276,10 @@ add_subdirectory (passive)
 add_subdirectory (nutaudet)
 add_subdirectory (charmdet)
 add_subdirectory (ecal)
+add_subdirectory (splitcal)
 add_subdirectory (hcal)
 add_subdirectory (veto)
+add_subdirectory (TimeDet)
 add_subdirectory (strawtubes)
 add_subdirectory (muon)
 add_subdirectory (shipgen)
@@ -270,10 +288,13 @@ add_subdirectory (genfit)
 add_subdirectory (preshower)
 add_subdirectory (pid)
 add_subdirectory (muonShieldOptimization)
+add_subdirectory (online)
+add_subdirectory (millepede)
 
 FIND_PATH(TEvePath NAMES TEveEventManager.h PATHS
   ${SIMPATH}/tools/root/include
   ${SIMPATH}/include/root
+  $ENV{ROOTSYS}/include/root
   NO_DEFAULT_PATH
 )
 
@@ -282,9 +303,9 @@ If(TEvePath)
 #If (OPENGL_FOUND AND OPENGL_GLU_FOUND)
   Message("Found TEve, so the eventdisplay will be compiled.")
 
-IF(NOT FAIRROOT_FOUND)
+ IF(NOT FAIRROOT_FOUND)
   add_subdirectory (eventdisplay)
-ENDIF(NOT FAIRROOT_FOUND)
+ ENDIF(NOT FAIRROOT_FOUND)
 
 EndIf(TEvePath)
 
@@ -293,9 +314,10 @@ add_custom_target(  # make relative links to folders
     COMMAND [ -e geometry ] || python -c \"import os.path as p, os\; os.symlink(p.join(p.relpath('${CMAKE_SOURCE_DIR}', '${CMAKE_BINARY_DIR}') , 'geometry') , 'geometry') \"
     COMMAND [ -e macro ] || python -c \"import os.path as p, os\; os.symlink(p.join(p.relpath('${CMAKE_SOURCE_DIR}', '${CMAKE_BINARY_DIR}') , 'macro') , 'macro') \"
 )
-
-WRITE_CONFIG_FILE(config.sh)
-WRITE_CONFIG_FILE(config.csh)
+IF(DEFINED SIMPATH)
+  MESSAGE(STATUS "Write configuration files ...")
+  WRITE_CONFIG_FILE(config.sh)
+  WRITE_CONFIG_FILE(config.csh)
 
 # manipulate the config file:
 
@@ -304,19 +326,21 @@ MESSAGE(STATUS "Looking for GENIE ...")
 # genie in general
 FIND_PATH(GENIE  NAMES genie PATHS
   ${SIMPATH}/../FairSoft/generators
+  ${GENIE_ROOT}
   NO_DEFAULT_PATH
 )
 
 If(NOT GENIE)
   Message(STATUS "Could not find Genie source directory")
 Else()
- file(APPEND ${CMAKE_BINARY_DIR}/config.csh "setenv GENIE \"${GENIE}/genie\"\n")
- file(APPEND ${CMAKE_BINARY_DIR}/config.sh  "export GENIE=\"${GENIE}/genie\"\n")
+  file(APPEND ${CMAKE_BINARY_DIR}/config.csh "setenv GENIE \"${GENIE}/genie\"\n")
+  file(APPEND ${CMAKE_BINARY_DIR}/config.sh  "export GENIE=\"${GENIE}/genie\"\n")
 EndIf()
 
 # location of cross section files
-FIND_PATH(GENPATH  NAMES genie PATHS
+FIND_PATH(GENPATH NAMES genie PATHS
   ${SIMPATH}/share/
+  ${GENIE_ROOT}
   NO_DEFAULT_PATH
 )
 
@@ -328,16 +352,19 @@ Else()
 EndIf()
 
 # location of pdf file
-FIND_PATH(LHAPATH NAMES PDFsets PATHS
-  ${SIMPATH}/share/lhapdf
+FIND_PATH(LHAPATH NAMES PDFsets.index PATHS
+  ${SIMPATH}/share/lhapdf/PDFsets
+  ${LHAPDF5_ROOT}/share/lhapdf
   NO_DEFAULT_PATH
 )
 
 If(NOT LHAPATH)
   Message(STATUS "Could not find LHA data files")
 Else()
- file(APPEND ${CMAKE_BINARY_DIR}/config.csh "setenv LHAPATH \"${LHAPATH}/data\"\n")
- file(APPEND ${CMAKE_BINARY_DIR}/config.sh  "export LHAPATH=\"${LHAPATH}/data\"\n")
+  IF(DEFINED SIMPATH)
+    file(APPEND ${CMAKE_BINARY_DIR}/config.csh "setenv LHAPATH \"${LHAPATH}/data\"\n")
+    file(APPEND ${CMAKE_BINARY_DIR}/config.sh  "export LHAPATH=\"${LHAPATH}/data\"\n")
+  ENDIF(DEFINED SIMPATH)
 EndIf()
 
 # for lxplus, need to change LD_LIBRARY_PATH
@@ -383,6 +410,9 @@ file(APPEND ${CMAKE_BINARY_DIR}/config.sh  "export PYTHONPATH=\"\${PYTHONPATH}:$
 file(APPEND ${CMAKE_BINARY_DIR}/config.csh "setenv FAIRSHIPRUN \"${CMAKE_CURRENT_BINARY_DIR}\"\n")
 file(APPEND ${CMAKE_BINARY_DIR}/config.sh  "export FAIRSHIPRUN=\"${CMAKE_CURRENT_BINARY_DIR}\"\n")
 
+file(APPEND ${CMAKE_BINARY_DIR}/config.csh  "setenv EOSSHIP \"root://eospublic.cern.ch/\"\n")
+file(APPEND ${CMAKE_BINARY_DIR}/config.sh  "export EOSSHIP=\"root://eospublic.cern.ch/\"\n")
+
 file(APPEND ${CMAKE_BINARY_DIR}/config.csh "setenv FAIRSHIP \"${CMAKE_CURRENT_SOURCE_DIR}\"\n")
 file(APPEND ${CMAKE_BINARY_DIR}/config.sh  "export FAIRSHIP=\"${CMAKE_CURRENT_SOURCE_DIR}\"\n")
 
@@ -404,3 +434,5 @@ file(APPEND ${CMAKE_BINARY_DIR}/config.sh  "  source ${SIMPATH}/bin/geant4.sh \n
 configure_file(${CMAKE_SOURCE_DIR}/CTestCustom.cmake 
                ${CMAKE_BINARY_DIR}/CTestCustom.cmake
               )
+
+ENDIF(DEFINED SIMPATH)

@@ -1,4 +1,5 @@
 #!/usr/bin/env python 
+from __future__ import print_function
 import ROOT,os,sys,getopt,time,shipRoot_conf
 import shipunit as u
 from ShipGeoConfig import ConfigRegistry
@@ -10,6 +11,7 @@ nev          = 1000
 checkOverlap = True
 G4only       = False
 storeOnlyMuons = False
+skipNeutrinos  = False
 withEvtGen     = True
 boostDiMuon    = 1.
 boostFactor    = 1.
@@ -20,18 +22,17 @@ chibb = 1.6e-7
 npot  = 5E13
 nStart = 0
 
-charmInputFile = "root://eoslhcb.cern.ch//eos/ship/data/Charm/Cascade-parp16-MSTP82-1-MSEL4-76Mpot_1.root"
+charmInputFile = ROOT.gSystem.Getenv("EOSSHIP")+"/eos/experiment/ship/data/Charm/Cascade-parp16-MSTP82-1-MSEL4-76Mpot_1.root"
 nStart = 0
 
 outputDir    = "."
-theSeed      = int(10000 * time.time() % 10000000)
 work_dir  = "./"
 ecut      = 0.5 # GeV   with 1 : ~1sec / event, with 2: 0.4sec / event, 10: 0.13sec
                  
 dy           = 10.
-dv           = 5 # 4=TP elliptical tank design, 5 = optimized conical rectangular design
-ds           = 7 # 5=TP muon shield, 6=magnetized hadron, 7=short magnet design 
-nud          = 1 # 0=TP, 1=new magnet option for short muon shield, 2= no magnet surrounding neutrino detector
+dv           = 6 # 4=TP elliptical tank design, 5 = optimized conical rectangular design, 6=5 without segment-1
+ds           = 9 # 5=TP muon shield, 6=magnetized hadron, 7=short magnet design, 9=optimised with T4 as constraint, 8=requires config file
+nud          = 3 # 0=TP, 1=new magnet option for short muon shield, 2= no magnet surrounding neutrino detector
 
 # example for primary interaction, nobias: python $FAIRSHIP/muonShieldOptimization/run_fixedTarget.py -n 10000 -e 10 -f -r 10
 #                                                               10000 events, energy cut 10GeV, run nr 10, override existing output folder
@@ -59,7 +60,7 @@ def get_work_dir(run_number,tag=None):
 
 def init():
   global runnr, nev, ecut, G4only, tauOnly,JpsiMainly, work_dir,Debug,withEvtGen,boostDiMuon,\
-         boostFactor,charm,beauty,charmInputFile,nStart,storeOnlyMuons,chicc,chibb,npot, nStart
+         boostFactor,charm,beauty,charmInputFile,nStart,storeOnlyMuons,chicc,chibb,npot,nStart,skipNeutrinos,FourDP
   logger.info("SHiP proton-on-taget simulator (C) Thomas Ruf, 2017")
 
   ap = argparse.ArgumentParser(
@@ -79,13 +80,16 @@ def init():
   ap.add_argument('-C', '--charm',      action='store_true',  dest='charm',  default=charm, help="generate charm decays")
   ap.add_argument('-B', '--beauty',     action='store_true',  dest='beauty', default=beauty, help="generate beauty decays")
   ap.add_argument('-M', '--storeOnlyMuons',  action='store_true',  dest='storeOnlyMuons',  default=storeOnlyMuons, help="store only muons, ignore neutrinos")
+  ap.add_argument('-N', '--skipNeutrinos',  action='store_true',  dest='skipNeutrinos',  default=False, help="skip neutrinos")
+  ap.add_argument('-D', '--4darkPhoton',  action='store_true',  dest='FourDP',  default=False, help="enable ntuple production")
 # for charm production       
   ap.add_argument('-cc','--chicc',action='store_true',  dest='chicc',  default=chicc, help="ccbar over mbias cross section")
   ap.add_argument('-bb','--chibb',action='store_true',  dest='chibb',  default=chibb, help="bbbar over mbias cross section")
   ap.add_argument('-p','--pot',action='store_true',  dest='npot',  default=npot, help="number of protons on target per spill to normalize on")
-  ap.add_argument('-S','--nStart',action='store_true',  dest='nStart',  default=nStart, help="first event of input file to start")
+  ap.add_argument('-S', '--nStart', type=int, help="first event of input file to start", dest='nStart', default=nStart)
   ap.add_argument('-I', '--InputFile', type=str, dest='charmInputFile',  default=charmInputFile, help="input file for charm/beauty decays")
   ap.add_argument('-o','--output'    , type=str, help="output directory", dest='work_dir', default=None)
+  ap.add_argument('-rs','--seed', type=int, help="random seed; default value is 0, see TRrandom::SetSeed documentation", dest='seed', default=0)
   args = ap.parse_args()
   if args.debug:
       logger.setLevel(logging.DEBUG)
@@ -98,6 +102,8 @@ def init():
   boostFactor  = args.boostFactor
   boostDiMuon  = args.boostDiMuon
   storeOnlyMuons = args.storeOnlyMuons
+  skipNeutrinos  = args.skipNeutrinos
+  FourDP         = args.FourDP
   if G4only:
     args.charm  = False
     args.beauty = False
@@ -144,7 +150,7 @@ def init():
 args = init()
 os.chdir(work_dir)
 # -------------------------------------------------------------------
-ROOT.gRandom.SetSeed(theSeed)  # this should be propagated via ROOT to Pythia8 and Geant4VMC
+ROOT.gRandom.SetSeed(args.seed)  # this should be propagated via ROOT to Pythia8 and Geant4VMC
 shipRoot_conf.configure()      # load basic libraries, prepare atexit for python
 ship_geo = ConfigRegistry.loadpy("$FAIRSHIP/geometry/geometry_config.py", Yheight = dy, tankDesign = dv, muShieldDesign = ds, nuTauTargetDesign=nud)
 
@@ -168,7 +174,7 @@ rtdb = run.GetRuntimeDb()
 run.SetMaterials("media.geo")  
 # -----Create geometry----------------------------------------------
 cave= ROOT.ShipCave("CAVE")
-cave.SetGeometryFileName("cave.geo")
+cave.SetGeometryFileName("caveWithAir.geo")
 run.AddModule(cave)
 
 TargetStation = ROOT.ShipTargetStation("TargetStation",ship_geo.target.length,ship_geo.hadronAbsorber.length,
@@ -189,6 +195,8 @@ run.AddModule(MuonShield) # needs to be added because of magn hadron shield.
 sensPlane = ROOT.exitHadronAbsorber()
 sensPlane.SetEnergyCut(ecut*u.GeV) 
 if storeOnlyMuons: sensPlane.SetOnlyMuons()
+if skipNeutrinos: sensPlane.SkipNeutrinos()
+if FourDP: sensPlane.SetOpt4DP() # in case a ntuple should be filled with pi0,etas,omega
 # sensPlane.SetZposition(0.*u.cm) # if not using automatic positioning behind default magnetized hadron absorber
 run.AddModule(sensPlane)
 
@@ -199,17 +207,21 @@ P8gen.SetTarget("/TargetArea_1",0.,0.) # will distribute PV inside target, beam 
 P8gen.SetMom(400.*u.GeV)
 P8gen.SetEnergyCut(ecut*u.GeV)
 P8gen.SetDebug(Debug)
+P8gen.SetHeartBeat(100000)
 if G4only: P8gen.SetG4only()
+if JpsiMainly: P8gen.SetJpsiMainly()
+if tauOnly:    P8gen.SetTauOnly()
 if withEvtGen: P8gen.WithEvtGen()
 if boostDiMuon > 1:
  P8gen.SetBoost(boostDiMuon) # will increase BR for rare eta,omega,rho ... mesons decaying to 2 muons in Pythia8
                             # and later copied to Geant4
-P8gen.SetSeed(theSeed)
+P8gen.SetSeed(args.seed)
 # for charm/beauty
 #        print ' for experts: p pot= number of protons on target per spill to normalize on'
 #        print '            : c chicc= ccbar over mbias cross section'
 if charm or beauty:
- P8gen.InitForCharmOrBeauty("root://eoslhcb.cern.ch//eos/ship/data/Charm/Cascade-parp16-MSTP82-1-MSEL4-76Mpot_1.root",nev,npot,nStart)
+ print("--- process heavy flavours ---")
+ P8gen.InitForCharmOrBeauty(charmInputFile,nev,npot,nStart)
 primGen.AddGenerator(P8gen)
 #
 run.SetGenerator(primGen)
@@ -226,10 +238,12 @@ AddDiMuonDecayChannelsToG4.Initialize(P8gen.GetPythia())
 
 # boost gamma2muon conversion
 if boostFactor > 1:
- import G4processes
- gProcessTable = G4processes.G4ProcessTable.GetProcessTable()
- procAnnihil = gProcessTable.FindProcessA('AnnihiToMuPair','e+')
- procGMuPair = gProcessTable.FindProcess('GammaToMuPair','gamma')
+ ROOT.gROOT.ProcessLine('#include "Geant4/G4ProcessTable.hh"')
+ ROOT.gROOT.ProcessLine('#include "Geant4/G4AnnihiToMuPair.hh"')
+ ROOT.gROOT.ProcessLine('#include "Geant4/G4GammaConversionToMuons.hh"')
+ gProcessTable = ROOT.G4ProcessTable.GetProcessTable()
+ procAnnihil = gProcessTable.FindProcess(ROOT.G4String('AnnihiToMuPair'),ROOT.G4String('e+'))
+ procGMuPair = gProcessTable.FindProcess(ROOT.G4String('GammaToMuPair'),ROOT.G4String('gamma'))
  procGMuPair.SetCrossSecFactor(boostFactor)
  procAnnihil.SetCrossSecFactor(boostFactor)
 
@@ -240,24 +254,46 @@ run.Run(nev)
 timer.Stop()
 rtime = timer.RealTime()
 ctime = timer.CpuTime()
-print ' ' 
-print "Macro finished succesfully." 
-print "Output file is ",  outFile 
-print "Real time ",rtime, " s, CPU time ",ctime,"s"
-
+print(' ') 
+print("Macro finished succesfully.") 
+print("Output file is ",  outFile) 
+print("Real time ",rtime, " s, CPU time ",ctime,"s")
 # ---post processing--- remove empty events --- save histograms
 tmpFile = outFile+"tmp"
-fin   = ROOT.gROOT.GetListOfFiles()[0]
-
+if ROOT.gROOT.GetListOfFiles().GetEntries()>0:
+ fin   = ROOT.gROOT.GetListOfFiles()[0]
+else:
+ fin = ROOT.TFile.Open(outFile)
 fHeader = fin.FileHeader
 fHeader.SetRunId(runnr)
 if charm or beauty:
 # normalization for charm
  poteq = P8gen.GetPotForCharm()
- fHeader.SetTitle("POT equivalent = %7.3G"%(poteq))
+ info = "POT equivalent = %7.3G"%(poteq)
 else: 
- fHeader.SetTitle("POT = "+str(nev))
-print "Data generated ", fHeader.GetTitle()
+ info = "POT = "+str(nev)
+
+conditions = " with ecut="+str(ecut)
+if JpsiMainly: conditions+=" J"
+if tauOnly:    conditions+=" T"
+if withEvtGen: conditions+=" V"
+if boostDiMuon > 1: conditions+=" diMu"+str(boostDiMuon)
+if boostFactor > 1: conditions+=" X"+str(boostFactor)
+
+info += conditions
+fHeader.SetTitle(info)
+print("Data generated ", fHeader.GetTitle())
+
+nt = fin.Get('4DP')
+if nt:
+ tf = ROOT.TFile('FourDP.root','recreate')
+ tnt = nt.CloneTree(0)
+ for i in range(nt.GetEntries()):
+  rc = nt.GetEvent(i)
+  rc = tnt.Fill(nt.id,nt.px,nt.py,nt.pz,nt.x,nt.y,nt.z)
+ tnt.Write()
+ tf.Close()
+
 t     = fin.cbmsim
 fout  = ROOT.TFile(tmpFile,'recreate' )
 sTree = t.CloneTree(0)
@@ -269,8 +305,10 @@ for n in range(t.GetEntries()):
           nEvents+=1
      #t.Clear()
 fout.cd()
-for x in fin.GetList():
- if not x.Class().GetName().find('TH')<0: 
+for k in fin.GetListOfKeys():
+ x = fin.Get(k.GetName())
+ className = x.Class().GetName()
+ if className.find('TTree')<0 and className.find('TNtuple')<0: 
    xcopy = x.Clone()
    rc = xcopy.Write()
 sTree.AutoSave()
@@ -279,9 +317,13 @@ fout.cd()
 ff.Write("FileHeader", ROOT.TObject.kSingleKey)
 sTree.Write()
 fout.Close()
-os.system("mv "+tmpFile+" "+outFile)
 
-print "Number of events produced with activity after hadron absorber:",nEvents
+rc1 = os.system("rm  "+outFile)
+rc2 = os.system("mv "+tmpFile+" "+outFile)
+print("removed out file, moved tmpFile to out file",rc1,rc2)
+fin.SetWritable(False) # bpyass flush error
+
+print("Number of events produced with activity after hadron absorber:",nEvents)
 
 if checkOverlap:
  sGeo = ROOT.gGeoManager

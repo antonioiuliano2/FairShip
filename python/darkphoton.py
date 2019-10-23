@@ -1,6 +1,7 @@
+from __future__ import division
+from __future__ import print_function
 import math
 import os
-#from scipy import interpolate 
 import ROOT as r
 
 #from settings import *
@@ -40,7 +41,7 @@ class DarkPhoton:
                     strBis = line[8]
                     #if numEcm<2:
                     #   print numEcm,numR,strType
-                    if 'EXCLSUM' in strType:
+                    if (('EXCLSUM' in strType) or ('EDWARDS' in strType) or ('BLINOV' in strType)):
                         ecm.push_back(numEcm)
                         ratio.push_back(numR)
                         #print numEcm,numR,strType
@@ -55,11 +56,7 @@ class DarkPhoton:
 
     def interpolatePDGtable(self):
         """ Find the best value for R for the given center-of-mass energy """
-        #using scipy
-        #fun = interpolate.interp1d(dataEcm,dataR)
-        #using ROOT
-        fun = r.Math.Interpolator(self.dataEcm.size(),r.Math.Interpolation.kLINEAR) #,Interpolation.kPOLYNOMIAL)
-        print 'function type:%s'%fun.Type()
+        fun = r.Math.Interpolator(self.dataEcm.size(),r.Math.Interpolation.kLINEAR)
         fun.SetData(self.dataEcm,self.dataR);
         return fun
 
@@ -68,9 +65,9 @@ class DarkPhoton:
         # Da http://pdg.lbl.gov/2012/hadronic-xsections/hadron.html#miscplots
         #ecm = math.sqrt(s)
         ecm = s
-        if ecm>=4.8:
-            print 'Asking for interpolation beyond 4.8 GeV: not implemented, needs extending!'
-            result=0
+        if ecm>=10.29:
+            print('Warning! Asking for interpolation beyond 10.29 GeV: not implemented, needs extending! Taking value at 10.29 GeV')
+            result=float(self.PdgR.Eval(10.29))
         elif ecm>=self.dataEcm[0]:
             result = float(self.PdgR.Eval(ecm))
         else:
@@ -100,7 +97,7 @@ class DarkPhoton:
     def hadronicDecayWidth(self):
         """ Dark photon decay into hadrons """
         """(mumu)*R"""
-        gmumu=self.leptonicDecayWidth('mu')
+        gmumu=self.leptonicDecayWidth('mu-')
         tdw=gmumu*self.Ree_interp(self.mDarkPhoton)
         #print 'Hadronic decay width is %.3e'%(tdw)
         return tdw;
@@ -111,9 +108,9 @@ class DarkPhoton:
     def totalDecayWidth(self): # mDarkPhoton in GeV
         """ Total decay width in GeV """
         #return hGeV*c / cTau(mDarkPhoton, epsilon)
-        tdw = (self.leptonicDecayWidth('e')
-               + self.leptonicDecayWidth('mu')
-               + self.leptonicDecayWidth('tau')
+        tdw = (self.leptonicDecayWidth('e-')
+               + self.leptonicDecayWidth('mu-')
+               + self.leptonicDecayWidth('tau-')
                + self.hadronicDecayWidth())
         
         #print 'Total decay width %e'%(tdw)
@@ -127,32 +124,32 @@ class DarkPhoton:
         return ctau #GeV/MeV conversion
     
     def lifetime(self):
-        return cTau()/ccm
+        return self.cTau()/ccm
 
     def findBranchingRatio(self,decayString):
         br = 0.
-        if   decayString == 'A -> e- e+': br = self.leptonicBranchingRatio('e')
-        elif   decayString == 'A -> mu- mu+': br = self.leptonicBranchingRatio('mu')
-        elif   decayString == 'A -> tau- tau+': br = self.leptonicBranchingRatio('tau')
+        if   decayString == 'A -> e- e+': br = self.leptonicBranchingRatio('e-')
+        elif   decayString == 'A -> mu- mu+': br = self.leptonicBranchingRatio('mu-')
+        elif   decayString == 'A -> tau- tau+': br = self.leptonicBranchingRatio('tau-')
         elif   decayString == 'A -> hadrons': br = self.hadronicBranchingRatio()
         else:
-            print 'findBranchingRatio ERROR: unknown decay %s'%decayString
+            print('findBranchingRatio ERROR: unknown decay %s'%decayString)
             quit()
             
         return br
 
     def allowedChannels(self):
-        print "Allowed channels for dark photon mass = %3.3f"%self.mDarkPhoton
+        print("Allowed channels for dark photon mass = %3.3f"%self.mDarkPhoton)
         allowedDecays = {'A -> hadrons':'yes'}
-        if self.mDarkPhoton > 2.*mass('e'):
+        if self.mDarkPhoton > 2.*mass('e-'):
             allowedDecays.update({'A -> e- e+':'yes'})
-            print "allowing decay to e"
-        if self.mDarkPhoton > 2.*mass('mu'):
+            print("allowing decay to e")
+        if self.mDarkPhoton > 2.*mass('mu-'):
             allowedDecays.update({'A -> mu- mu+':'yes'})
-            print "allowing decay to mu"
-        if self.mDarkPhoton > 2.*mass('tau'):
+            print("allowing decay to mu")
+        if self.mDarkPhoton > 2.*mass('tau-'):
             allowedDecays.update({'A -> tau- tau+':'yes'})
-            print "allowing decay to tau"
+            print("allowing decay to tau")
                         
         return allowedDecays
                     

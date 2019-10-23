@@ -56,6 +56,7 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
    export PATH=/home/travis/miniconda2/bin:$PATH
    conda update --yes conda
    conda install --yes python=2.7 numpy scipy
+   conda install --yes libgfortran
 
    export PYTHON=python
    export FAIRSOFTTAR="https://cernbox.cern.ch/index.php/s/ciIustpVqDbLvxF/download"
@@ -89,7 +90,7 @@ fi
 git remote set-branches --add origin master
 
 # build FairShip
-./configure.sh
+./configure.sh || exit 1
 
 # run FairShip tests
 cd ../FairShipRun

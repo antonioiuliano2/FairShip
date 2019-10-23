@@ -144,7 +144,7 @@ Bool_t  strawtubes::ProcessHits(FairVolume* vol)
     AddHit(fTrackID, straw_uniqueId, TVector3(xmean, ymean,  zmean),
            TVector3(fMom.Px(), fMom.Py(), fMom.Pz()), fTime, deltaTrackLength,
            fELoss,pdgCode,dist2Wire);
-    if (dist2Wire>0.6){
+    if (dist2Wire>fInner_Straw_diameter/2){  
      std::cout << "addhit " << dist2Wire<< " straw id " << straw_uniqueId << " pdgcode " << pdgCode<< " dot prod " << pq.Dot(uCrossv)<< std::endl;
      std::cout << " exit:" << gMC->IsTrackExiting() << " stop:" << gMC->IsTrackStop() << " disappeared:" << gMC->IsTrackDisappeared()<< std::endl;
      std::cout << " entry:" << fPos.X()<< " " << fPos.Y()<< " " << fPos.Z() << std::endl;
@@ -220,11 +220,11 @@ void strawtubes::SetOuterStrawDiameter(Double_t outerstrawdiameter)
 }
 
 
-void strawtubes::SetStrawPitch(Double_t strawpitch)
+void strawtubes::SetStrawPitch(Double_t strawpitch,Double_t layer_offset, Double_t plane_offset)
 {
      fStraw_pitch = strawpitch;                                 //!  Distance (x) between straws in one layer
-     fOffset_layer12 = strawpitch/2;
-     fOffset_plane12 = strawpitch/4;
+     fOffset_layer12 = layer_offset;
+     fOffset_plane12 = plane_offset;
 }
 
 void strawtubes::SetDeltazLayer(Double_t deltazlayer)
@@ -258,6 +258,22 @@ void strawtubes::SetDeltazView(Double_t deltazview)
 {
      fDeltaz_view = deltazview;                                  //! Distance (z) between views
 }
+
+void strawtubes::SetDeltazFrame(Double_t deltazframe)
+{
+        fDeltaz_frame = deltazframe;                             //! Thickness (z) of the meterial frame
+}
+
+void strawtubes::SetFrameLateralWidth(Double_t framelateralwidth)
+{
+        fFrame_lateral_width = framelateralwidth;                //! Width (x and y) of the material frame
+}
+
+void strawtubes::SetFrameMaterial(TString framematerial)
+{
+        fFrame_material = framematerial;                         //! Material of the view frame
+}
+
 
 void strawtubes::SetStrawLength12(Double_t strawlength12)
 {
@@ -319,6 +335,8 @@ void strawtubes::ConstructGeometry()
     TGeoMedium *sttmix9010_2bar   = gGeoManager->GetMedium("STTmix9010_2bar");
     InitMedium("tungsten");
     TGeoMedium *tungsten          = gGeoManager->GetMedium("tungsten");
+    InitMedium(fFrame_material);
+    TGeoMedium *FrameMatPtr       = gGeoManager->GetMedium(fFrame_material);
     InitMedium("vacuum");
     TGeoMedium *med          = gGeoManager->GetMedium("vacuum");
 
@@ -345,23 +363,24 @@ void strawtubes::ConstructGeometry()
     
     Double_t yDim =  (fStraws_per_layer+1) * fStraw_pitch /2. ; // put everything inside vacbox
     //arguments of box are half-lengths; 
-    TGeoBBox *detbox1 = new TGeoBBox("detbox1", fStraw_length+1.,  ftr34ydim+1., fDeltaz_view/2.+eps);
-    TGeoBBox *detbox2 = new TGeoBBox("detbox2", fStraw_length+eps, ftr34ydim+eps, fDeltaz_view/2.);
-    
-    TGeoBBox *detbox1_12 = new TGeoBBox("detbox1_12", fStraw_length_12+1.,  ftr12ydim+1., fDeltaz_view/2.+eps);
-    TGeoBBox *detbox2_12 = new TGeoBBox("detbox2_12", fStraw_length_12+eps, ftr12ydim+eps, fDeltaz_view/2.);
-    
-    TGeoBBox *detbox1_veto = new TGeoBBox("detbox1_veto", fStraw_length_veto+1.,  fvetoydim+1., fDeltaz_view/2.+eps);
-    TGeoBBox *detbox2_veto = new TGeoBBox("detbox2_veto", fStraw_length_veto+eps, fvetoydim+eps, fDeltaz_view/2.);
+    TGeoBBox *detbox1 = new TGeoBBox("detbox1", fStraw_length+fFrame_lateral_width,  ftr34ydim+fFrame_lateral_width, fDeltaz_frame/2.);
+    TGeoBBox *detbox2 = new TGeoBBox("detbox2", fStraw_length+eps, ftr34ydim+eps, fDeltaz_frame/2.+eps);
+
+    TGeoBBox *detbox1_12 = new TGeoBBox("detbox1_12", fStraw_length_12+fFrame_lateral_width,  ftr12ydim+fFrame_lateral_width, fDeltaz_frame/2.);
+    TGeoBBox *detbox2_12 = new TGeoBBox("detbox2_12", fStraw_length_12+eps, ftr12ydim+eps, fDeltaz_frame/2.+eps);
+    TGeoCompositeShape *detcomp1 = new TGeoCompositeShape("detcomp1", "detbox1-detbox2");
+    TGeoCompositeShape *detcomp1_12 = new TGeoCompositeShape("detcomp1_12", "detbox1_12-detbox2_12");
+    TGeoBBox *vetovacbox;
+    TGeoCompositeShape *detcomp1_veto;
+    if (fStraw_length_veto>1){
+     TGeoBBox *detbox1_veto = new TGeoBBox("detbox1_veto", fStraw_length_veto+1.,  fvetoydim+1., fDeltaz_view/2.);
+     TGeoBBox *detbox2_veto = new TGeoBBox("detbox2_veto", fStraw_length_veto+eps, fvetoydim+eps, fDeltaz_view/2.+eps);
 
     //the station sits inside a vacuum box
     //TGeoBBox *vetovacbox = new TGeoBBox("Vetovacbox", fVacBox_x, fVacBox_y, fDeltaz_view );
-    TGeoBBox *vetovacbox = new TGeoBBox("Vetovacbox", fStraw_length_veto+75., fvetoydim+75., fDeltaz_view );
-    
-    TGeoCompositeShape *detcomp1 = new TGeoCompositeShape("detcomp1", "detbox1-detbox2");
-    TGeoCompositeShape *detcomp1_12 = new TGeoCompositeShape("detcomp1_12", "detbox1_12-detbox2_12"); 
-    TGeoCompositeShape *detcomp1_veto = new TGeoCompositeShape("detcomp1_veto", "detbox1_veto-detbox2_veto"); 
-       
+     vetovacbox = new TGeoBBox("Vetovacbox", fStraw_length_veto+75., fvetoydim+75., fDeltaz_view );
+     detcomp1_veto = new TGeoCompositeShape("detcomp1_veto", "detbox1_veto-detbox2_veto"); 
+    }
     // Volume: straw
     rmin = fInner_Straw_diameter/2.;
     rmax = fOuter_Straw_diameter/2.;
@@ -374,11 +393,13 @@ void strawtubes::ConstructGeometry()
     TGeoVolume *straw_12 = new TGeoVolume("straw_12",straw_tube_12, mylar);
     straw_12->SetLineColor(4);
     straw_12->SetVisibility(kTRUE);
-    TGeoTube *straw_tube_veto = new TGeoTube("straw_veto",rmin,rmax,fStraw_length_veto-4.*eps);
-    TGeoVolume *straw_veto = new TGeoVolume("straw_veto",straw_tube_veto, mylar);
-    straw_veto->SetLineColor(4);
-    straw_veto->SetVisibility(kTRUE);
-	       	
+    TGeoVolume *straw_veto;
+    if (fStraw_length_veto>1){
+     TGeoTube *straw_tube_veto = new TGeoTube("straw_veto",rmin,rmax,fStraw_length_veto-4.*eps);
+     straw_veto = new TGeoVolume("straw_veto",straw_tube_veto, mylar);
+     straw_veto->SetLineColor(4);
+     straw_veto->SetVisibility(kTRUE);
+    }
     // Volume: gas
     rmin = fWire_thickness/2.+epsS;
     rmax = fInner_Straw_diameter/2.-epsS;
@@ -390,10 +411,14 @@ void strawtubes::ConstructGeometry()
     TGeoVolume *gas_12 = new TGeoVolume("gas_12",gas_tube_12, sttmix9010_2bar);
     gas_12->SetLineColor(5);    //only the gas is sensitive
     AddSensitiveVolume(gas_12);
-    TGeoTube *gas_tube_veto = new TGeoTube("gas_veto",rmin,rmax,fStraw_length_veto-6.*eps);
-    TGeoVolume *gas_veto = new TGeoVolume("gas_veto",gas_tube_veto, sttmix9010_2bar);
-    gas_veto->SetLineColor(5);    //only the gas is sensitive
-    AddSensitiveVolume(gas_veto);
+    TGeoVolume *gas_veto;
+    TGeoBBox *layer_veto;
+    if (fStraw_length_veto>1){
+     TGeoTube *gas_tube_veto = new TGeoTube("gas_veto",rmin,rmax,fStraw_length_veto-6.*eps);
+     gas_veto = new TGeoVolume("gas_veto",gas_tube_veto, sttmix9010_2bar);
+     gas_veto->SetLineColor(5);    //only the gas is sensitive
+     AddSensitiveVolume(gas_veto);
+    }
        
     // Volume: wire
     rmin=0.;
@@ -403,18 +428,17 @@ void strawtubes::ConstructGeometry()
     wire->SetLineColor(6); 
     TGeoTube *wire_tube_12 = new TGeoTube("wire_12",rmin,rmax,fStraw_length_12-8.*eps);
     TGeoVolume *wire_12 = new TGeoVolume("wire_12",wire_tube_12, tungsten);
-    wire_12->SetLineColor(6);     
-    TGeoTube *wire_tube_veto = new TGeoTube("wire_veto",rmin,rmax,fStraw_length_veto-8.*eps);
-    TGeoVolume *wire_veto = new TGeoVolume("wire_veto",wire_tube_veto, tungsten);
-    wire_veto->SetLineColor(6);     
-    
-      
+    wire_12->SetLineColor(6);
     Int_t statnb;
-    statnb=5;
+    if (fStraw_length_veto>1){
+     TGeoTube *wire_tube_veto = new TGeoTube("wire_veto",rmin,rmax,fStraw_length_veto-8.*eps);
+     TGeoVolume *wire_veto = new TGeoVolume("wire_veto",wire_tube_veto, tungsten);
+     wire_veto->SetLineColor(6);
+     statnb=5;
     // statnb = station number. 1,2,3,4 tracking stations, 5 veto station
-    TGeoVolume *vetovac = new TGeoVolume("Veto", vetovacbox, med);
+     TGeoVolume *vetovac = new TGeoVolume("Veto", vetovacbox, med);
 
-    top->AddNode(vetovac, statnb, new TGeoTranslation(0,0,fT0z));
+     top->AddNode(vetovac, statnb, new TGeoTranslation(0,0,fT0z));
     //vetovac->SetVisDaughters(kTRUE);
     //vetovac->SetTransparency(80);
 
@@ -458,7 +482,7 @@ void strawtubes::ConstructGeometry()
 	 //plane loop
          TString nmplane_veto = nmveto+"_plane_"; nmplane_veto += pnb;
 	 //width of the planes: z distance between layers + outer straw diameter
-	 TGeoBBox *plane_veto = new TGeoBBox("plane box", fStraw_length_veto+eps/2., fvetoydim+eps/2., planewidth/2.+eps/2.);
+	 TGeoBBox *plane_veto = new TGeoBBox("plane box", fStraw_length_veto+eps/2., fvetoydim+eps/2., planewidth/2.+3.*eps/2.);
          TGeoVolume *planebox_veto = new TGeoVolume(nmplane_veto, plane_veto, med);
 	 //the planebox sits in the viewframe
 	 //hence z translate the plane wrt to the view
@@ -471,7 +495,7 @@ void strawtubes::ConstructGeometry()
          for (Int_t lnb=0; lnb<2; lnb++) {
            TString nmlayer_veto = nmplane_veto+"_layer_"; nmlayer_veto += lnb;
 	   //width of the layer: (plane width-2eps)/2
-	   TGeoBBox *layer_veto = new TGeoBBox("layer box_veto", fStraw_length_veto+eps/4., fvetoydim+eps/4., layerwidth/2.+eps/4.);
+	   layer_veto = new TGeoBBox("layer box_veto", fStraw_length_veto+eps/4., fvetoydim+eps/4., layerwidth/2.+eps/4.);
            TGeoVolume *layerbox_veto = new TGeoVolume(nmlayer_veto, layer_veto, med);      
 	   //z translate the layerbox wrt the plane box (which is already rotated)	          	
 	   planebox_veto->AddNode(layerbox_veto, statnb*10000000+vnb*1000000+pnb*100000+lnb*10000,new TGeoTranslation(0,0,(lnb-1./2.)*fDeltaz_layer12)); 	  	
@@ -496,42 +520,50 @@ void strawtubes::ConstructGeometry()
         //end of plane loop	 	
       }
       //end of view loop
-     }
+     } }
      // end of veto station loop
     //Tracking stations
     //statnb=station number; vnb=view number; pnb=plane number; lnb=layer number; snb=straw number
     
-    //TGeoBBox *vacbox = new TGeoBBox("vacbox",  fVacBox_x, fVacBox_y, 2.*fDeltaz_view );
-    TGeoBBox *vacbox = new TGeoBBox("vacbox",  fVacBox_x+50., ftr34ydim+30., 2.*fDeltaz_view);
-    TGeoBBox *vacbox_12 = new TGeoBBox("vacbox_12",  fStraw_length_12+75., ftr12ydim+75., 2.*fDeltaz_view);
+    //New scalable endpoints of vacuum boxes which cover rotated view frames
+
+    Double_t x_prime = (fVacBox_x+0.6*fFrame_lateral_width+2*eps)*TMath::Cos(fView_angle*TMath::Pi()/180.0) + (ftr34ydim+fFrame_lateral_width+2*eps)*TMath::Sin(fView_angle*TMath::Pi()/180.0);
+    Double_t y_prime = (fVacBox_x+0.6*fFrame_lateral_width+2*eps)*TMath::Sin(fView_angle*TMath::Pi()/180.0) + (ftr34ydim+fFrame_lateral_width+2*eps)*TMath::Cos(fView_angle*TMath::Pi()/180.0);
+        Double_t x_prime_12 = (fStraw_length_12+fFrame_lateral_width+2*eps)*TMath::Cos(fView_angle*TMath::Pi()/180.0) + (ftr12ydim+fFrame_lateral_width+2*eps)*TMath::Sin(fView_angle*TMath::Pi()/180.0);
+    Double_t y_prime_12 = (fStraw_length_12+fFrame_lateral_width+2*eps)*TMath::Sin(fView_angle*TMath::Pi()/180.0) + (ftr12ydim+fFrame_lateral_width+2*eps)*TMath::Cos(fView_angle*TMath::Pi()/180.0);
+
+    TGeoBBox *vacbox = new TGeoBBox("vacbox", x_prime+eps, y_prime+eps, 2.*fDeltaz_view);
+    TGeoBBox *vacbox_12 = new TGeoBBox("vacbox_12", x_prime_12+eps, y_prime_12+eps, 2.*fDeltaz_view);
+
+    fFrame_material.ToLower();
 
     for (statnb=1;statnb<5;statnb++) {
        // tracking station loop
        TString nmstation = "Tr"; 
-       TString nmstation_12 = "Tr"; 
        std::stringstream ss;
        ss << statnb;
-       nmstation_12 = nmstation_12 + ss.str();
        nmstation = nmstation + ss.str();
-                        	
-       TGeoVolume *vac_12 = new TGeoVolume(nmstation_12, vacbox_12, med);
-       TGeoVolume *vac = new TGeoVolume(nmstation, vacbox, med);
-	 
+       TGeoVolume *vac;
+       TGeoVolume *vac_12;
        switch (statnb) {
 	   case 1:
 	      TStationz=fT1z;
+              vac_12 = new TGeoVolume(nmstation, vacbox_12, med);
 	      top->AddNode(vac_12, statnb, new TGeoTranslation(0,0,TStationz));
 	      break;
 	   case 2:
 	      TStationz=fT2z;
+              vac_12 = new TGeoVolume(nmstation, vacbox_12, med);
 	      top->AddNode(vac_12, statnb, new TGeoTranslation(0,0,TStationz));
 	      break;
 	   case 3:
 	      TStationz=fT3z;
+              vac = new TGeoVolume(nmstation, vacbox, med);
 	      top->AddNode(vac, statnb, new TGeoTranslation(0,0,TStationz));
 	      break;
 	   case 4:
 	      TStationz=fT4z;
+              vac = new TGeoVolume(nmstation, vacbox, med);
 	      top->AddNode(vac, statnb, new TGeoTranslation(0,0,TStationz));
 	      break;
 	   default:
@@ -550,26 +582,33 @@ void strawtubes::ConstructGeometry()
             switch (vnb) {
 	      case 0:
 	        angle=0.;
-	        nmview_12 = nmstation_12+"_x1";      	      	 
+	        nmview_12 = nmstation+"_x1";      	      	 
 	        break;
 	      case 1:
 	        angle=fView_angle;      
-	      	nmview_12 = nmstation_12+"_u";     
+	      	nmview_12 = nmstation+"_u";     
 	        break;
 	      case 2:
 	        angle=-fView_angle;      
-	        nmview_12 = nmstation_12+"_v";
+	        nmview_12 = nmstation+"_v";
 	        break;
 	      case 3:
 	        angle=0.;	      
-	        nmview_12 = nmstation_12+"_x2";
+	        nmview_12 = nmstation+"_x2";
 	        break;
 	      default:
 	        angle=0.;      
-	        nmview_12 = nmstation_12+"_x1";
+	        nmview_12 = nmstation+"_x1";
             }	
 	  
-	    TGeoVolume *viewframe_12 = new TGeoVolume(nmview_12, detcomp1_12, Al);	 
+	    TGeoVolume *viewframe_12;
+            if (fFrame_material.Contains("aluminium")) {
+                viewframe_12 = new TGeoVolume(nmview_12, detcomp1_12, Al);
+            }
+            else {
+                viewframe_12 = new TGeoVolume(nmview_12, detcomp1_12, FrameMatPtr);
+            }
+	 
 
 	    //z-translate the viewframe from station z pos
 	    t5.SetTranslation(0, 0,(vnb-3./2.)*(fDeltaz_view));
@@ -585,7 +624,7 @@ void strawtubes::ConstructGeometry()
 	      //plane loop	   
 	      TString nmplane_12 = nmview_12+"_plane_"; 
 	      nmplane_12 += pnb;
-	      TGeoBBox *plane_12 = new TGeoBBox("plane box_12", fStraw_length_12+eps/2, ftr12ydim+eps/2, planewidth/2.+eps/2);	   	   
+	      TGeoBBox *plane_12 = new TGeoBBox("plane box_12", fStraw_length_12+eps/2, ftr12ydim+eps/2, planewidth/2.+3.*eps/2);	   	   
  	      TGeoVolume *planebox_12 = new TGeoVolume(nmplane_12, plane_12, med);          
 	   
 	      //the planebox sits in the viewframe
@@ -659,7 +698,14 @@ void strawtubes::ConstructGeometry()
 	        nmview = nmstation+"_x1";
             }	
 	  
-	    TGeoVolume *viewframe = new TGeoVolume(nmview, detcomp1, Al);	 
+	    TGeoVolume *viewframe;
+            if (fFrame_material.Contains("aluminium")) {
+                viewframe = new TGeoVolume(nmview, detcomp1, Al);
+            }
+            else {
+                viewframe = new TGeoVolume(nmview, detcomp1, FrameMatPtr);
+            }
+	 
 
 	    //z-translate the viewframe from station z pos
 	    t5.SetTranslation(0, 0,(vnb-3./2.)*(fDeltaz_view));
@@ -675,7 +721,7 @@ void strawtubes::ConstructGeometry()
 	      //plane loop	   
 	      TString nmplane = nmview+"_plane_"; 
 	      nmplane += pnb;
-	      TGeoBBox *plane = new TGeoBBox("plane box", fStraw_length+eps/2, ftr34ydim+eps/2, planewidth/2.+eps/2);	   	   
+	      TGeoBBox *plane = new TGeoBBox("plane box", fStraw_length+eps/2, ftr34ydim+eps/2, planewidth/2.+3.*eps/2);	   	   
  	      TGeoVolume *planebox = new TGeoVolume(nmplane, plane, med);          
 	   
 	      //the planebox sits in the viewframe

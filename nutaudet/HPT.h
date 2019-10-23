@@ -23,9 +23,22 @@ class Hpt:public FairDetector
     virtual ~Hpt();
       
     void ConstructGeometry();
-    void SetZsize(const Double_t MSsize);
+
+    void SetSciFiParam(Double_t scifimat_width, Double_t scifimat_hor, Double_t scifimat_vert,   
+                       Double_t scifimat_z, Double_t support_z, Double_t honeycomb_z);
+    void SetHPTrackerParam(Double_t HPTX, Double_t HPTY, Double_t HPTZ);
+    void SetNumberSciFi(Int_t n_hor_planes_, Int_t n_vert_planes_);
+    void SetZsize(const Double_t Mudetsize);
     void SetConcreteBaseDim(Double_t X, Double_t Y, Double_t Z);
     
+    void SetDesign(Int_t Design);
+    //methods for design 3 
+    void SetDistanceHPTs(Double_t dd);       
+    void SetHPTNumber(Int_t nHPT);
+    void SetSurroundingDetHeight(Double_t height);
+    void GetMagnetGeometry(Double_t EmuzC, Double_t EmuY);
+    void GetNumberofTargets(Int_t ntarget);
+    //
     /**      Initialization of the detector is done here    */
     virtual void Initialize();
     
@@ -94,14 +107,37 @@ protected:
     Double_t DimX;
     Double_t DimY;
     Double_t DimZ;
-    Double_t zSizeMS; //dimension of the Magnetic Spectrometer volume
+    Double_t zSizeMudet; //dimension of the Muon Detector volume
     Double_t fConcreteX; //dimesion of Concrete Base on which the external HPTs lie
     Double_t fConcreteY;
     Double_t fConcreteZ;
 
+    Double_t fSRHeight;
+    Double_t fDesign;
+    Double_t fDistance;
+    Int_t fnHPT;
+
+    Double_t HPTrackerX; // parameters for Downstream SciFi Tracker
+    Double_t HPTrackerY;
+    Double_t HPTrackerZ;
+
+    Double_t scifimat_width;     
+    Double_t scifimat_hor;
+    Double_t scifimat_vert; 
+    Double_t scifimat_z; 
+    Double_t support_z; 
+    Double_t honeycomb_z;
+    Int_t n_hor_planes;
+    Int_t n_vert_planes;
+
+    Double_t fmagnety; //parameters from EmuMagnet
+    Double_t fmagnetcenter;
+
+    Int_t fntarget;
+
     Hpt(const Hpt&);
     Hpt& operator=(const Hpt&);
-    ClassDef(Hpt,3)
+    ClassDef(Hpt,5)
 
 };
 #endif 
