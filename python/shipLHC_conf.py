@@ -50,6 +50,15 @@ def configure(run,ship_geo,Gfield=''):
  Scifi.SetGapBrick(ship_geo.Scifi.DZ)
  detectorList.append(Scifi)
 
+ MuFilter = ROOT.MuFilter("MuFilter",ROOT.kTRUE)
+ MuFilter.SetMuFilterDimensions(ship_geo.MuFilter.X, ship_geo.MuFilter.Y, ship_geo.MuFilter.Z)
+ MuFilter.SetIronBlockDimensions(ship_geo.MuFilter.FeX, ship_geo.MuFilter.FeY, ship_geo.MuFilter.FeZ)
+ MuFilter.SetTimingPlanesDimensions(ship_geo.MuFilter.TDetX, ship_geo.MuFilter.TDetY, ship_geo.MuFilter.TDetZ)
+ MuFilter.SetNplanes(ship_geo.MuFilter.nplanes)
+ MuFilter.SetCenterZ(ship_geo.MuFilter.Zcenter)
+ MuFilter.SetDisplacement(ship_geo.MuFilter.ShiftX, ship_geo.MuFilter.ShiftY)
+ detectorList.append(MuFilter)
+
  for x in detectorList:
    run.AddModule(x)
 # return list of detector elements

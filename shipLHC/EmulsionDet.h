@@ -1,7 +1,7 @@
 //  
 //EmulsionDet.h
 //
-//
+// by A.Buonaura
 
 #ifndef EmulsionDet_H
 #define EmulsionDet_H

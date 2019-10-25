@@ -9,8 +9,8 @@ with ConfigRegistry.register_config("basic") as c:
 
 	c.EmulsionDet = AttrDict(z=0*u.cm)
 	c.EmulsionDet.zC = 0*u.m
-	c.EmulsionDet.row=5
-        c.EmulsionDet.col=3
+	c.EmulsionDet.row=4
+        c.EmulsionDet.col=4
         c.EmulsionDet.wall=12
 	c.EmulsionDet.target = 1  #number of neutrino target volumes
 	c.EmulsionDet.n_plates = 56
@@ -24,8 +24,6 @@ with ConfigRegistry.register_config("basic") as c:
 	c.EmulsionDet.AllPW = c.EmulsionDet.LeadTh + c.EmulsionDet.EPlW
 	c.EmulsionDet.BrX = 12.9 * u.cm
 	c.EmulsionDet.BrY = 10.5 * u.cm
-	c.EmulsionDet.BrX = c.EmulsionDet.BrY
-        c.EmulsionDet.BrY = c.EmulsionDet.BrX
 	c.EmulsionDet.BrPackZ = 0.1045 * u.cm
 	c.EmulsionDet.BrPackX = c.EmulsionDet.BrX - c.EmulsionDet.EmX
 	c.EmulsionDet.BrPackY = c.EmulsionDet.BrY - c.EmulsionDet.EmY
@@ -35,7 +33,6 @@ with ConfigRegistry.register_config("basic") as c:
 	c.EmulsionDet.WallXDim = c.EmulsionDet.col*c.EmulsionDet.BrX
 	c.EmulsionDet.WallYDim = c.EmulsionDet.row*c.EmulsionDet.BrY+(c.EmulsionDet.row-1)*c.EmulsionDet.Ydist
 	c.EmulsionDet.WallZDim = c.EmulsionDet.BrZ
-	#c.EmulsionDet.TTz = 6*u.cm
 	c.EmulsionDet.TTz = 2.5*u.cm
         c.EmulsionDet.zdim = c.EmulsionDet.wall* c.EmulsionDet.WallZDim + (c.EmulsionDet.wall+1)*c.EmulsionDet.TTz
 	c.EmulsionDet.ShiftX = -c.EmulsionDet.xdim/2
@@ -48,4 +45,17 @@ with ConfigRegistry.register_config("basic") as c:
 	c.Scifi.DZ = c.EmulsionDet.BrZ
 	c.Scifi.nplanes = c.EmulsionDet.wall+1
 
-
+	c.MuFilter = AttrDict(z=0*u.cm)
+	c.MuFilter.X = c.EmulsionDet.xdim + 20*u.cm
+        c.MuFilter.Y = c.EmulsionDet.ydim + 20*u.cm
+        c.MuFilter.FeX = c.MuFilter.X
+        c.MuFilter.FeY = c.MuFilter.Y
+        c.MuFilter.FeZ = 20*u.cm
+        c.MuFilter.TDetX = c.MuFilter.X
+        c.MuFilter.TDetY = c.MuFilter.Y
+        c.MuFilter.TDetZ = 2*u.cm
+        c.MuFilter.nplanes = 4
+	c.MuFilter.Z = c.MuFilter.nplanes*(c.MuFilter.FeZ+c.MuFilter.TDetZ)
+	c.MuFilter.Zcenter = c.EmulsionDet.zC+c.EmulsionDet.zdim/2+c.MuFilter.Z/2
+	c.MuFilter.ShiftX = c.EmulsionDet.ShiftX
+	c.MuFilter.ShiftY = c.EmulsionDet.ShiftY -10*u.cm

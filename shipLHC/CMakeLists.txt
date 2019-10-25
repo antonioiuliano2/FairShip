@@ -29,6 +29,8 @@ EmulsionDetPoint.cxx
 EmulsionDetContFact.cxx
 Scifi.cxx
 ScifiPoint.cxx
+MuFilter.cxx
+MuFilterPoint.cxx
 )
 
 Set(HEADERS )

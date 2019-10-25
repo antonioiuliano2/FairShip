@@ -422,8 +422,8 @@ if simEngine=="Genie" and options.shipLHC:
  primGen.SetTarget(0., 0.) # do not interfere with GenieGenerator
  Geniegen = ROOT.GenieGenerator()
  Geniegen.Init(inputFile,options.firstEvent)
- #Geniegen.SetPositions(ship_geo.EmulsionDet.zC-480*u.m, -ship_geo.EmulsionDet.zdim/2,ship_geo.EmulsionDet.zdim/2)
- Geniegen.SetPositions(ship_geo.EmulsionDet.zC-480*u.m, -ship_geo.EmulsionDet.zdim/2,ship_geo.EmulsionDet.TTz+12*(ship_geo.EmulsionDet.TTz+ship_geo.EmulsionDet.BrZ))
+ Geniegen.SetPositions(ship_geo.EmulsionDet.zC-480*u.m, -ship_geo.EmulsionDet.zdim/2,ship_geo.EmulsionDet.zdim/2)
+ #Geniegen.SetPositions(ship_geo.EmulsionDet.zC-480*u.m, -ship_geo.EmulsionDet.zdim/2,ship_geo.EmulsionDet.TTz+12*(ship_geo.EmulsionDet.TTz+ship_geo.EmulsionDet.BrZ))
  primGen.AddGenerator(Geniegen)
  options.nEvents = min(options.nEvents,Geniegen.GetNevents())
  run.SetPythiaDecayer('DecayConfigPy8.C')

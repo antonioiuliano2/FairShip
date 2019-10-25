@@ -228,7 +228,7 @@ void EmulsionDet::ConstructGeometry()
 	//TGeoVolume *top = gGeoManager->MakeBox("Top",vacuum,10.,10.,10.);
 	//gGeoManager->SetTopVolume(top);
 
-	//Definition of the target box containing emulsion bricks + (CES if fDesign = 0 o 1) + target trackers (TT) 
+	//Definition of the target box containing emulsion bricks + target trackers (TT) 
 	TGeoBBox *TargetBox = new TGeoBBox("TargetBox",XDimension/2, YDimension/2, ZDimension/2);
 	TGeoVolume *volTarget = new TGeoVolume("volTarget",TargetBox, air);
 
