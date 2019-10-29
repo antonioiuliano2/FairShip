@@ -54,7 +54,7 @@ with ConfigRegistry.register_config("basic") as c:
         c.MuFilter.TDetX = c.MuFilter.X
         c.MuFilter.TDetY = c.MuFilter.Y
         c.MuFilter.TDetZ = 2*u.cm
-        c.MuFilter.nplanes = 4
+        c.MuFilter.nplanes = 8
 	c.MuFilter.Z = c.MuFilter.nplanes*(c.MuFilter.FeZ+c.MuFilter.TDetZ)
 	c.MuFilter.Zcenter = c.EmulsionDet.zC+c.EmulsionDet.zdim/2+c.MuFilter.Z/2
 	c.MuFilter.ShiftX = c.EmulsionDet.ShiftX
