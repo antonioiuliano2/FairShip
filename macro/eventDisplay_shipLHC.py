@@ -882,8 +882,10 @@ else:
   ShipGeo = upkl.load('ShipGeo')
 
 mcHits = {}
-mcHits['EmulsionDetPoints']  = ROOT.FairMCPointDraw("EmulsionDetPoint", ROOT.kRed, ROOT.kFullSquare)
+mcHits['EmulsionDetPoints']  = ROOT.FairMCPointDraw("EmulsionDetPoint", ROOT.kGreen, ROOT.kFullSquare)
 mcHits['ScifiPoints']  = ROOT.FairMCPointDraw("ScifiPoint", ROOT.kBlue, ROOT.kFullSquare)
+mcHits['MuFilterPoints']  = ROOT.FairMCPointDraw("MuFilterPoint", ROOT.kRed, ROOT.kFullSquare)
+
 for x in mcHits: fMan.AddTask(mcHits[x])
 
 fMan.Init(1,4,10) # default Init(visopt=1, vislvl=3, maxvisnds=10000), ecal display requires vislvl=4
@@ -945,6 +947,14 @@ def DrawCharmTracks():
       if pa.Lifetime()>1.E-12: 
        print(sTree.MCTrack[i])
        SHiPDisplay.tracks.DrawMCTrack(i)
+
+def DrawMuonTrack():
+  i = -1
+  for aTrack in sTree.MCTrack:
+    i+=1
+    if abs(aTrack.GetPdgCode())==13:
+      print(sTree.MCTrack[i])
+      SHiPDisplay.tracks.DrawMCTrack(i)
 
 def positionText(r,x,y,z,angle,txt,size=200,color=ROOT.kBlue,mode=ROOT.TGLFont.kExtrude,light=ROOT.kTRUE):
  tt = ROOT.TEveText(txt)
