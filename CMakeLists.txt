@@ -6,7 +6,16 @@
 # and ShipRoot.
 
 # Check if cmake has the required version
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6.0 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.9.4 FATAL_ERROR)
+
+foreach(p
+  CMP0028 # double colon for imported and alias targets
+  CMP0074 # use _ROOT env variables
+  )
+  if(POLICY ${p})
+  cmake_policy(SET ${p} NEW)
+  endif()
+endforeach()
 
 # Set name of our project to "ShipRoot". Has to be done
 # after check of cmake version since this is a new feature                  
@@ -123,7 +132,7 @@ CHECK_EXTERNAL_PACKAGE_INSTALL_DIR()
 # For example the framework can run without GEANT4, but ROOT is
 # mandatory
 
-find_package(ROOT 5.34.00 REQUIRED)
+find_package(ROOT 6.10.06 REQUIRED)
 find_package(Pythia8 REQUIRED)
 find_package(EvtGen REQUIRED)
 find_package(GENERATORS REQUIRED)
@@ -280,6 +289,7 @@ add_subdirectory (preshower)
 add_subdirectory (pid)
 add_subdirectory (muonShieldOptimization)
 add_subdirectory (online)
+add_subdirectory (millepede)
 
 FIND_PATH(TEvePath NAMES TEveEventManager.h PATHS
   ${SIMPATH}/tools/root/include
@@ -392,9 +402,6 @@ If(${distribution} MATCHES "ScientificCERNSLC")
  file(APPEND ${CMAKE_BINARY_DIR}/config.sh  "rm lcg.sh\n")
  
 EndIf()
-# extend PYTHONPATH
-file(APPEND ${CMAKE_BINARY_DIR}/config.csh "setenv PYTHONPATH \"\${PYTHONPATH}:${CMAKE_SOURCE_DIR}/Developments/track_pattern_recognition\"\n")
-file(APPEND ${CMAKE_BINARY_DIR}/config.sh  "export PYTHONPATH=\"\${PYTHONPATH}:${CMAKE_SOURCE_DIR}/Developments/track_pattern_recognition\"\n")
 
 # add some other useful environment variables:
 file(APPEND ${CMAKE_BINARY_DIR}/config.csh "setenv FAIRSHIPRUN \"${CMAKE_CURRENT_BINARY_DIR}\"\n")
