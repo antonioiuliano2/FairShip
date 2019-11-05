@@ -285,7 +285,7 @@ if simEngine == "Pythia8":
   if ship_geo.MufluxSpectrometer.muflux == False :
      P8gen.SetTarget("volTarget_1",0.,0.) # will distribute PV inside target, beam offset x=y=0.
      if options.TrackingCharm:
-      print "Activating DecayConfigNuage external decayer"
+      print ("Activating DecayConfigNuage external decayer")
       run.SetPythiaDecayer("DecayConfigNuAge.C") #decays handled by external decayer
       P8gen.doTrackCharm()
   else: 
