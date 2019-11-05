@@ -259,18 +259,17 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
 
      if (ii==1){im = 0;}
      Int_t motherpdg = fPythia->event[fPythia->event[ii].mother1()].id();
-     ischarm = std::find(std::begin(idsig), std::end(idsig), TMath::Abs(motherpdg));
-     if (!fTrackingCharm) cpg->AddTrack(id,px,py,pz,x/cm,y/cm,z/cm,im,wanttracking,e,tof,1.); //all final particles tracked
-     else if (ischarm==std::end(idsig)){ //charm daughters not passed from Pythia to Geant4   
+     if (!fTrackingCharm){
+       cpg->AddTrack(id,px,py,pz,x/cm,y/cm,z/cm,im,wanttracking,e,tof,1.); //all final particles tracked
+       addedParticles+=1;
+       }
+     else if (ischarm!=std::end(idsig)){ //charm tracks, not daughters passed from Pythia to Geant4
       cpg->AddTrack(id,px,py,pz,x/cm,y/cm,z/cm,im,wanttracking,e,tof,1.);
       addedParticles+=1;
      }
-     else{
-      std::cout<<"Excluding track: "<<id<<" with mother "<<motherpdg<<std::endl;      
-     } 
-    } 
-    key+=addedParticles-1; // pythia counts from 1
-  } 
+    } //end of loop on pythia event of a charm
+   key+=addedParticles-1; // pythia counts from 1
+  } //end of loop on two charms
   counter+=1; 
 // now the underyling event
   bool lx = true;
