@@ -9,7 +9,6 @@
 #include "GenieGenerator.h"
 
 class FairPrimaryGenerator;
-using namespace Pythia8;
 
 class Pythia8Generator : public FairGenerator
 {
@@ -40,7 +39,7 @@ class Pythia8Generator : public FairGenerator
 
  private:
   
-  RndmEngine* fRandomEngine;  //!
+  Pythia8::RndmEngine* fRandomEngine;  //!
   
  protected:
 
@@ -55,11 +54,11 @@ class Pythia8Generator : public FairGenerator
   TFile* fInputFile;   //! pointer to a file
   FairLogger*  fLogger; //!   don't make it persistent, magic ROOT command
   TTree* fTree;        //! 
-  Pythia* fPythia;             //!
+  Pythia8::Pythia* fPythia;             //!
   Double_t fFDs;       // correction for Pythia6 to match measured Ds production
   Int_t fnRetries;     // 
   GenieGenerator* fMaterialInvestigator;  //!
-  ClassDef(Pythia8Generator,2);
+  ClassDef(Pythia8Generator,3);
   TString targetName;
   Double_t xOff;
   Double_t yOff;
