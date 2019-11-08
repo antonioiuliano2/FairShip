@@ -27,18 +27,20 @@ class CharmDigi:
 
         self.gMan  = ROOT.gGeoManager
 
+    def SetSpill(self,nspill):
+        self.nspill = nspill
+
     def digitize(self):
 
-        #self.sTree.t0 = ROOT.gRandom.Rndm()*1*u.microsecond
-        nspill = grandom.Uniform(0,4)   
+        #self.sTree.t0 = ROOT.gRandom.Rndm()*1*u.microsecond         
         pottime = grandom.Uniform()*4.8     
-        self.sTree.t0 = nspill*100 + pottime
+        self.sTree.t0 = self.nspill*100 + pottime
         self.header.SetEventTime( self.sTree.t0 )
         self.header.SetRunId( self.sTree.MCEventHeader.GetRunID() )
         self.header.SetMCEntryNumber( self.sTree.MCEventHeader.GetEventID() )  # counts from 1
         self.eventHeader.Fill()
         self.digiEmu.Delete()
-        self.digitizeEmulsion(nspill, pottime)
+        self.digitizeEmulsion(self.nspill, pottime)
         self.digiEmuBranch.Fill()
 
     def digitizeEmulsion(self,nspill,pottime):
@@ -61,7 +63,7 @@ class CharmDigi:
             tantheta = pow(pow(tx,2) + pow(ty,2),0.5)
             # effect of the target mover along x
             x = emupoint.GetX() -12.5/2. + pottime * targetmoverspeed
-            y = emupoint.GetY() - 8.9/2. + nspill * spilldy
+            y = emupoint.GetY() - 9.9/2. + nspill * spilldy
             basetrack.SetX(x)
             basetrack.SetY(y)
             basetrack.SetTX(tx)
@@ -72,6 +74,7 @@ class CharmDigi:
             pdgparticle = self.PDG.GetParticle(pdgcode)
 
             basetrack.SetNFilm(nfilmhit)
+            basetrack.SetPdgCode(pdgcode)
             basetrack.SetMCTrackID(emupoint.GetTrackID())   
             
             basetrack.setValid()

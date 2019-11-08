@@ -31,6 +31,7 @@ parser.add_argument("-cs", "--CharmdetSetup", type=int, dest='CharmdetSetup',hel
 parser.add_argument("-f", "--inputFile", dest="inputFile", help="single input file", required=True)
 parser.add_argument("-g", "--geoFile", dest="geoFile", help="geofile", required=True)
 parser.add_argument("-n", "--nEvents", dest="nEvents", help="number of events to process", default=100000)
+parser.add_argument("-ns", "--nspill", dest="nspill", help="number of spill", default=1)
 parser.add_argument("-d", "--Debug", dest="debug", help="debug", default=False)
 
 options = parser.parse_args()
@@ -71,6 +72,7 @@ if options.CharmdetSetup == 0:
 else:
  import CharmDigi
  SHiP = CharmDigi.CharmDigi(outFile)
+ SHiP.SetSpill(int(options.nspill))
 
 nEvents   = min(SHiP.sTree.GetEntries(),int(options.nEvents))
 # main loop
