@@ -60,7 +60,10 @@ with ConfigRegistry.register_config("basic") as c:
     c.Box.EmX = 12.5 * u.cm
     c.Box.EmY = 9.9 * u.cm
     c.Box.PBTh = 0.0175 * u.cm
-    c.Box.PasSlabTh = 0.1 * u.cm #passive slab in ECC (lead for July measurement, molybdenum/tungsten for SHiP target replica
+    if cTarget == 16:
+     c.Box.PasSlabTh = 0.09 * u.cm #passive slab in ECC (run with tungsten)
+    else:
+     c.Box.PasSlabTh = 0.1 * u.cm #passive slab in ECC (lead for July 2018 measurement, molybdenum/tungsten for SHiP target replica)
     c.Box.EPlW = 2* c.Box.EmTh + c.Box.PBTh
     c.Box.AllPW = c.Box.PasSlabTh + c.Box.EPlW
     c.Box.BrX = 12.9 *u.cm
@@ -338,7 +341,7 @@ with ConfigRegistry.register_config("basic") as c:
     #position of module centres units are cm. Geometry is given with reference to the centre of all modules for the xy plane and the front of the pixel box for the z axis, precision is given to the micron range
     #module position naming: "axis"Si"Telescope number"
     
-		#measured values
+    #measured values
     c.PixelModules.xSi = []
     c.PixelModules.ySi = []
     c.PixelModules.zSi = []
