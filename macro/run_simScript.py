@@ -150,6 +150,7 @@ if options.thedeccouplings:
 if options.testFlag:
   inputFile = "$FAIRSHIP/files/Cascade-parp16-MSTP82-1-MSEL4-76Mpot_1_5000.root"
 
+
 #sanity check
 if (HNL and options.RPVSUSY) or (HNL and options.DarkPhoton) or (options.DarkPhoton and options.RPVSUSY): 
  print("cannot have HNL and SUSY or DP at the same time, abort")

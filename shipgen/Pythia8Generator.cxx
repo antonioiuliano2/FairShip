@@ -235,12 +235,11 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
     for(Int_t ii=1; ii<fPythia->event.size(); ii++){
      id = fPythia->event[ii].id(); 
      Bool_t wanttracking=false;
-     
      Int_t *ischarm = std::find(std::begin(idsig), std::end(idsig), TMath::Abs(id));
      if (ischarm!=std::end(idsig)&& fTrackingCharm==true) wanttracking= true; //charmed hadrons are tracked in Geant4, in order to leave MCPoints
      
      if(fPythia->event[ii].isFinal()){ wanttracking=true; }
-     if (ii>1){      
+     if (ii>1){
       z  = fPythia->event[ii].zProd()+dl*fPythia->event[1].pz()+zinter;
       x  = fPythia->event[ii].xProd()+dl*fPythia->event[1].px();
       y  = fPythia->event[ii].yProd()+dl*fPythia->event[1].py();
