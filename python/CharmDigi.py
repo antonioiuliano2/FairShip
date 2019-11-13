@@ -69,7 +69,7 @@ class CharmDigi:
             basetrack.SetTX(tx)
             basetrack.SetTY(ty)
 
-            nfilmhit = emupoint.GetDetectorID() #
+            nfilmhit = emupoint.GetNFilm() #
             pdgcode = emupoint.PdgCode()
             pdgparticle = self.PDG.GetParticle(pdgcode)
 

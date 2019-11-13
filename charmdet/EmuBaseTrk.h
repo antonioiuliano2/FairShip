@@ -11,12 +11,12 @@ class EmuBaseTrk: public ShipHit {
      ~EmuBaseTrk() = default;
      EmuBaseTrk(Int_t detID, Float_t digi);
      //accessors
-     Double_t GetX() {return fx;};
-     Double_t GetY() {return fy;};
-     Double_t GetTX() {return fTX;};
-     Double_t GetTY() {return fTY;};
-     Int_t GetMCTrackID() {return fMCTrackID;};
-     Int_t GetNFilm() {return fNFilm;};
+     Double_t GetX() const {return fx;};
+     Double_t GetY() const {return fy;};
+     Double_t GetTX() const {return fTX;};
+     Double_t GetTY() const {return fTY;};
+     Int_t GetTrackID() const {return fMCTrackID;};
+     Int_t GetNFilm() const {return fNFilm;};
      Int_t PdgCode() const {return fPdgCode;}
 
      //modifiers
