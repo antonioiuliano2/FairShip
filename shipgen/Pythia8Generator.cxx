@@ -138,6 +138,19 @@ Pythia8Generator::~Pythia8Generator()
 // -----   Passing the event   ---------------------------------------------
 Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
 {
+  Double_t sigmax = 0.137;
+  Double_t sigmay = 0.5;
+  Double_t theta = 0.2;
+
+  Double_t x0 = gRandom->Gaus(0.,sigmax);
+  Double_t y0 = gRandom->Gaus(0.,sigmay);
+  //applying rotation
+  TVector3 *beamvector = new TVector3(x0,y0,0.);
+  beamvector->RotateZ(theta);
+
+  Double_t xbeam = beamvector->X();
+  Double_t ybeam = beamvector->Y();
+
   Double_t x,y,z,px,py,pz,dl,e,tof;
   Int_t im,id,key;
   fnRetries =0;
@@ -259,11 +272,11 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
      if (ii==1){im = 0;}
      Int_t motherpdg = fPythia->event[fPythia->event[ii].mother1()].id();
      if (!fTrackingCharm){
-       cpg->AddTrack(id,px,py,pz,x/cm,y/cm,z/cm,im,wanttracking,e,tof,1.); //all final particles tracked
+       cpg->AddTrack(id,px,py,pz,x/cm + xbeam,y/cm + ybeam,z/cm,im,wanttracking,e,tof,1.); //all final particles tracked
        addedParticles+=1;
        }
      else if (ischarm!=std::end(idsig)){ //charm tracks, not daughters passed from Pythia to Geant4
-      cpg->AddTrack(id,px,py,pz,x/cm,y/cm,z/cm,im,wanttracking,e,tof,1.);
+      cpg->AddTrack(id,px,py,pz,x/cm + xbeam,y/cm + ybeam,z/cm,im,wanttracking,e,tof,1.);
       addedParticles+=1;
      }
     } //end of loop on pythia event of a charm
@@ -278,8 +291,8 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
     if (mE[0] == 0){
      lx = true;
      fn++;
-     cpg->AddTrack((Int_t)hid[0],hpx[0],hpy[0],hpz[0],(mpx[0]+fPythia->event[0].xProd())/cm,
-                                                      (mpy[0]+fPythia->event[0].yProd())/cm,
+     cpg->AddTrack((Int_t)hid[0],hpx[0],hpy[0],hpz[0],(mpx[0]+fPythia->event[0].xProd())/cm+ xbeam,
+                                                      (mpy[0]+fPythia->event[0].yProd())/cm+ ybeam,
                                                       (mpz[0]+fPythia->event[0].zProd())/cm+zinter/cm,-1,true);
      // mpx,mpy,mpz are the vertex coordinates with respect to charm hadron, first particle in Pythia is (system) 
    }
