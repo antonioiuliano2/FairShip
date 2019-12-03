@@ -269,6 +269,22 @@ Bool_t FixedTargetGenerator::ReadEvent(FairPrimaryGenerator* cpg)
 {
   Double_t zinter=0;
   Double_t ZoverA = 1.;
+
+  //rotation of beam, as required to replicated test beam
+  if (fcharmtarget){
+   Double_t sigmax = 0.137 *cm; //offset units converted to mm, then they are divided again before passed to addtrack
+   Double_t sigmay = 0.5 *cm;
+
+   Double_t theta = + 0.20;
+   Double_t x0 = gRandom->Gaus(0,sigmax);
+   Double_t y0 = gRandom->Gaus(0,sigmay);
+  
+   TVector3 * vec = new TVector3(x0,y0,0.);
+   vec->RotateZ(theta);
+   xOff = vec->X();
+   yOff = vec->Y();
+  }
+
   if (targetName.Data() !=""){
 // calculate primary proton interaction point:
 // loop over trajectory between start and end to pick an interaction point, copied from GenieGenerator and adapted to hadrons

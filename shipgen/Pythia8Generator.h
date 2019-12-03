@@ -35,6 +35,7 @@ class Pythia8Generator : public FairGenerator
   void SetfFDs(Double_t z) { fFDs = z; };
   void SetTarget(TString s, Double_t x,Double_t y ) { targetName = s; xOff=x; yOff=y; };
   Int_t nrOfRetries(){ return fnRetries; };
+  void doTrackCharm() {fTrackingCharm = kTRUE;};
 
  private:
   
@@ -57,7 +58,7 @@ class Pythia8Generator : public FairGenerator
   Double_t fFDs;       // correction for Pythia6 to match measured Ds production
   Int_t fnRetries;     // 
   GenieGenerator* fMaterialInvestigator;  //!
-  ClassDef(Pythia8Generator,3);
+  ClassDef(Pythia8Generator,4);
   TString targetName;
   Double_t xOff;
   Double_t yOff;
@@ -68,6 +69,7 @@ class Pythia8Generator : public FairGenerator
   Double_t startZ;
   Double_t endZ;
   Double_t maxCrossSection;
+  Bool_t fTrackingCharm;
 };
 
 #endif /* !PNDP8GENERATOR_H */
