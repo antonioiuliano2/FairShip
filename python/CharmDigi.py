@@ -18,7 +18,7 @@ class CharmDigi:
         # event header
         self.header  = ROOT.FairEventHeader()
         self.eventHeader  = self.sTree.Branch("ShipEventHeader",self.header,32000,1)
-        self.digiEmu = ROOT.TClonesArray("EmuBaseTrk")
+        self.digiEmu = ROOT.TClonesArray("BoxPoint")
         self.digiEmuBranch = self.sTree.Branch("EmuBaseTrks",self.digiEmu,32000,1)
         # setup random number generator
         ROOT.gRandom.SetSeed()
@@ -61,8 +61,8 @@ class CharmDigi:
 
             #filling in the tclonesarray
             if index>0 and self.digiEmu.GetSize() == index: self.digiEmu.Expand(index+1000)
-             self.digiEmu[index] = basetrack
-             index = index + 1
+            self.digiEmu[index] = basetrack
+            index = index + 1
     def finish(self):
         print 'finished writing tree'
         self.sTree.Write()
