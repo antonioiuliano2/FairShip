@@ -34,6 +34,7 @@ class Pythia8Generator : public FairGenerator
   void UseExternalFile(const char* x, Int_t i){ fextFile   = x; firstEvent=i; };
   void SetfFDs(Double_t z) { fFDs = z; };
   void SetTarget(TString s, Double_t x,Double_t y ) { targetName = s; xOff=x; yOff=y; };
+  void TiltBeam(Double_t sigmax, Double_t sigmay, Double_t theta){fbeamsigmax = sigmax; fbeamsigmay = sigmay; fbeamtheta = theta;}
   Int_t nrOfRetries(){ return fnRetries; };
   void doTrackCharm() {fTrackingCharm = kTRUE;};
 
@@ -58,7 +59,7 @@ class Pythia8Generator : public FairGenerator
   Double_t fFDs;       // correction for Pythia6 to match measured Ds production
   Int_t fnRetries;     // 
   GenieGenerator* fMaterialInvestigator;  //!
-  ClassDef(Pythia8Generator,4);
+  ClassDef(Pythia8Generator,5);
   TString targetName;
   Double_t xOff;
   Double_t yOff;
@@ -69,6 +70,9 @@ class Pythia8Generator : public FairGenerator
   Double_t startZ;
   Double_t endZ;
   Double_t maxCrossSection;
+  Double_t fbeamsigmax;
+  Double_t fbeamsigmay;
+  Double_t fbeamtheta;
   Bool_t fTrackingCharm;
 };
 

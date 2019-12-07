@@ -34,6 +34,7 @@ class FixedTargetGenerator : public FairGenerator
   void UseRandom1() { fUseRandom1 = kTRUE; fUseRandom3 = kFALSE; };
   void UseRandom3() { fUseRandom1 = kFALSE; fUseRandom3 = kTRUE; };
   void SetCharmTarget(Bool_t charmtarget = true) {fcharmtarget = charmtarget;}; //charm geometry uses a different target, default one is usual
+  void TiltBeam(Double_t sigmax, Double_t sigmay, Double_t theta){fbeamsigmax = sigmax; fbeamsigmay = sigmay; fbeamtheta = theta;}
   void SetTarget(TString s, Double_t x,Double_t y ) { targetName = s; xOff=x; yOff=y; };
   void SetBoost(Double_t f) { fBoost  = f; }  // boost factor for rare di-muon decays
   void SetG4only() { G4only  = true; }  // only run Geant4, no pythia primary interaction
@@ -70,6 +71,9 @@ class FixedTargetGenerator : public FairGenerator
   TString targetName,Option;
   Double_t xOff;
   Double_t yOff;
+  Double_t fbeamsigmax;
+  Double_t fbeamsigmay;
+  Double_t fbeamtheta;
   Double_t start[3];
   Double_t end[3];
   Double_t bparam;

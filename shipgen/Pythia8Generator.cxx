@@ -138,19 +138,15 @@ Pythia8Generator::~Pythia8Generator()
 // -----   Passing the event   ---------------------------------------------
 Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
 {
-  Double_t sigmax = 0.137*cm;
-  Double_t sigmay = 0.5*cm;
 
-  Double_t theta = 0.20;
-
-  Double_t x0 = gRandom->Gaus(0.,sigmax);
-  Double_t y0 = gRandom->Gaus(0.,sigmay);
+  Double_t x0 = gRandom->Gaus(0.,fbeamsigmax);
+  Double_t y0 = gRandom->Gaus(0.,fbeamsigmay);
   //applying rotation
   TVector3 *beamvector = new TVector3(x0,y0,0.);
-  beamvector->RotateZ(theta);
+  beamvector->RotateZ(fbeamtheta);
 
-  xOff = beamvector->X();
-  yOff = beamvector->Y();
+  xOff = beamvector->X() * cm;
+  yOff = beamvector->Y() * cm;
 
   Double_t x,y,z,px,py,pz,dl,e,tof;
   Int_t im,id,key;

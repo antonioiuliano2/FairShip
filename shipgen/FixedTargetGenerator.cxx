@@ -272,17 +272,13 @@ Bool_t FixedTargetGenerator::ReadEvent(FairPrimaryGenerator* cpg)
 
   //rotation of beam, as required to replicated test beam
   if (fcharmtarget){
-   Double_t sigmax = 0.137 *cm; //offset units converted to mm, then they are divided again before passed to addtrack
-   Double_t sigmay = 0.5 *cm;
-
-   Double_t theta = + 0.20;
-   Double_t x0 = gRandom->Gaus(0,sigmax);
-   Double_t y0 = gRandom->Gaus(0,sigmay);
+   Double_t x0 = gRandom->Gaus(0,fbeamsigmax);
+   Double_t y0 = gRandom->Gaus(0,fbeamsigmay);
   
    TVector3 * vec = new TVector3(x0,y0,0.);
-   vec->RotateZ(theta);
-   xOff = vec->X();
-   yOff = vec->Y();
+   vec->RotateZ(fbeamtheta);
+   xOff = vec->X() *cm;
+   yOff = vec->Y() *cm;
   }
 
   if (targetName.Data() !=""){
