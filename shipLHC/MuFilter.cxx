@@ -118,10 +118,15 @@ void MuFilter::SetCenterZ(Double_t z)
 	fCenterZ = z;
 }
 
-void MuFilter::SetDisplacement(Double_t x, Double_t y)
+void MuFilter::SetXYDisplacement(Double_t x, Double_t y)
 {
 	fShiftX = x;
 	fShiftY = y;
+}
+
+void MuFilter::SetYPlanesDisplacement(Double_t y)
+{
+	fShiftDY = y;
 }
 
 void MuFilter::Initialize()
@@ -186,8 +191,16 @@ void MuFilter::ConstructGeometry()
 
 	for(Int_t l=0; l<fNplanes; l++)
 	{
-		volMuFilter->AddNode(volFeBlock,l,new TGeoTranslation(0,0,-fMuFilterZ/2+fFeBlockZ/2+l*(fFeBlockZ+fTDetZ)));
-		volMuFilter->AddNode(volTDet,l,new TGeoTranslation(0,0,-fMuFilterZ/2+fFeBlockZ+fTDetZ/2+l*(fFeBlockZ+fTDetZ)));
+		if(l<5)
+		{
+			volMuFilter->AddNode(volFeBlock,l,new TGeoTranslation(0,fMuFilterY/2-fFeBlockY/2-l*fShiftDY,-fMuFilterZ/2+fFeBlockZ/2+l*(fFeBlockZ+fTDetZ)));
+			volMuFilter->AddNode(volTDet,l,new TGeoTranslation(0,fMuFilterY/2-fFeBlockY/2-l*fShiftDY,-fMuFilterZ/2+fFeBlockZ+fTDetZ/2+l*(fFeBlockZ+fTDetZ)));
+		}
+		if(l>=5)
+		{
+			volMuFilter->AddNode(volFeBlock,l,new TGeoTranslation(0,fMuFilterY/2-fFeBlockY/2-5*fShiftDY,-fMuFilterZ/2+fFeBlockZ/2+l*(fFeBlockZ+fTDetZ)));
+			volMuFilter->AddNode(volTDet,l,new TGeoTranslation(0,fMuFilterY/2-fFeBlockY/2-5*fShiftDY,-fMuFilterZ/2+fFeBlockZ+fTDetZ/2+l*(fFeBlockZ+fTDetZ)));
+		}
 	}
 }
 

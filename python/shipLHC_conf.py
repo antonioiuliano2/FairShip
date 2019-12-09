@@ -30,8 +30,11 @@ def configure(run,ship_geo,Gfield=''):
  cave= ROOT.ShipCave("CAVE")
  cave.SetGeometryFileName("cave.geo")
  detectorList.append(cave)
+
+ floor = ROOT.Floor("FLOOR")
+ detectorList.append(floor)
  
- EmulsionDet = ROOT.EmulsionDet("EmulsionDet",ship_geo.EmulsionDet.Ydist,ROOT.kTRUE)
+ EmulsionDet = ROOT.EmulsionDet("EmulsionDet",ROOT.kTRUE)
  EmulsionDet.SetCenterZ(ship_geo.EmulsionDet.zC)
  EmulsionDet.SetNumberTargets(ship_geo.EmulsionDet.target)
  EmulsionDet.SetNumberBricks(ship_geo.EmulsionDet.col,ship_geo.EmulsionDet.row,ship_geo.EmulsionDet.wall)
@@ -56,7 +59,8 @@ def configure(run,ship_geo,Gfield=''):
  MuFilter.SetTimingPlanesDimensions(ship_geo.MuFilter.TDetX, ship_geo.MuFilter.TDetY, ship_geo.MuFilter.TDetZ)
  MuFilter.SetNplanes(ship_geo.MuFilter.nplanes)
  MuFilter.SetCenterZ(ship_geo.MuFilter.Zcenter)
- MuFilter.SetDisplacement(ship_geo.MuFilter.ShiftX, ship_geo.MuFilter.ShiftY)
+ MuFilter.SetXYDisplacement(ship_geo.MuFilter.ShiftX, ship_geo.MuFilter.ShiftY)
+ MuFilter.SetYPlanesDisplacement(ship_geo.MuFilter.ShiftDY)
  detectorList.append(MuFilter)
 
  for x in detectorList:

@@ -23,7 +23,7 @@ class TClonesArray;
 class EmulsionDet : public FairDetector
 {
 public:
-  EmulsionDet(const char* name, const Double_t Ydist, Bool_t Active, const char* Title = "EmulsionDet");
+  EmulsionDet(const char* name, Bool_t Active, const char* Title = "EmulsionDet");
     EmulsionDet();
     virtual ~EmulsionDet();
     
@@ -123,8 +123,6 @@ protected:
     Double_t BrickPackageX; //dimension of the brick package along X
     Double_t BrickPackageY; //dimension of the brick package along Y
     Double_t BrickPackageZ; //dimension of the brick package along Z
-
-    Double_t Ydistance; //distance in Y between 2 bricks
 
     Double_t BrickZ; //dimension of the brick + package along the Z axis
     Double_t BrickY;

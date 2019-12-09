@@ -36,7 +36,8 @@ class MuFilter : public FairDetector
 		void SetMuFilterDimensions(Double_t, Double_t, Double_t);
 		void SetNplanes(Int_t);
 		void SetCenterZ(Double_t);
-		void SetDisplacement(Double_t , Double_t );
+		void SetXYDisplacement(Double_t , Double_t );
+		void SetYPlanesDisplacement(Double_t);
 
 
 		/**      Initialization of the detector is done here    */
@@ -105,6 +106,7 @@ class MuFilter : public FairDetector
 			Double_t fCenterZ;	//Zposition of the muon filter
 			Double_t fShiftX;	//|Shift in x-y wrt beam line
 			Double_t fShiftY;	//|
+			Double_t fShiftDY;	//Shift in DY of the first 6 planes (2 cm)
 
 			Int_t fNplanes;		//Number of planes
 

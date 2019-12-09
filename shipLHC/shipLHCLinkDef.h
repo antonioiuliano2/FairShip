@@ -6,6 +6,7 @@
 
 #pragma link C++ class ShipCave+;
 #pragma link C++ class ShipGeoCave;
+#pragma link C++ class Floor;
 #pragma link C++ class EmulsionDet+;
 #pragma link C++ class EmulsionDetPoint+;
 #pragma link C++ class EmulsionDetContFact+;

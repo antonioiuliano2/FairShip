@@ -68,7 +68,7 @@ fEmulsionDetPointCollection(new TClonesArray("EmulsionDetPoint"))
 {
 }
 
-EmulsionDet::EmulsionDet(const char* name, const Double_t Ydist, Bool_t Active,const char* Title)
+EmulsionDet::EmulsionDet(const char* name, Bool_t Active,const char* Title)
 : FairDetector(name, true, kEmulsionDet),
   fTrackID(-1),
 fVolumeID(-1),
@@ -79,7 +79,6 @@ fLength(-1.),
 fELoss(-1),
 fEmulsionDetPointCollection(new TClonesArray("EmulsionDetPoint"))
 {
- Ydistance = Ydist;
 }
 
 EmulsionDet::~EmulsionDet()
@@ -264,6 +263,7 @@ void EmulsionDet::ConstructGeometry()
 	volBrick->SetVisibility(kTRUE);
 
 	top->AddNode(volTarget,1,new TGeoTranslation(ShiftX,ShiftY+YDimension/2,fCenterZ));
+	cout<<ShiftX<<"  "<<ShiftY+YDimension/2<<"  "<<fCenterZ<<endl; 
 	TGeoVolumeAssembly *volRow = new TGeoVolumeAssembly("Row");
 	volRow->SetLineColor(20);
 
@@ -281,7 +281,7 @@ void EmulsionDet::ConstructGeometry()
 		volWall->AddNode(volRow,k,new TGeoTranslation(0, d_cl_y + BrickY/2, 0));
 
 		// 2mm is the distance for the structure that holds the brick
-		d_cl_y += BrickY + Ydistance;
+		d_cl_y += BrickY ;
 	}
 
 	//Columns
