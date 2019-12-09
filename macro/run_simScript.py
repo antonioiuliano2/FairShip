@@ -101,6 +101,7 @@ parser.add_argument("--Muflux",  dest="muflux",  help="Muflux fixed target setup
 parser.add_argument("--charm", dest="charm",  help="!=0 create charm detector instead of SHiP", required=False, default=0)
 parser.add_argument("--CharmdetSetup", dest="CharmdetSetup",  help="1 charm cross section setup, 0 muon flux setup", required=False, default=0, type=int)
 parser.add_argument("--CharmTarget",   dest="CharmTarget",  help="six different configurations used in July 2018 exposure for charm", required=False, default=3, type=int)
+parser.add_argument("--TrackingCharm", dest="TrackingCharm", help="tracking of charm hadrons done by Geant", required=False, action="store_true")
 parser.add_argument("-F",        dest="deepCopy",  help="default = False: copy only stable particles to stack, except for HNL events", required=False, action="store_true")
 parser.add_argument("-t", "--test", dest="testFlag",  help="quick test", required=False,action="store_true")
 parser.add_argument("--dry-run", dest="dryrun",  help="stop after initialize", required=False,action="store_true")
@@ -274,15 +275,19 @@ if simEngine == "Pythia8":
  if charmonly:
   primGen.SetTarget(0., 0.) #vertex is setted in pythia8Generator
   ut.checkFileExists(inputFile)
+  P8gen = ROOT.Pythia8Generator()
+  P8gen.UseExternalFile(inputFile, options.firstEvent)
   if ship_geo.Box.gausbeam:
    P8gen.TiltBeam(0.137,0.5,0.20)  
   else:
    primGen.SetBeam(0.,0., ship_geo.Box.TX-1., ship_geo.Box.TY-1.) #Uniform distribution in x/y on the target (0.5 cm of margin at both sides)
    primGen.SmearVertexXY(True)
-  P8gen = ROOT.Pythia8Generator()
-  P8gen.UseExternalFile(inputFile, options.firstEvent)
   if ship_geo.MufluxSpectrometer.muflux == False :
      P8gen.SetTarget("volTarget_1",0.,0.) # will distribute PV inside target, beam offset x=y=0.
+     if options.TrackingCharm:
+      print ("Activating DecayConfigNuage external decayer")
+      run.SetPythiaDecayer("DecayConfigNuAge.C") #decays handled by external decayer
+      P8gen.doTrackCharm()
   else: 
      print("ERROR: charmonly option should not be used for the muonflux measurement")
      1/0
