@@ -9,6 +9,7 @@
 #include "TMath.h"
 #include "Pythia8Generator.h"
 #include "HNLPythia8Generator.h"
+#include "FairMCEventHeader.h"
 const Double_t cm = 10.; // pythia units are mm
 const Double_t c_light = 2.99792458e+10; // speed of light in cm/sec (c_light   = 2.99792458e+8 * m/s)
 Int_t counter = 0;
@@ -138,7 +139,7 @@ Pythia8Generator::~Pythia8Generator()
 // -----   Passing the event   ---------------------------------------------
 Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
 {
-
+  FairMCEventHeader* header = cpg->GetEvent();
   Double_t x0 = gRandom->Gaus(0.,fbeamsigmax);
   Double_t y0 = gRandom->Gaus(0.,fbeamsigmay);
   //applying rotation
@@ -185,6 +186,7 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
    Double_t zinterStart = start[2];
 // simulate more downstream interaction points for interactions down in the cascade
    Int_t nInter = ck[0]; if (nInter>16){nInter=16;}
+   header->SetRunID(ck[0]); //remembering cascade depth
    for( Int_t nI=0; nI<nInter; nI++){
     // if (!subprocCodes[nI]<90){continue;}  //if process is not inelastic, go to next. Changed by taking now collision length
     prob2int = -1.;   
@@ -195,9 +197,15 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
     // Mo: nuclear /\ 15.25 cm pion 17.98 cm  f=1.18
     while (prob2int<rndm) {
  //place x,y,z uniform along path
-      zinter = gRandom->Uniform(zinterStart,end[2]);
+      //zinter = gRandom->Uniform(zinterStart,end[2]);
+      zinter = gRandom->Uniform(zinterStart, 320.); //need to produce them also after the end of target
       Double_t point[3]={xOff,yOff,zinter};
       bparam = fMaterialInvestigator->MeanMaterialBudget(start, point, mparam);
+      if (zinter > end[2]){
+       bparam = fMaterialInvestigator->MeanMaterialBudget(start, point, mparam);
+       mparam[8] = mparam[8] + ((zinter - end[2])/17.59); //17.59 cm interaction length of lead
+       point[2] = end[2] - 0.1;
+      }     
       Double_t interLength = mparam[8]  * intLengthFactor * 1.7; // 1.7 = interaction length / collision length from PDG Tables 
       TGeoNode *node = gGeoManager->FindNode(point[0],point[1],point[2]);
       TGeoMaterial *mat = 0;
