@@ -45,9 +45,11 @@ with ConfigRegistry.register_config("basic") as c:
 	c.Scifi.nplanes = c.EmulsionDet.wall+1
 
 	c.MuFilter = AttrDict(z=0*u.cm)
+	c.MuFilter.ShiftDY = 2.0*u.cm
+	c.MuFilter.ShiftDYTot = 6.0*u.cm
 	c.MuFilter.X = c.EmulsionDet.xdim + 20*u.cm
         #c.MuFilter.Y = c.EmulsionDet.ydim + 20*u.cm+10.0*u.cm
-        c.MuFilter.Y = 60.0*u.cm+10.0*u.cm
+        c.MuFilter.Y = 60.0*u.cm+c.MuFilter.ShiftDYTot
         c.MuFilter.FeX = c.MuFilter.X
         #c.MuFilter.FeY = c.EmulsionDet.ydim + 20*u.cm
         c.MuFilter.FeY = 60.0*u.cm
@@ -59,5 +61,4 @@ with ConfigRegistry.register_config("basic") as c:
 	c.MuFilter.Z = c.MuFilter.nplanes*(c.MuFilter.FeZ+c.MuFilter.TDetZ)
 	c.MuFilter.Zcenter = c.EmulsionDet.zC+c.EmulsionDet.zdim/2+c.MuFilter.Z/2
 	c.MuFilter.ShiftX = c.EmulsionDet.ShiftX
-	c.MuFilter.ShiftY = c.EmulsionDet.ShiftY-10*u.cm
-	c.MuFilter.ShiftDY = 2.0*u.cm
+	c.MuFilter.ShiftY = 3.3*u.cm

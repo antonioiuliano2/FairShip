@@ -11,7 +11,7 @@ import rootUtils as ut
 from ShipGeoConfig import ConfigRegistry
 from argparse import ArgumentParser
 
-debug = 0  # 1 print weights and field
+debug = 2  # 1 print weights and field
            # 2 make overlap check
 dryrun = False # True: just setup Pythia and exit
 
