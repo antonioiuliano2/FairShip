@@ -245,9 +245,9 @@ void Hpt::ConstructGeometry()
         TGeoBBox *DT = new TGeoBBox("DT", DimX/2, DimY/2, DimZ/2);
         TGeoVolume *volDT = new TGeoVolume("volDT",DT,HPTmat); 
         volDT->SetLineColor(kBlue-5);
+        
+        // Creating of SciFi modules in HPT   
 
-        //////////////////////////////////////////
-        //// Creating of SciFi modules in HPT ////   
         InitMedium("CarbonComposite");
         TGeoMedium *CarbonComposite = gGeoManager->GetMedium("CarbonComposite");
 
@@ -382,9 +382,17 @@ void Hpt::Register()
 
 // -----   Public method to Decode volume info  -------------------------------------------
 // -----   returns hpt, arm, rpc numbers -----------------------------------
-void Hpt::DecodeVolumeID(Int_t detID,int &nHPT)
+void Hpt::DecodeVolumeID(Int_t detID,int &nHPT, int &nplane, Bool_t &ishor)
 {
-  nHPT = detID;
+   nHPT = detID/1000;
+   int idir = (detID - nHPT*1000)/100;
+
+   if (idir == 1) ishor = kFALSE;
+   else if (idir == 0) ishor = kTRUE;
+
+   nplane = (detID - nHPT*1000 - idir*100);
+  
+
 }
 
 TClonesArray* Hpt::GetCollection(Int_t iColl) const
