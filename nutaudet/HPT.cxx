@@ -247,7 +247,6 @@ void Hpt::ConstructGeometry()
         volDT->SetLineColor(kBlue-5);
         
         // Creating of SciFi modules in HPT   
-
         InitMedium("CarbonComposite");
         TGeoMedium *CarbonComposite = gGeoManager->GetMedium("CarbonComposite");
 

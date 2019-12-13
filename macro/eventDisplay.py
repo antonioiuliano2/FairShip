@@ -1025,7 +1025,6 @@ else:
  mcHits['TargetPoints']   = ROOT.FairMCPointDraw("TargetPoint", ROOT.kRed, ROOT.kFullSquare)
  mcHits['TTPoints'] = ROOT.FairMCPointDraw("TTPoint",ROOT.kBlue,ROOT.kFullDiamond)
  mcHits['DTPoints'] = ROOT.FairMCPointDraw("HptPoint",ROOT.kMagenta,ROOT.kFullSquare) #for downstream trackers
-
  ecalGeoFile = ShipGeo.ecal.File
 
  if hasattr(ShipGeo,'preshowerOption'): 
