@@ -37,9 +37,11 @@ class CharmDigi:
         self.sTree.t0 = self.nspill*100 + pottime
         self.header.SetEventTime( self.sTree.t0 )
         self.header.SetRunId( self.sTree.MCEventHeader.GetRunID() )
-        self.header.SetMCEntryNumber( self.sTree.MCEventHeader.GetEventID() )  # counts from 1
+        #self.header.SetMCEntryNumber( self.sTree.MCEventHeader.GetEventID() )  # counts from 1
+        self.header.SetMCEntryNumber( self.iEvent )  # counts from 0
         self.eventHeader.Fill()
         self.digiEmu.Delete()
+        self.nspill = self.iEvent/2000 #set spill according to number of event
         self.digitizeEmulsion(self.nspill, pottime)
         self.digiEmuBranch.Fill()
 
