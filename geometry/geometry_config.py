@@ -17,7 +17,7 @@ if "muShieldDesign" not in globals():
 if "muShieldGeo" not in globals():
     muShieldGeo = None
 if "nuTargetPassive" not in globals():
-    nuTargetPassive = 0
+    nuTargetPassive = 1
 if "nuTauTargetDesign" not in globals():
     nuTauTargetDesign = 0
     if muShieldDesign >= 7: 
@@ -596,14 +596,14 @@ with ConfigRegistry.register_config("basic") as c:
         c.tauMudet.B = 1.5 * u.tesla
     if nuTauTargetDesign==3:
         scaleMudet=1.
-        c.tauMudet.NFethick = 4 #upstream slabs, more thick
-        c.tauMudet.NFethin = 4 #downstream slabs, less thick
-        c.tauMudet.NRpc= 8
-        c.tauMudet.NmuRpc = 3
+        c.tauMudet.NFethick = 13 #upstream slabs, more thick
+        c.tauMudet.NFethin = 0 #downstream slabs, less thick
+        c.tauMudet.NRpc= 13
+        c.tauMudet.NmuRpc = 0
         
-        c.tauMudet.XFe = scaleMudet*1.900*u.m #layer dimensions, excluded supports
-        c.tauMudet.YFe = scaleMudet*3.600*u.m
-        c.tauMudet.ZFethick = 15.*u.cm
+        c.tauMudet.XFe = scaleMudet*2.0*u.m #layer dimensions, excluded supports
+        c.tauMudet.YFe = scaleMudet*4.7*u.m
+        c.tauMudet.ZFethick = 10.*u.cm
         c.tauMudet.ZFethin = 10.* u.cm
 
         c.tauMudet.XRpc = c.tauMudet.XFe
@@ -617,8 +617,8 @@ with ConfigRegistry.register_config("basic") as c:
         c.tauMudet.LateralSupportX = 34 * u.cm
         c.tauMudet.LateralSupportY = 34 * u.cm
 
-        c.tauMudet.Xtot = c.tauMudet.XFe + c.tauMudet.UpperSupportX + c.tauMudet.LowerSupportX #now we need to include also supports.
-        c.tauMudet.Ytot = c.tauMudet.YFe + c.tauMudet.UpperSupportY + c.tauMudet.LowerSupportY #now we need to include also supports.
+        c.tauMudet.Xtot = c.tauMudet.XFe + 2 * c.tauMudet.LateralSupportX#now we need to include also supports.
+        c.tauMudet.Ytot = c.tauMudet.YFe + c.tauMudet.UpperSupportY + c.tauMudet.LowerSupportY 
         c.tauMudet.deltax = 0* u.cm #size differences between MuonFilter and VetoTagger layers
         c.tauMudet.deltay = 80* u.cm
         c.tauMudet.Ztot = (c.tauMudet.NRpc+c.tauMudet.NmuRpc)*c.tauMudet.ZRpc+c.tauMudet.NFethick*c.tauMudet.ZFethick + c.tauMudet.NFethin*c.tauMudet.ZFethin
@@ -671,9 +671,9 @@ with ConfigRegistry.register_config("basic") as c:
         c.NuTauTarget.col=9
         c.NuTauTarget.wall=20
     if c.NuTauTarget.Design == 3: #One unique magnet, eventually more than one target volume 
-        c.NuTauTarget.n_plates = 56 
-        c.NuTauTarget.row = 2 #new configuration, four large emulsion films
-        c.NuTauTarget.col = 2
+        #c.NuTauTarget.n_plates = 56 
+        c.NuTauTarget.row = 7
+        c.NuTauTarget.col = 7
         c.NuTauTarget.wall = 19
     c.NuTauTarget.n_plates = 56
      
@@ -682,17 +682,17 @@ with ConfigRegistry.register_config("basic") as c:
     c.NuTauTarget.nuTargetPassive = nuTargetPassive
 
     # space for the structure that holds the brick
-    c.NuTauTarget.Ydist = 0.0*u.cm
+    c.NuTauTarget.Ydist = 0.2*u.cm
     c.NuTauTarget.SingleEmFilm = True
     c.NuTauTarget.EmTh = 0.0070 * u.cm
-    c.NuTauTarget.EmX = 40.0 * u.cm
-    c.NuTauTarget.EmY = 40.0 * u.cm
+    c.NuTauTarget.EmX = 12.5 * u.cm
+    c.NuTauTarget.EmY = 9.9 * u.cm
     c.NuTauTarget.PBTh = 0.0175 * u.cm
     c.NuTauTarget.LeadTh = 0.1 * u.cm
     c.NuTauTarget.EPlW = 2* c.NuTauTarget.EmTh + c.NuTauTarget.PBTh
     c.NuTauTarget.AllPW = c.NuTauTarget.LeadTh + c.NuTauTarget.EPlW
-    c.NuTauTarget.BrX = 41.0 * u.cm
-    c.NuTauTarget.BrY = 41.0 * u.cm
+    c.NuTauTarget.BrX = 12.9 * u.cm
+    c.NuTauTarget.BrY = 10.5 * u.cm
     c.NuTauTarget.BrPackZ = 0.1045 * u.cm
     c.NuTauTarget.BrPackX = c.NuTauTarget.BrX - c.NuTauTarget.EmX
     c.NuTauTarget.BrPackY = c.NuTauTarget.BrY - c.NuTauTarget.EmY
