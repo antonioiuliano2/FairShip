@@ -203,7 +203,7 @@ Bool_t Pythia8Generator::ReadEvent(FairPrimaryGenerator* cpg)
       bparam = fMaterialInvestigator->MeanMaterialBudget(start, point, mparam);
       if (zinter > end[2]){
        bparam = fMaterialInvestigator->MeanMaterialBudget(start, point, mparam);
-       mparam[8] = mparam[8] + ((zinter - end[2])/17.59); //17.59 cm interaction length of lead
+       mparam[8] = mparam[8] + ((zinter - end[2])/gGeoManager->GetVolume("volPassiveslab")->GetMaterial()->GetIntLen()); //17.59 cm should be interaction length of lead, strangely 18.27 cm from gGeoManager
        point[2] = end[2] - 0.1;
       }     
       Double_t interLength = mparam[8]  * intLengthFactor * 1.7; // 1.7 = interaction length / collision length from PDG Tables 
