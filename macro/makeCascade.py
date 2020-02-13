@@ -12,6 +12,7 @@ R = ''
 #generate ccbar (msel=4) or bbbar(msel=5)
 mselcb=4
 pbeamh=400.
+fracp=0.43
 storePrimaries = False
 nevgen=100000
 Fntuple='Cascade100k-parp16-MSTP82-1-MSEL'+str(mselcb)+'-ntuple.root'
@@ -20,7 +21,7 @@ print("usage: python $FAIRSHIP/macro/makeCascade.py -n (20000) -msel (4) -E (400
 
 try:
         opts, args = getopt.getopt(sys.argv[1:], "s:t:H:n:E:m:P",[\
-                                   "msel=","seed=","beam="])
+                                   "msel=","seed=","beam=","fracp="])
 except getopt.GetoptError:
         # print help information and exit:
         print(' enter -n: number of events to produce, default 20000')
@@ -29,6 +30,7 @@ except getopt.GetoptError:
         print('       -t: name of ntuple output file,    default: Cascade20k-parp16-MSTP82-1-MSEL"+msel+"-ntuple.root')
         print('       -s --seed: random number seed, integer, if not given, current time will be used.')
         print('       -P : store all particles produced together with charm')
+        print('       --fracp= : set fraction of protons over neutrons according to material') #about 0.43 for Molybdenum and 0.40 for Lead  
         sys.exit()
 for o, a in opts:
         if o in ("-n",):
@@ -43,6 +45,8 @@ for o, a in opts:
             R = int(a)
         if o in ("-P",):
             storePrimaries = True
+        if o in ("--fracp",):
+            fracp = float(a)
 print('Generate ',nevgen,' p.o.t. with msel=',mselcb,' proton beam ',pbeamh,'GeV')
 print('Output ntuples written to: ',Fntuple)
 
@@ -59,9 +63,7 @@ print('Cascade beam particle: ',idbeam)
 
 #  Assume Molybdum target, fracp is the fraction of protons in nucleus, i.e. 42/98.
 #  Used to average chi on p and n target in Pythia.
-fracp=0.43
-#
-print('Target particles: ',target,' fraction of protons in Mo=',fracp)
+print('Target particles: ',target,' set fraction of protons=',fracp)
 
 # lower/upper momentum limit for beam, depends on msel..
 # signal particles wanted (and their antis), which could decay semi-leptonically.
