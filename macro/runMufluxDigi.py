@@ -72,7 +72,10 @@ if options.CharmdetSetup == 0:
 else:
  import CharmDigi
  SHiP = CharmDigi.CharmDigi(outFile)
- SHiP.SetSpill(int(options.neventsspill))
+ SHiP.SetSpill(int(options.neventsspill)) #the same number of events is assumed for all spills
+ ntotspills = nevents/neventsspill
+ SHiP.SetSpillDY(10./ntotspills)
+ print ("Generating {} spills with DY {}".format( ntotspills, 10./ntotspills))
 
 nEvents   = min(SHiP.sTree.GetEntries(),int(options.nEvents))
 # main loop

@@ -30,6 +30,9 @@ class CharmDigi:
     def SetSpill(self,neventsspill):
         self.neventsspill = neventsspill
 
+    def SetSpillDY(spilldy):
+        self.spilldy = spilldy
+
     def digitize(self):
 
         #self.sTree.t0 = ROOT.gRandom.Rndm()*1*u.microsecond         
@@ -46,8 +49,7 @@ class CharmDigi:
         self.digiEmuBranch.Fill()
 
     def digitizeEmulsion(self,nspill,pottime):
-        index = 0
-        spilldy = 1.0
+        index = 0        
         #casual generator for estimating detector resolution
         targetmoverspeed = 2.6 
          
@@ -55,7 +57,7 @@ class CharmDigi:
         for emupoint in self.sTree.BoxPoint:
             # effect of the target mover along x
             x = emupoint.GetX() -12.5/2. + pottime * targetmoverspeed
-            y = emupoint.GetY() - 9.9/2. + nspill * spilldy + 0.5
+            y = emupoint.GetY() - 9.9/2. + nspill * self.spilldy + 0.5
             mom = ROOT.TVector3(emupoint.GetPx(), emupoint.GetPy(), emupoint.GetPz())
             pos = ROOT.TVector3(x,y,emupoint.GetZ())
 
