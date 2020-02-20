@@ -313,12 +313,16 @@ if simEngine == "PG":
   myPgun = ROOT.FairBoxGenerator(options.pID,1)
   myPgun.SetPRange(options.Estart,options.Eend)
   myPgun.SetPhiRange(0, 360) # // Azimuth angle range [degree]
-  myPgun.SetXYZ(0.*u.cm, 0.*u.cm, 0.*u.cm) 
-  if options.charm!=0:
-     myPgun.SetThetaRange(0,6) # // Pdefault for muon flux
-     primGen.SetTarget(ship_geo.target.z0,0.)
-  else:  
-     myPgun.SetThetaRange(0,0) # // Polar angle in lab system range [degree]
+  
+  targetdz = 28 * ship_geo.Box.AllPW + ship_geo.Box.EPlW
+  myPgun.SetXYZ(0.*u.cm, 0.*u.cm, ship_geo.Box.zBox-targetdz) 
+  #if options.charm!=0:
+  #   myPgun.SetThetaRange(0,6) # // Pdefault for muon flux
+  #   primGen.SetTarget(ship_geo.target.z0,0.)
+  #else:  
+  myPgun.SetThetaRange(0,0) # // Polar angle in lab system range [degree]
+  primGen.SetBeam(0.,0., ship_geo.Box.TX-1., ship_geo.Box.TY-1.) #Uniform distribution in x/y on the target (0.5 cm of margin at both sides)
+  primGen.SmearVertexXY(True)
   primGen.AddGenerator(myPgun)
 # -----muon DIS Background------------------------
 if simEngine == "muonDIS":

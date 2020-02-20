@@ -235,7 +235,7 @@ void Box::ConstructGeometry()
     volEmulsionFilm->SetLineColor(kBlue);
     volEmulsionFilm2->SetLineColor(kBlue);
     AddSensitiveVolume(volEmulsionFilm);
-    AddSensitiveVolume(volEmulsionFilm2);
+    //AddSensitiveVolume(volEmulsionFilm2);
 	
     TGeoBBox *PlBase = new TGeoBBox("PlBase", EmulsionX/2, EmulsionY/2, PlasticBaseThickness/2);
     TGeoVolume *volPlBase = new TGeoVolume("PlasticBase",PlBase,PBase);

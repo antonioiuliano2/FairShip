@@ -197,21 +197,21 @@ class DrawTracks(ROOT.FairTask):
      xx =  top.GetNode("VMuonBox_1")
      self.z_end = xx.GetMatrix().GetTranslation()[2]+xx.GetVolume().GetShape().GetDZ()
   magNode = top.GetNode('MCoil_1')
-  if magNode: self.z_mag = magNode.GetMatrix().GetTranslation()[2]
-  else:       self.z_mag = ShipGeo['Bfield'].z
+# if magNode: self.z_mag = magNode.GetMatrix().GetTranslation()[2]
+ # else:       self.z_mag = ShipGeo['Bfield'].z
   ecalDet = top.GetNode('Ecal_1')
-  self.z_ecal = self.z_end
-  if ecalDet: self.z_ecal = ecalDet.GetMatrix().GetTranslation()[2]
-  elif hasattr(ShipGeo,'ecal'):  self.z_ecal = ShipGeo['ecal'].z
-  self.niter = 100
-  self.dz = (self.z_end - self.z_start) / float(self.niter)
-  self.parallelToZ = ROOT.TVector3(0., 0., 1.) 
+ # self.z_ecal = self.z_end
+ # if ecalDet: self.z_ecal = ecalDet.GetMatrix().GetTranslation()[2]
+  #elif hasattr(ShipGeo,'ecal'):  self.z_ecal = ShipGeo['ecal'].z
+  #self.niter = 100
+  #self.dz = (self.z_end - self.z_start) / float(self.niter)
+  #self.parallelToZ = ROOT.TVector3(0., 0., 1.) 
   sc    = gEve.GetScenes()
   self.evscene = sc.FindChild('Event scene')
-  targetNode = top.GetNode("TargetArea_1")
-  if targetNode:  self.Targetz = targetNode.GetMatrix().GetTranslation()[2]
-  elif hasattr(ShipGeo,'target'): self.Targetz = ShipGeo['target'].z0
-  else:  self.Targetz=0
+  #targetNode = top.GetNode("TargetArea_1")
+  #if targetNode:  self.Targetz = targetNode.GetMatrix().GetTranslation()[2]
+  #elif hasattr(ShipGeo,'target'): self.Targetz = ShipGeo['target'].z0
+  #else:  self.Targetz=0
  def FinishEvent(self):
   pass
  def ExecuteTask(self,option=''):
@@ -1048,19 +1048,20 @@ top   = sGeo.GetTopVolume()
 speedUp()
 gEve  = ROOT.gEve
 
-if hasattr(ShipGeo.Bfield,"fieldMap"):
+if False:
+ if hasattr(ShipGeo.Bfield,"fieldMap"):
   ROOT.gSystem.Load('libG4clhep.so')
   ROOT.gSystem.Load('libgeant4vmc.so')
   import geomGeant4
   fieldMaker = geomGeant4.addVMCFields(ShipGeo, '', True, withVirtualMC = False)
   bfield = ROOT.genfit.FairShipFields()
   bfield.setField(fieldMaker.getGlobalField())
-else:
+ else:
   bfield = ROOT.genfit.BellField(ShipGeo.Bfield.max ,ShipGeo.Bfield.z,2, ShipGeo.Bfield.y/2.*u.m)
-geoMat =  ROOT.genfit.TGeoMaterialInterface()
-ROOT.genfit.MaterialEffects.getInstance().init(geoMat)
-fM = ROOT.genfit.FieldManager.getInstance()
-fM.init(bfield)
+ geoMat =  ROOT.genfit.TGeoMaterialInterface()
+ ROOT.genfit.MaterialEffects.getInstance().init(geoMat)
+ fM = ROOT.genfit.FieldManager.getInstance()
+ fM.init(bfield)
 
 import TrackExtrapolateTool
 br = gEve.GetBrowser()

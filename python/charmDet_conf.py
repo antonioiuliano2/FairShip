@@ -58,9 +58,9 @@ def configure(run,ship_geo,Gfield=''):
                                  ship_geo.PixelModules.DimZpixelbox, ship_geo.PixelModules.D1short, ship_geo.PixelModules.D1long, 
                                  ship_geo.PixelModules.DimZSithin, ship_geo.PixelModules.DimZSithick, ship_geo.PixelModules.z_offset)
 # === SciFi modules
-    detectorList.append(SciFi)
+   # detectorList.append(SciFi)
 # === Pixel modules
-    detectorList.append(PixelModules)
+   # detectorList.append(PixelModules)
     for i, (x, y, z) in enumerate(zip(ship_geo.PixelModules.xSi,ship_geo.PixelModules.ySi,ship_geo.PixelModules.zSi)):
       PixelModules.SetSiliconStationPositions(i, x, y, z)
 
@@ -131,7 +131,8 @@ def configure(run,ship_geo,Gfield=''):
  MufluxSpectrometer.SetTubeResolution(ship_geo.MufluxSpectrometer.v_drift,ship_geo.MufluxSpectrometer.sigma_spatial) 
   
  if (ship_geo.MufluxSpectrometer.muflux==False): 
-    detectorList.append(MufluxSpectrometer)
+    print("All detectors modules except Box have been disables")
+ #   detectorList.append(MufluxSpectrometer)
  else:
  # Scintillator and Target Station classes for muflux configuration
     Scintillator = ROOT.Scintillator("Scintillator",ROOT.kTRUE)
@@ -162,10 +163,10 @@ def configure(run,ship_geo,Gfield=''):
       slices_material.push_back(eval("ship_geo.target.M"+str(i)))
 
      TargetStation.SetLayerPosMat(ship_geo.target.xy,slices_length,slices_material)
-     detectorList.append(TargetStation)
+  #   detectorList.append(TargetStation)
      
-    detectorList.append(Scintillator)
-    detectorList.append(MufluxSpectrometer)
+  #  detectorList.append(Scintillator)
+  #  detectorList.append(MufluxSpectrometer)
    
  MuonTagger = ROOT.MuonTagger("MuonTagger", ship_geo.MuonTagger.BX, ship_geo.MuonTagger.BY, ship_geo.MuonTagger.BZ, ship_geo.MuonTagger.zBox, ROOT.kTRUE)
  MuonTagger.SetPassiveParameters(ship_geo.MuonTagger.PX, ship_geo.MuonTagger.PY, ship_geo.MuonTagger.PTh, ship_geo.MuonTagger.PTh1)
@@ -180,7 +181,7 @@ def configure(run,ship_geo,Gfield=''):
  MuonTagger.SetHStrip(ship_geo.MuonTagger.HStripy,ship_geo.MuonTagger.HStripy_ext,ship_geo.MuonTagger.HStripoffset)  
  MuonTagger.SetNStrips(ship_geo.MuonTagger.NVstrips,ship_geo.MuonTagger.NHstrips) 
   
- detectorList.append(MuonTagger)
+ #detectorList.append(MuonTagger)
  for x in detectorList:
   run.AddModule(x)
   
