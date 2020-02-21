@@ -99,6 +99,7 @@ parser.add_argument("--strawDesign", dest="strawDesign", help="simplistic tracke
                                             ,required=False, default=globalDesigns[default]['strawDesign'], type=int)
 parser.add_argument("--Muflux",  dest="muflux",  help="Muflux fixed target setup", required=False, action="store_true")
 parser.add_argument("--charm", dest="charm",  help="!=0 create charm detector instead of SHiP", required=False, default=0)
+parser.add_argument("--desy19", dest="desy19",  help="!=0 create detector for DESY19 testbeam instead of SHiP", required=False, default=0)
 parser.add_argument("--CharmdetSetup", dest="CharmdetSetup",  help="1 charm cross section setup, 0 muon flux setup", required=False, default=0, type=int)
 parser.add_argument("--CharmTarget",   dest="CharmTarget",  help="six different configurations used in July 2018 exposure for charm", required=False, default=3, type=int)
 parser.add_argument("-F",        dest="deepCopy",  help="default = False: copy only stable particles to stack, except for HNL events", required=False, action="store_true")
@@ -175,10 +176,7 @@ shipRoot_conf.configure(0)     # load basic libraries, prepare atexit for python
 # - muShieldDesign = 2  # 1=passive 5=active (default) 7=short design+magnetized hadron absorber
 # - targetOpt      = 5  # 0=solid   >0 sliced, 5: 5 pieces of tungsten, 4 H20 slits, 17: Mo + W +H2O (default)
 #   nuTauTargetDesign = 0 # 0 = TP, 1 = NEW with magnet, 2 = NEW without magnet, 3 = 2018 design
-if options.charm == 0: ship_geo = ConfigRegistry.loadpy("$FAIRSHIP/geometry/geometry_config.py", Yheight = options.dy, tankDesign = options.dv, \
-                                                muShieldDesign = options.ds, nuTauTargetDesign=options.nud, CaloDesign=options.caloDesign, \
-                                                strawDesign=options.strawDesign, muShieldGeo=options.geofile)
-else: 
+if options.charm != 0:
  ship_geo = ConfigRegistry.loadpy("$FAIRSHIP/geometry/charm-geometry_config.py", Setup = options.CharmdetSetup, cTarget = options.CharmTarget)
  if options.CharmdetSetup == 0: print("Setup for muon flux measurement has been set")
  else: 
@@ -186,6 +184,14 @@ else:
   if (((options.CharmTarget > 6) or (options.CharmTarget < 0)) and (options.CharmTarget != 16)): #check if proper option for emulsion target has been set
    print("ERROR: unavailable option for CharmTarget. Currently implemented options: 1,2,3,4,5,6,16")
    1/0
+
+elif options.desy19 != 0:
+    ship_geo = ConfigRegistry.loadpy("$FAIRSHIP/geometry/desy19-geometry_config.py")
+
+else: 
+  ship_geo = ConfigRegistry.loadpy("$FAIRSHIP/geometry/geometry_config.py", Yheight = options.dy, tankDesign = options.dv, \
+                                                muShieldDesign = options.ds, nuTauTargetDesign=options.nud, CaloDesign=options.caloDesign, \
+                                                strawDesign=options.strawDesign, muShieldGeo=options.geofile)
 # switch off magnetic field to measure muon flux
 #ship_geo.muShield.Field = 0.
 #ship_geo.EmuMagnet.B = 0.
@@ -225,7 +231,8 @@ rtdb = run.GetRuntimeDb()
 # import shipMuShield_only as shipDet_conf # special use case for an attempt to convert active shielding geometry for use with FLUKA
 # import shipTarget_only as shipDet_conf
 if options.charm!=0: import charmDet_conf as shipDet_conf 
-else:        import shipDet_conf
+elif options.desy19!=0: import desy19Det_conf as shipDet_conf
+else: import shipDet_conf
 
 modules = shipDet_conf.configure(run,ship_geo)
 # -----Create PrimaryGenerator--------------------------------------
@@ -313,16 +320,17 @@ if simEngine == "PG":
   myPgun = ROOT.FairBoxGenerator(options.pID,1)
   myPgun.SetPRange(options.Estart,options.Eend)
   myPgun.SetPhiRange(0, 360) # // Azimuth angle range [degree]
-  
-  targetdz = 28 * ship_geo.Box.AllPW + ship_geo.Box.EPlW
-  myPgun.SetXYZ(0.*u.cm, 0.*u.cm, ship_geo.Box.zBox-targetdz) 
-  #if options.charm!=0:
-  #   myPgun.SetThetaRange(0,6) # // Pdefault for muon flux
-  #   primGen.SetTarget(ship_geo.target.z0,0.)
-  #else:  
+  myPgun.SetXYZ(0.*u.cm, 0.*u.cm, 0.*u.cm) 
+  if options.charm!=0:
+     myPgun.SetThetaRange(0,6) # // Pdefault for muon flux
+     primGen.SetTarget(ship_geo.target.z0,0.)
+  elif options.desy19!=0: #options for electron simulation in DESY19  
+   targetdz = 28 * ship_geo.EmuTarget.AllPW + ship_geo.EmuTarget.EPlW
+   myPgun.SetXYZ(0.*u.cm, 0.*u.cm, ship_geo.EmuTarget.zEmuTarget-targetdz) 
+   primGen.SetBeam(0.,0., ship_geo.EmuTarget.TX-1., ship_geo.EmuTarget.TY-1.) #Uniform distribution in x/y on the target (0.5 cm of margin at both sides)
+   primGen.SmearVertexXY(True)
+
   myPgun.SetThetaRange(0,0) # // Polar angle in lab system range [degree]
-  primGen.SetBeam(0.,0., ship_geo.Box.TX-1., ship_geo.Box.TY-1.) #Uniform distribution in x/y on the target (0.5 cm of margin at both sides)
-  primGen.SmearVertexXY(True)
   primGen.AddGenerator(myPgun)
 # -----muon DIS Background------------------------
 if simEngine == "muonDIS":
@@ -499,7 +507,7 @@ import geomGeant4
 # Define extra VMC B fields not already set by the geometry definitions, e.g. a global field,
 # any field maps, or defining if any volumes feel only the local or local+global field.
 # For now, just keep the fields already defined by the C++ code, i.e comment out the fieldMaker
-if options.charm == 0:   # charm and muflux testbeam not yet updated for using the new bfield interface
+if (options.charm == 0 and options.desy19 == 0):   # charm and muflux testbeam not yet updated for using the new bfield interface, DESY has no field
  if hasattr(ship_geo.Bfield,"fieldMap"):
   fieldMaker = geomGeant4.addVMCFields(ship_geo, '', True)
 

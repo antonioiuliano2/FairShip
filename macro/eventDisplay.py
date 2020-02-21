@@ -1003,7 +1003,9 @@ else:
   ShipGeo = upkl.load('ShipGeo')
 
 mcHits = {}
-if hasattr(ShipGeo,"MuonTagger"): 
+if hasattr(ShipGeo,"EmuTarget"): 
+  mcHits['EmuDESYPoints']  = ROOT.FairMCPointDraw("EmuDESYPoint", ROOT.kRed, ROOT.kFullSquare)
+elif hasattr(ShipGeo,"MuonTagger"): 
   mcHits['MufluxSpectrometerPoints']  = ROOT.FairMCPointDraw("MufluxSpectrometerPoint", ROOT.kRed, ROOT.kFullSquare)
   mcHits['MuonTaggerPoints']  = ROOT.FairMCPointDraw("MuonTaggerPoint", ROOT.kGreen, ROOT.kFullCircle)
   if ShipGeo.MufluxSpectrometer.muflux == False:
