@@ -35,6 +35,10 @@ public:
     void SetEmulsionParam(Double_t EmTh, Double_t EmX, Double_t EmY, Double_t PBTh,Double_t EPlW, Double_t PasSlabTh, Double_t AllPW);
  
     void SetTargetParam(Double_t TX, Double_t TY, Double_t TZ);
+    void SetECCDistance(Double_t ECCdistance);
+
+    void SetNPlates(Int_t NPlates, Int_t NPlates_second);
+    void SetNRun(Int_t NRun);
     
     /**      Initialization of the detector is done here    */
     virtual void Initialize();
@@ -109,6 +113,7 @@ protected:
     Double_t EmPlateWidth; // Z dimension of the emulsion plates = 2*EmulsionThickness+PlasticBaseThickness
     Double_t AllPlateWidth; //PlateZ + LeadThickness
 
+    Double_t fECCdistance;
 
     Double_t BrickPackageX; //dimension of the brick package along X
     Double_t BrickPackageY; //dimension of the brick package along Y
@@ -116,6 +121,10 @@ protected:
     Double_t BrickZ; //dimension of the brick + package along the Z axis
     Double_t BrickY;
     Double_t BrickX;
+
+    Int_t fNRun;
+    Int_t fNPlates;
+    Int_t fNPlates_second;
 };
 
 #endif

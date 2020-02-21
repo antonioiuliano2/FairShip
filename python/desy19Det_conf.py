@@ -31,6 +31,12 @@ def configure(run,ship_geo,Gfield=''):
 # === Emulsion Target 
  EmuTarget = ROOT.EmuDESYTarget("EmuDESYTarget",ship_geo.EmuTarget.zEmuTarget,ROOT.kTRUE)
  EmuTarget.SetEmulsionParam(ship_geo.EmuTarget.EmTh, ship_geo.EmuTarget.EmX, ship_geo.EmuTarget.EmY, ship_geo.EmuTarget.PBTh,ship_geo.EmuTarget.EPlW, ship_geo.EmuTarget.PasSlabTh, ship_geo.EmuTarget.AllPW)
+ 
+ EmuTarget.SetNPlates(ship_geo.EmuTarget.NPlates[ship_geo.EmuTarget.cRun-1],ship_geo.EmuTarget.NPlates_second)
+ EmuTarget.SetNRun(ship_geo.EmuTarget.cRun)
+
+ EmuTarget.SetECCdistance(ship_geo.EmuTarget.ECCdistance)
+ 
  EmuTarget.SetBrickParam(ship_geo.EmuTarget.BrX, ship_geo.EmuTarget.BrY, ship_geo.EmuTarget.BrZ, ship_geo.EmuTarget.BrPackX, ship_geo.EmuTarget.BrPackY, ship_geo.EmuTarget.BrPackZ)
  EmuTarget.SetTargetParam(ship_geo.EmuTarget.TX, ship_geo.EmuTarget.TY, ship_geo.EmuTarget.TZ)
  detectorList.append(EmuTarget)

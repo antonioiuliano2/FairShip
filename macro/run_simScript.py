@@ -186,7 +186,7 @@ if options.charm != 0:
    1/0
 
 elif options.desy19 != 0:
-    ship_geo = ConfigRegistry.loadpy("$FAIRSHIP/geometry/desy19-geometry_config.py")
+    ship_geo = ConfigRegistry.loadpy("$FAIRSHIP/geometry/desy19-geometry_config.py",cRun=int(options.desy19))
 
 else: 
   ship_geo = ConfigRegistry.loadpy("$FAIRSHIP/geometry/geometry_config.py", Yheight = options.dy, tankDesign = options.dv, \
@@ -325,7 +325,9 @@ if simEngine == "PG":
      myPgun.SetThetaRange(0,6) # // Pdefault for muon flux
      primGen.SetTarget(ship_geo.target.z0,0.)
   elif options.desy19!=0: #options for electron simulation in DESY19  
-   targetdz = 28 * ship_geo.EmuTarget.AllPW + ship_geo.EmuTarget.EPlW
+   targetdz = ship_geo.EmuTarget.NPlates[ship_geo.EmuTarget.cRun-1] * ship_geo.EmuTarget.AllPW + ship_geo.EmuTarget.EPlW
+   if (options.Estart == 10.): #if energy is not set, set it according to the RUN
+    myPgun.SetPRange(ship_geo.EmuTarget.eEnergy[ship_geo.EmuTarget.cRun-1],ship_geo.EmuTarget.eEnergy[ship_geo.EmuTarget.cRun-1])
    myPgun.SetXYZ(0.*u.cm, 0.*u.cm, ship_geo.EmuTarget.zEmuTarget-targetdz) 
    primGen.SetBeam(0.,0., ship_geo.EmuTarget.TX-1., ship_geo.EmuTarget.TY-1.) #Uniform distribution in x/y on the target (0.5 cm of margin at both sides)
    primGen.SmearVertexXY(True)

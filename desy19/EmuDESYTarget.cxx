@@ -125,6 +125,15 @@ void EmuDESYTarget::SetTargetParam(Double_t TX, Double_t TY, Double_t TZ){
   TargetZ = TZ;
 }
 
+void EmuDESYTarget::SetNPlates(Int_t NPlates, Int_t NPlates_second){
+  fNPlates = NPlates;
+  fNPlates_second = NPlates_second;
+}
+
+void EmuDESYTarget::SetNRun(Int_t NRun){
+  fNRun = NRun;
+}
+
 
 // -----   Private method InitMedium
 Int_t EmuDESYTarget::InitMedium(const char* name)
@@ -178,20 +187,16 @@ void EmuDESYTarget::ConstructGeometry()
     TGeoBBox *PlBase = new TGeoBBox("PlBase", EmulsionX/2, EmulsionY/2, PlasticBaseThickness/2);
     TGeoVolume *volPlBase = new TGeoVolume("PlasticBase",PlBase,PBase);
     volPlBase->SetLineColor(kYellow-4);
-      //begin brick part (July testbeam)
-      //Int_t NPlates = 19; //Number of doublets emulsion + Pb (two interaction lengths for 3 mm lead slabs)
-    Int_t NPlates = 28; //when we consider 1 mm lead slabs
+
     const Int_t NBricks = 1;        
-    Double_t zPasLead = NPlates * PassiveSlabThickness;  //amount of passive layer
-    
-    TargetZ = NPlates * AllPlateWidth + EmPlateWidth; //CH1       
+    Double_t zPasLead = fNPlates * PassiveSlabThickness;  //amount of passive layer    
 
     TGeoVolumeAssembly *volTarget = new TGeoVolumeAssembly("volTarget");
     volTarget->SetLineColor(kCyan);
     volTarget->SetTransparency(1);
       
-    top->AddNode(volTarget,1,new TGeoTranslation(0,0,zEmuTargetPosition-TargetZ/2)); //Box ends at origin           
- 
+    top->AddNode(volTarget,1,new TGeoTranslation(0,0,zEmuTargetPosition-TargetZ/2)); //Box ends at origin
+
     TGeoVolume *volPasLead = NULL;
     
     TGeoBBox *Passiveslab = new TGeoBBox("Passiveslab", EmulsionX/2, EmulsionY/2, PassiveSlabThickness/2);
@@ -204,17 +209,42 @@ void EmuDESYTarget::ConstructGeometry()
     Double_t zpoint = -TargetZ/2;
 
 	  //adding emulsions
-    for(Int_t n=0; n<NPlates+1; n++)
+    for(Int_t n=0; n<fNPlates+1; n++)
 	    {
 	      AddEmulsionFilm(zpoint + n*AllPlateWidth, nfilm, volTarget, volEmulsionFilm, volEmulsionFilm2, volPlBase);
 	      nfilm++;
 	    }           
-	 for(Int_t n=0; n<NPlates; n++) //adding 1 mm lead plates
+	 for(Int_t n=0; n<fNPlates; n++) //adding 1 mm lead plates
 	    {
               volTarget->AddNode(volPassiveslab, npassiveslab, new TGeoTranslation(0,0,zpoint + EmPlateWidth + PassiveSlabThickness/2 + n*AllPlateWidth));
               npassiveslab++;
 	    }	
-	 zpoint = zpoint + NPlates *AllPlateWidth + EmPlateWidth;
+	 zpoint = zpoint + fNPlates *AllPlateWidth + EmPlateWidth;
+
+    Double_t PassiveZ = 56 * PassiveSlabThickness;  //amount of passive layer, empty brick
+
+    if (fNRun < 8){
+     TGeoBBox *PassiveBrick = new TGeoBBox("PassiveBrick", EmulsionX/2, EmulsionY/2, PassiveZ/2);
+     TGeoVolume *volPassiveBrick = new TGeoVolume("volPassiveBrick",PassiveBrick,lead);
+     volPassiveBrick->SetLineColor(kGray);
+     top->AddNode(volPassiveBrick,1,new TGeoTranslation(0,0,zEmuTargetPosition+TargetZ/2 + fECCdistance + PassiveZ/2.));
+    }
+    else{ //RUN8 case, also second volume active         
+    	    //adding emulsions
+          zpoint = zpoint +fECCdistance;
+          for(Int_t n=0; n<fNPlates_second+1; n++)
+	         {
+	          AddEmulsionFilm(zpoint + n*AllPlateWidth, nfilm, volTarget, volEmulsionFilm, volEmulsionFilm2, volPlBase);
+	          nfilm++;
+	          }           
+	         for(Int_t n=0; n<fNPlates_second; n++) //adding 1 mm lead plates
+	         {
+              volTarget->AddNode(volPassiveslab, npassiveslab, new TGeoTranslation(0,0,zpoint + EmPlateWidth + PassiveSlabThickness/2 + n*AllPlateWidth));
+              npassiveslab++;
+	         }	
+	        zpoint = zpoint + fNPlates_second *AllPlateWidth + EmPlateWidth;
+
+      }   
 	}      
      
     
