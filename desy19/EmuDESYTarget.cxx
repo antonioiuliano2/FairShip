@@ -231,7 +231,7 @@ void EmuDESYTarget::ConstructGeometry()
      TGeoBBox *PassiveBrick = new TGeoBBox("PassiveBrick", EmulsionX/2, EmulsionY/2, PassiveZ/2);
      TGeoVolume *volPassiveBrick = new TGeoVolume("volPassiveBrick",PassiveBrick,lead);
      volPassiveBrick->SetLineColor(kGray);
-     top->AddNode(volPassiveBrick,1,new TGeoTranslation(0,0,zEmuTargetPosition+TargetZ/2 + fECCdistance + PassiveZ/2.));
+     top->AddNode(volPassiveBrick,1,new TGeoTranslation(0,0,zEmuTargetPosition+ fECCdistance + PassiveZ/2.));
     }
     else{ //RUN8 case, also second volume active         
     	    //adding emulsions

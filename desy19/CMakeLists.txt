@@ -29,6 +29,8 @@ link_directories( ${LINK_DIRECTORIES})
 set(SRCS
 EmuDESYTarget.cxx
 EmuDESYPoint.cxx
+SciFiDESY.cxx
+SciFiDESYPoint.cxx
 DESYContFact.cxx
 )
 

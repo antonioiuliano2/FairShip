@@ -41,6 +41,12 @@ def configure(run,ship_geo,Gfield=''):
  EmuTarget.SetTargetParam(ship_geo.EmuTarget.TX, ship_geo.EmuTarget.TY, ship_geo.EmuTarget.TZ)
  detectorList.append(EmuTarget)
   
+# === SciFi modules
+ SciFi = ROOT.SciFiDESY("SciFiDESY",ROOT.kTRUE)
+ SciFi.SetStationDimensions(ship_geo.SciFi.DX,ship_geo.SciFi.DY,ship_geo.SciFi.DZ)
+ SciFi.SetStationPositions(ship_geo.SciFi.zpos1,ship_geo.SciFi.zpos2)
+ detectorList.append(SciFi)
+
  #detectorList.append(MuonTagger)
  for x in detectorList:
   run.AddModule(x)

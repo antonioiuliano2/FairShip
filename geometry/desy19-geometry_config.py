@@ -12,7 +12,7 @@ with ConfigRegistry.register_config("basic") as c:
     
     #EmuTarget (Brick!)
     c.EmuTarget = AttrDict(z=0*u.cm)
-    c.EmuTarget.zEmuTarget = 106.66 * u.cm
+    c.EmuTarget.zEmuTarget = 0 * u.cm
 
     c.EmuTarget.PBTh = 0.0175 * u.cm
     c.EmuTarget.EmTh = 0.0070 * u.cm
@@ -46,6 +46,20 @@ with ConfigRegistry.register_config("basic") as c:
     c.EmuTarget.TX = c.EmuTarget.EmX
     c.EmuTarget.TY = c.EmuTarget.EmY
     c.EmuTarget.TZ = c.EmuTarget.NPlates[cRun-1] * c.EmuTarget.AllPW +  c.EmuTarget.EPlW
+
+
+    ##SCIFIs
+    # SciFi Modules
+    c.SciFi = AttrDict(z=0*u.cm)
+    # mother volume dimensions
+    c.SciFi.DX = 15*u.cm
+    c.SciFi.DY = 15*u.cm
+    c.SciFi.DZ = 1 * u.cm
+
+    #positions along z
+
+    c.SciFi.zpos1 = 5*u.cm
+    c.SciFi.zpos2 = 20.6*u.cm
 
 
 

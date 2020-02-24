@@ -6,6 +6,8 @@
 
 #pragma link C++ class EmuDESYTarget+;
 #pragma link C++ class EmuDESYPoint+;
+#pragma link C++ class SciFiDESY+;
+#pragma link C++ class SciFiDESYPoint+;
 #pragma link C++ class DESYContFact+;
 
 #endif
