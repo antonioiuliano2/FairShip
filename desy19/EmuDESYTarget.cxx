@@ -108,6 +108,10 @@ void EmuDESYTarget::SetEmulsionParam(Double_t EmTh, Double_t EmX, Double_t EmY, 
     AllPlateWidth = AllPW;
 }
 
+void EmuDESYTarget::SetECCDistance(Double_t ECCdistance){
+    fECCdistance = ECCdistance;
+}
+
 void EmuDESYTarget::SetBrickParam(Double_t BrX, Double_t BrY, Double_t BrZ, Double_t BrPackX, Double_t BrPackY, Double_t BrPackZ)
 {
   BrickPackageX = BrPackX;
