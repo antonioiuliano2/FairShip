@@ -109,11 +109,21 @@ Int_t SciFiDESY::InitMedium(const char* name)
   return geoBuild->createMedium(ShipMedium);
 }
 //dimensions of SciFiDESY stations
-void SciFiDESY::SetStationDimensions(Double_t SciFiDESYStationDX, Double_t SciFiDESYStationDY, Double_t SciFiDESYStationDZ)
+
+void SciFiDESY::SetBoxDimensions(Double_t DX, Double_t DY, Double_t DZ)
 {
-  DimX = SciFiDESYStationDX;
-  DimY = SciFiDESYStationDY;
-  DimZ = SciFiDESYStationDZ;
+
+  DimX = DX;
+  DimY = DY;
+  DimZ = DZ;
+
+}
+
+void SciFiDESY::SetStationDimensions(Double_t StationDX, Double_t StationDY, Double_t StationDZ)
+{
+  SciFiStatDX = StationDX;
+  SciFiStatDY = StationDY;
+  SciFiStatDZ = StationDZ;
 }
 
 
@@ -130,15 +140,27 @@ void SciFiDESY::ConstructGeometry()
   InitMedium("air");
   TGeoMedium *air = gGeoManager->GetMedium("air");
 
+  InitMedium("SciFiMat");
+  TGeoMedium *SciFiMat = gGeoManager->GetMedium("SciFiMat");
+
   TGeoVolume *top = gGeoManager->GetTopVolume();
 
-  TGeoBBox *SciFiDESY = new TGeoBBox("SciFiDESY", DimX/2, DimY/2, DimZ/2); //long along y
-  TGeoVolume *volSciFiDESY = new TGeoVolume("volSciFiDESY",SciFiDESY,air);
-  volSciFiDESY->SetLineColor(kRed);
-  AddSensitiveVolume(volSciFiDESY);
-  //two SciFis, after each brick
+  TGeoBBox *SciFiDESYBox = new TGeoBBox("SciFiDESYBox", DimX/2, DimY/2, DimZ/2); //long along y
+  TGeoVolume *volSciFiDESY = new TGeoVolume("volSciFiDESY",SciFiDESYBox,air);
+
+  //two SciFis section, after each brick
   top->AddNode(volSciFiDESY, 1, new TGeoTranslation(0,0,fZposSciFi1)); //compensation for the Node offset
   top->AddNode(volSciFiDESY, 2, new TGeoTranslation(0,0,fZposSciFi2)); //compensation for the Node offset
+
+  //each SciFi section has two (double) planes.
+  TGeoBBox *SciFistation = new TGeoBBox("SciFistation",SciFiStatDX/2, SciFiStatDY/2, SciFiStatDZ/2);
+  TGeoVolume *volSciFistation = new TGeoVolume("volSciFistation", SciFistation, SciFiMat);
+
+  volSciFiDESY->AddNode(volSciFistation,1,new TGeoTranslation(0,0,-DimZ/2. + SciFiStatDZ/2.));
+  volSciFiDESY->AddNode(volSciFistation,2,new TGeoTranslation(0,0,DimZ/2. - SciFiStatDZ/2.));
+
+  volSciFistation->SetLineColor(kRed);
+  AddSensitiveVolume(volSciFistation);
 
 }
 
