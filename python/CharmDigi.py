@@ -30,7 +30,7 @@ class CharmDigi:
     def SetSpill(self,neventsspill):
         self.neventsspill = neventsspill
 
-    def SetSpillDY(spilldy):
+    def SetSpillDY(self,spilldy):
         self.spilldy = spilldy
 
     def digitize(self):
