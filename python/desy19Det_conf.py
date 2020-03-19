@@ -43,7 +43,8 @@ def configure(run,ship_geo,Gfield=''):
   
 # === SciFi modules
  SciFi = ROOT.SciFiDESY("SciFiDESY",ROOT.kTRUE)
- SciFi.SetStationDimensions(ship_geo.SciFi.DX,ship_geo.SciFi.DY,ship_geo.SciFi.DZ)
+ SciFi.SetBoxDimensions(ship_geo.SciFi.DX,ship_geo.SciFi.DY,ship_geo.SciFi.DZ)
+ SciFi.SetStationDimensions(ship_geo.SciFi.StatDX,ship_geo.SciFi.StatDY,ship_geo.SciFi.StatDZ)
  SciFi.SetStationPositions(ship_geo.SciFi.zpos1,ship_geo.SciFi.zpos2)
  detectorList.append(SciFi)
 

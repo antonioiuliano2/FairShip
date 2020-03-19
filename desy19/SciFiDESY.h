@@ -23,7 +23,8 @@ class SciFiDESY:public FairDetector
 
     void ConstructGeometry();
 
-    void SetStationDimensions(Double_t SciFiDESYStationDX, Double_t SciFiDESYStationDY, Double_t SciFiDESYStationDZ);
+    void SetBoxDimensions(Double_t DX, Double_t DY, Double_t DZ);
+    void SetStationDimensions(Double_t StationDX, Double_t DESYStationDY, Double_t DESYStationDZ);
     void SetStationPositions(Double_t posz1, Double_t posz2);
 
     /**      Initialization of the detector is done here    */
@@ -93,12 +94,16 @@ class SciFiDESY:public FairDetector
     Double_t DimY;
     Double_t DimZ;
 
+    Double_t SciFiStatDX;
+    Double_t SciFiStatDY;
+    Double_t SciFiStatDZ;
+
     Double_t fZposSciFi1;
     Double_t fZposSciFi2;
 
     SciFiDESY(const SciFiDESY&);
     SciFiDESY& operator=(const SciFiDESY&);
-    ClassDef(SciFiDESY,1)
+    ClassDef(SciFiDESY,2)
 
 };
 #endif

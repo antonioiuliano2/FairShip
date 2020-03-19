@@ -52,14 +52,19 @@ with ConfigRegistry.register_config("basic") as c:
     # SciFi Modules
     c.SciFi = AttrDict(z=0*u.cm)
     # mother volume dimensions
-    c.SciFi.DX = 15*u.cm
-    c.SciFi.DY = 15*u.cm
-    c.SciFi.DZ = 1 * u.cm
+    c.SciFi.DX = 13*u.cm
+    c.SciFi.DY = 13*u.cm
+    c.SciFi.DZ = 5.0 * u.cm
+
+    # dimensions of stations
+    c.SciFi.StatDX = c.SciFi.DX
+    c.SciFi.StatDY = c.SciFi.DY
+    c.SciFi.StatDZ = 1.0 * u.cm
 
     #positions along z
 
-    c.SciFi.zpos1 = 5*u.cm
-    c.SciFi.zpos2 = 20.6*u.cm
+    c.SciFi.zpos1 = 2*u.cm+ c.SciFi.DZ/2.
+    c.SciFi.zpos2 = c.SciFi.zpos1 + c.SciFi.DZ/2 + (15.5 * u.cm)
 
 
 
