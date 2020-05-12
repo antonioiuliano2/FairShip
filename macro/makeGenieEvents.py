@@ -22,8 +22,8 @@ hfile = "pythia8_Geant4_1.0_withCharm_nu.root" #2018 background generation
 #hfile = "pythia8_Geant4-withCharm_onlyNeutrinos.root"
 #put the above files in folder linked by the environment variables GENIEXSECPATH and NUFLUXPATH
 
-splines   = '/home/antonio/Simulations/GENIE_FNAL_nu_splines'+'/'+xsec #path of splines
-neutrinos = '/home/antonio/Simulations'+'/'+hfile #path of flux
+splines   = '/eos/experiment/ship/user/aiuliano/GENIE_FNAL_nu_splines'+'/'+xsec #path of splines
+neutrinos = '/eos/experiment/ship/data/Mbias/background-prod-2018'+'/'+hfile #path of flux
 
 
 
