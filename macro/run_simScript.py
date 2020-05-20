@@ -190,10 +190,15 @@ shipRoot_conf.configure(0)     # load basic libraries, prepare atexit for python
 if options.muShieldWithCobaltMagnet and options.ds < 3:
 	print("--coMuonShield works only for muShieldDesign >2")
 	sys.exit()
-if options.charm == 0: ship_geo = ConfigRegistry.loadpy("$FAIRSHIP/geometry/geometry_config.py", Yheight = options.dy, tankDesign = options.dv, \
+
+if options.desy19 != 0:
+    ship_geo = ConfigRegistry.loadpy("$FAIRSHIP/geometry/desy19-geometry_config.py",cRun=int(options.desy19))
+
+elif options.charm == 0: ship_geo = ConfigRegistry.loadpy("$FAIRSHIP/geometry/geometry_config.py", Yheight = options.dy, tankDesign = options.dv, \
                                                 muShieldDesign = options.ds, nuTauTargetDesign=options.nud, CaloDesign=options.caloDesign, \
                                                 strawDesign=options.strawDesign, muShieldGeo=options.geofile,
                                                 muShieldStepGeo=options.muShieldStepGeo, muShieldWithCobaltMagnet=options.muShieldWithCobaltMagnet)
+
 else: 
  ship_geo = ConfigRegistry.loadpy("$FAIRSHIP/geometry/charm-geometry_config.py", Setup = options.CharmdetSetup, cTarget = options.CharmTarget)
  if options.CharmdetSetup == 0: print("Setup for muon flux measurement has been set")
@@ -202,14 +207,6 @@ else:
   if (((options.CharmTarget > 6) or (options.CharmTarget < 0)) and (options.CharmTarget != 16)): #check if proper option for emulsion target has been set
    print("ERROR: unavailable option for CharmTarget. Currently implemented options: 1,2,3,4,5,6,16")
    1/0
-
-elif options.desy19 != 0:
-    ship_geo = ConfigRegistry.loadpy("$FAIRSHIP/geometry/desy19-geometry_config.py",cRun=int(options.desy19))
-
-else: 
-  ship_geo = ConfigRegistry.loadpy("$FAIRSHIP/geometry/geometry_config.py", Yheight = options.dy, tankDesign = options.dv, \
-                                                muShieldDesign = options.ds, nuTauTargetDesign=options.nud, CaloDesign=options.caloDesign, \
-                                                strawDesign=options.strawDesign, muShieldGeo=options.geofile)
 # switch off magnetic field to measure muon flux
 #ship_geo.muShield.Field = 0.
 #ship_geo.EmuMagnet.B = 0.
