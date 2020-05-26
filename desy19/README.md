@@ -13,3 +13,15 @@ Launch with
 Event display, copied from the standard FairSHIP EventDisplay
 
  python -i $FAIRSHIP/macro/desy19_eventDisplay.py -f ship.conical.PG_11-TGeant4.root -g geofile_full.conical.PG_11-TGeant4.root
+ 
+## RUN Table
+| RUN | N. Emulsions | Electron energy \[GeV\] | Additional Notes |
+| :--- | :--- | :--- | :--- |
+| 1 | 57 | 6 |  |
+| 2 | 43 | 6 |  |
+| 3 | 29 | 6 |  |
+| 4 | 15 | 6 |  |
+| 5 | 29 | 2 |  |
+| 6 | 29 | 4 |  |
+| 7 | 19 | 6 |  |
+| 8 | 15 | 6 | Second ECC with 29 films downstream |
