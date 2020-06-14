@@ -4,6 +4,7 @@ from __future__ import division
 #Output is an ntuple with muon/neutrinos 
 import ROOT,time,os,sys,random,getopt
 import rootUtils as ut
+import numpy as np #I need a numpy array to use as c++ float* array
 ROOT.gROOT.LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C")
 ROOT.basiclibs()
 
@@ -65,19 +66,20 @@ P8.readString("ProcessLevel:all = off")
 # let strange particle decay in Geant4
 n=1
 while n!=0:
-  n = p8.particleData.nextId(n)
-  p = p8.particleData.particleDataEntryPtr(n)
+  n = P8.particleData.nextId(n)
+  p = P8.particleData.particleDataEntryPtr(n)
   if p.tau0()>1: 
     command = str(n)+":mayDecay = false"
-    p8.readString(command)
+    P8.readString(command)
     print("Pythia8 configuration: Made %s stable for Pythia, should decay in Geant4",p.name())
 P8.init()
 
 
 #output ntuple:
 ftup = ROOT.TFile.Open(FOUT, 'RECREATE')
-Ntup = ROOT.TNtuple("Decay","pythia8 heavy flavour decays","id:px:py:pz:E:M:weight:mid:mpx:mpy:mpz:mE:pot:ptGM:pzGM")
-
+Ntup = ROOT.TNtuple("Decay","pythia8 heavy flavour decays","id:px:py:pz:E:M:weight:mid:mpx:mpy:mpz:mE:pot:ptGM:pzGM:Cascadek")
+#added cascade depth, only possible for new format, more than 15 branches now present, cannot use Float without an array
+ntuple_entry = np.zeros(16,dtype = np.float32)
 h={}
 #book hists for Genie neutrino momentum distrubition, just as check
 # type of neutrino
@@ -91,9 +93,14 @@ for idnu in range(12,18,2):
     idhnu+=1000
     idw=-idnu
    name=PDG.GetParticle(idw).GetName()
-   ut.bookHist(h,str(idhnu),name+' momentum (GeV)',400,0.,400.)
-   ut.bookHist(h,str(idhnu+100),name+' log10-p vs log10-pt',100,-0.3,1.7,100,-2.,0.5)
-   ut.bookHist(h,str(idhnu+200),name+' log10-p vs log10-pt',25,-0.3,1.7,100,-2.,0.5)
+   #now separately for cascade and primary
+   ut.bookHist(h,str(idhnu),name+' momentum (GeV) primary',400,0.,400.)
+   ut.bookHist(h,str(idhnu+100),name+' log10-p vs log10-pt primary',100,-0.3,1.7,100,-2.,0.5)
+   ut.bookHist(h,str(idhnu+200),name+' log10-p vs log10-pt primary',25,-0.3,1.7,100,-2.,0.5)
+
+   ut.bookHist(h,str(idhnu+300),name+' momentum (GeV) cascade',400,0.,400.)
+   ut.bookHist(h,str(idhnu+400),name+' log10-p vs log10-pt cascade',100,-0.3,1.7,100,-2.,0.5)
+   ut.bookHist(h,str(idhnu+500),name+' log10-p vs log10-pt cascade',25,-0.3,1.7,100,-2.,0.5)
 
 pot=0.
 #Determine fDs on this file for primaries
@@ -134,7 +141,25 @@ for n in range(nEvents):
       if idabs>11 and idabs<17:
        par= P8.event[n]
        ptGM = ROOT.TMath.Sqrt(sTree.mpx*sTree.mpx+sTree.mpy*sTree.mpy)
-       Ntup.Fill(par.id(),par.px(),par.py(),par.pz(),par.e(),par.m(),wspill,sTree.id,sTree.px,sTree.py,sTree.pz,sTree.E,sTree.M,ptGM,sTree.mpz)
+       #filling the ntuple
+       ntuple_entry[0] = par.id()
+       ntuple_entry[1] = par.px()
+       ntuple_entry[2] = par.py()
+       ntuple_entry[3] = par.pz()
+       ntuple_entry[4] = par.e()
+       ntuple_entry[5] = par.m()
+       ntuple_entry[6] = wspill
+       ntuple_entry[7] = sTree.id
+       ntuple_entry[8] = sTree.px
+       ntuple_entry[9] = sTree.py
+       ntuple_entry[10] = sTree.pz
+       ntuple_entry[11] = sTree.E
+       ntuple_entry[12] = sTree.M
+       ntuple_entry[13] = ptGM
+       ntuple_entry[14] = sTree.mpz
+       ntuple_entry[15] = sTree.k 
+       Ntup.Fill(ntuple_entry)
+
        #count total muons from charm/spill, and within some angluar range..
        if idabs==16 or idabs==14 or idabs==12:
          idhnu=idabs+1000
@@ -143,9 +168,14 @@ for n in range(nEvents):
          ptot=ROOT.TMath.Sqrt(pt2+par.pz()**2)
          l10ptot=min(max(ROOT.TMath.Log10(ptot),-0.3),1.69999)
          l10pt=min(max(ROOT.TMath.Log10(ROOT.TMath.Sqrt(pt2)),-2.),0.4999)
-         h[str(idhnu)].Fill(ptot,wspill)                     
-         h[str(idhnu+100)].Fill(l10ptot,l10pt,wspill)
-         h[str(idhnu+200)].Fill(l10ptot,l10pt,wspill)
+         if (sTree.k == 1):
+          h[str(idhnu)].Fill(ptot,wspill)                     
+          h[str(idhnu+100)].Fill(l10ptot,l10pt,wspill)
+          h[str(idhnu+200)].Fill(l10ptot,l10pt,wspill)
+         else:
+          h[str(idhnu+300)].Fill(ptot,wspill)                     
+          h[str(idhnu+400)].Fill(l10ptot,l10pt,wspill)
+          h[str(idhnu+500)].Fill(l10ptot,l10pt,wspill)
        
 print('Now at Ntup.Write() for pot=',pot,nrcpot)
 if (1.-pot/nrcpot)<1.e-2:
