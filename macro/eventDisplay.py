@@ -292,13 +292,13 @@ class DrawTracks(ROOT.FairTask):
     da.GetStartVertex(fPos)
     hitlist[fPos.Z()] = [fPos.X(),fPos.Y()]
   # loop over all sensitive volumes to find hits
-   for P in ["vetoPoint","muonPoint","EcalPoint","HcalPoint","preshowerPoint","strawtubesPoint","ShipRpcPoint","TargetPoint","TimeDetPoint"]:
+   for P in ["vetoPoint","muonPoint","EcalPoint","HcalPoint","preshowerPoint","strawtubesPoint","ShipRpcPoint","TargetPoint","HptPoint","TimeDetPoint"]:
     if not sTree.GetBranch(P): continue
     c=eval("sTree."+P)
     for p in c:
       if p.GetTrackID()==n:
        if hasattr(p, "LastPoint"): 
-        lp = p.LastPoint()
+        lp = p.LastPoint()     
         if lp.x()==lp.y() and lp.x()==lp.z() and lp.x()==0: 
 # must be old data, don't expect hit at 0,0,0  
          hitlist[p.GetZ()] = [p.GetX(),p.GetY()]
@@ -307,6 +307,8 @@ class DrawTracks(ROOT.FairTask):
          hitlist[2.*p.GetZ()-lp.z()] = [2.*p.GetX()-lp.x(),2.*p.GetY()-lp.y()] 
        else:
         hitlist[p.GetZ()] = [p.GetX(),p.GetY()]
+        if n==1: #just one time hack for event 229
+         hitlist[-3282.475] = [-28.15956,-23.34519]
    if len(hitlist)==1:
     if fT.GetMotherId()<0: continue
     if abs(sTree.MCTrack[fT.GetMotherId()].GetPdgCode()) == options.HiddenParticleID:
@@ -333,6 +335,8 @@ class DrawTracks(ROOT.FairTask):
     else:  pName =  str(fT.GetPdgCode())
     DTrack.SetName('MCTrack_'+str(n)+'_'+pName)
     c = ROOT.kYellow
+    if (n==1): #another just once hack
+     c = ROOT.kBlue
     if abs(fT.GetPdgCode()) == options.HiddenParticleID:c = ROOT.kMagenta
     DTrack.SetMainColor(c)
     DTrack.SetLineWidth(3)
@@ -1033,7 +1037,7 @@ else:
 
 for x in mcHits: fMan.AddTask(mcHits[x])
 
-fMan.Init(1,4,10) # default Init(visopt=1, vislvl=3, maxvisnds=10000), ecal display requires vislvl=4
+fMan.Init(1,10,10) # default Init(visopt=1, vislvl=3, maxvisnds=10000), ecal display requires vislvl=4
 #visopt, set drawing mode :
 # option=0 (default) all nodes drawn down to vislevel
 # option=1           leaves and nodes at vislevel drawn
