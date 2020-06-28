@@ -127,10 +127,8 @@ void EmulsionDet::SetDetectorDimension(Double_t xdim, Double_t ydim, Double_t zd
   ZDimension = zdim;
 }
 
-void EmulsionDet::SetNumberBricks(Double_t col, Double_t row, Double_t wall)
+void EmulsionDet::SetNumberWalls(Double_t wall)
 {
-  fNCol = col;
-  fNRow = row;
   fNWall = wall;
 }
 
@@ -147,14 +145,14 @@ void EmulsionDet::SetTargetWallDimension(Double_t WallXDim_, Double_t WallYDim_,
 }
 
 
-void EmulsionDet::SetEmulsionParam(Double_t EmTh, Double_t EmX, Double_t EmY, Double_t PBTh, Double_t EPlW,Double_t LeadTh, Double_t AllPW)
+void EmulsionDet::SetEmulsionParam(Double_t EmTh, Double_t EmX, Double_t EmY, Double_t PBTh, Double_t EPlW,Double_t PassiveTh, Double_t AllPW)
 {
   EmulsionThickness = EmTh;
   EmulsionX = EmX;
   EmulsionY = EmY;
   PlasticBaseThickness = PBTh;
   EmPlateWidth = EPlW;
-  LeadThickness = LeadTh;
+  PassiveThickness = PassiveTh;
   AllPlateWidth = AllPW;
 }
 
@@ -205,7 +203,7 @@ void EmulsionDet::ConstructGeometry()
 
 	InitMedium("NuclearEmulsion");
 	TGeoMedium *NEmu =gGeoManager->GetMedium("NuclearEmulsion");
-
+	
 	TGeoMaterial *NEmuMat = NEmu->GetMaterial(); //I need the materials to build the mixture
 	TGeoMaterial *PBaseMat = PBase->GetMaterial();
 
@@ -217,8 +215,8 @@ void EmulsionDet::ConstructGeometry()
 
 	TGeoMedium *Emufilm = new TGeoMedium("EmulsionFilm",100,emufilmmixture);
 
-	InitMedium("lead");
-	TGeoMedium *lead = gGeoManager->GetMedium("lead");
+	InitMedium("WNi");
+	TGeoMedium *tungsten = gGeoManager->GetMedium("WNi");
 
 	Int_t NPlates = number_of_plates; //Number of doublets emulsion + Pb
 	cout<< " Number of plates: "<<number_of_plates<<endl;
@@ -241,14 +239,14 @@ void EmulsionDet::ConstructGeometry()
 	volBrick->SetLineColor(kCyan);
 	volBrick->SetTransparency(1);
 
-	TGeoBBox *Lead = new TGeoBBox("Pb", EmulsionX/2, EmulsionY/2, LeadThickness/2);
-	TGeoVolume *volLead = new TGeoVolume("Lead",Lead,lead);
-	volLead->SetTransparency(1);
-	volLead->SetLineColor(kGray);
+	TGeoBBox *Passive = new TGeoBBox("Passive", EmulsionX/2, EmulsionY/2, PassiveThickness/2);
+	TGeoVolume *volPassive = new TGeoVolume("volPassive",Passive,tungsten);
+	volPassive->SetTransparency(1);
+	volPassive->SetLineColor(kGray);
 
 	for(Int_t n=0; n<NPlates; n++)
 	{
-		volBrick->AddNode(volLead, n, new TGeoTranslation(0,0,-BrickZ/2+BrickPackageZ/2+ EmPlateWidth + LeadThickness/2 + n*AllPlateWidth)); //LEAD
+		volBrick->AddNode(volPassive, n, new TGeoTranslation(0,0,-BrickZ/2+ EmPlateWidth + PassiveThickness/2 + n*AllPlateWidth)); //LEAD
 	}
 
 	TGeoBBox *EmulsionFilm = new TGeoBBox("EmulsionFilm", EmulsionX/2, EmulsionY/2, EmPlateWidth/2);
@@ -257,46 +255,25 @@ void EmulsionDet::ConstructGeometry()
 	//      AddSensitiveVolume(volEmulsionFilm);
 	for(Int_t n=0; n<NPlates+1; n++)
 	{
-		volBrick->AddNode(volEmulsionFilm, n, new TGeoTranslation(0,0,-BrickZ/2+BrickPackageZ/2+ EmPlateWidth/2 + n*AllPlateWidth));
+		volBrick->AddNode(volEmulsionFilm, n, new TGeoTranslation(0,0,-BrickZ/2+ EmPlateWidth/2 + n*AllPlateWidth));
 	}
 
 	volBrick->SetVisibility(kTRUE);
 
-	top->AddNode(volTarget,1,new TGeoTranslation(ShiftX,ShiftY+YDimension/2,fCenterZ));
+	top->AddNode(volTarget,1,new TGeoTranslation(ShiftX+XDimension/2,ShiftY+YDimension/2,fCenterZ));
 	cout<<ShiftX<<"  "<<ShiftY+YDimension/2<<"  "<<fCenterZ<<endl; 
-	TGeoVolumeAssembly *volRow = new TGeoVolumeAssembly("Row");
-	volRow->SetLineColor(20);
-
-	Double_t d_cl_x = -WallXDim/2;
-	for(int j= 0; j < fNCol; j++)
-	{
-		volRow->AddNode(volBrick,j,new TGeoTranslation(d_cl_x+BrickX/2, 0, 0));
-		d_cl_x += BrickX;
-	}
+	
 	TGeoVolumeAssembly *volWall = new TGeoVolumeAssembly("Wall");
 
-	Double_t d_cl_y = -WallYDim/2;
-	for(int k= 0; k< fNRow; k++)
-	{
-		volWall->AddNode(volRow,k,new TGeoTranslation(0, d_cl_y + BrickY/2, 0));
-
-		// 2mm is the distance for the structure that holds the brick
-		d_cl_y += BrickY ;
-	}
-
-	//Columns
+	//Walls
 	Double_t d_cl_z = - ZDimension/2 + TTrackerZ;
 	Double_t d_tt = -ZDimension/2 + TTrackerZ/2;
-	
 
 	for(int l = 0; l < fNWall; l++)
 	{
-		volTarget->AddNode(volWall,l,new TGeoTranslation(0, 0, d_cl_z +BrickZ/2));
+		volTarget->AddNode(volBrick,l,new TGeoTranslation(0, 0, d_cl_z +BrickZ/2));
 		d_cl_z += BrickZ + TTrackerZ;
 	}
-
-
-
 }
 
 

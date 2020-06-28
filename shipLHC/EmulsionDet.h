@@ -33,9 +33,10 @@ public:
     /** Other functions */
 void SetTargetWallDimension(Double_t WallXDim, Double_t WallYDim, Double_t WallZDim);
     void SetDetectorDimension(Double_t xdim, Double_t ydim, Double_t zdim);
-void SetEmulsionParam(Double_t EmTh, Double_t EmX, Double_t EmY, Double_t PBTh,Double_t EPlW, Double_t LeadTh, Double_t AllPW);
+void SetEmulsionParam(Double_t EmTh, Double_t EmX, Double_t EmY, Double_t PBTh,Double_t EPlW, Double_t PassiveTh, Double_t AllPW);
     void SetBrickParam(Double_t BrX, Double_t BrY, Double_t BrZ, Double_t BrPackX, Double_t BrPackY,Double_t BrPackZ, Int_t number_of_plates_);
-void SetNumberBricks(Double_t col, Double_t row, Double_t wall);
+//void SetNumberBricks(Double_t col, Double_t row, Double_t wall);
+ void SetNumberWalls(Double_t wall);
     void SetTTzdimension(Double_t TTZ);
     void SetNumberTargets(Int_t target);
  void SetCenterZ(Double_t z);
@@ -100,8 +101,6 @@ protected:
 
     Double_t fCenterZ;
 
-    Int_t fNCol;
-    Int_t fNRow;
     Int_t fNWall;
     Int_t fNTarget;
     Int_t number_of_plates; ////
@@ -115,9 +114,9 @@ protected:
     Double_t EmulsionY;
 
     Double_t PlasticBaseThickness;
-    Double_t LeadThickness;
+    Double_t PassiveThickness; //Tungsten plate thickness
     Double_t EmPlateWidth; // Z dimension of the emulsion plates = 2*EmulsionThickness+PlasticBaseThickness
-    Double_t AllPlateWidth; //PlateZ + LeadThickness
+    Double_t AllPlateWidth; //PlateZ + PassiveThickness
 
 
     Double_t BrickPackageX; //dimension of the brick package along X
@@ -128,11 +127,6 @@ protected:
     Double_t BrickY;
     Double_t BrickX;
 
-    Double_t RohacellGap; //dimension of the Rohacell Gap in CES along Z axis
-    Double_t LayerCESWidth;
-    Double_t CESWidth; //dimension of the CES along Z axis
-
-    Double_t CellWidth; //dimension of Brick + CES along Z axis
 
     //TargetTrackers
     Double_t TTrackerZ;
