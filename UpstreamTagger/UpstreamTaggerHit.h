@@ -16,7 +16,7 @@ class UpstreamTaggerHit : public ShipHit, UpstreamTagger
     /** Default constructor **/
     UpstreamTaggerHit();
 
-    UpstreamTaggerHit(UpstreamTaggerPoint* p, Double_t t0);
+    UpstreamTaggerHit(UpstreamTaggerPoint* p, UpstreamTagger* c, Double_t t0);
 
     /** Destructor **/
     virtual ~UpstreamTaggerHit();
@@ -55,6 +55,7 @@ class UpstreamTaggerHit : public ShipHit, UpstreamTagger
     Double_t v_drift = 17.7;// cm/ns
     Double_t T_resol = 0.283; // Rpc time resolution in ns
 
+    UpstreamTagger* c0;
     Double_t point_final[3];
     const Double_t * mom[3];
 

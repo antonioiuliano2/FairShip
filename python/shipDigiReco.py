@@ -241,9 +241,9 @@ class ShipDigiReco:
    self.digiTimeDet.Delete()
    self.digitizeTimeDet()
    self.digiTimeDetBranch.Fill()
-   self.digiUpstreamTagger.Delete()
-   self.digitizeUpstreamTagger()
-   self.digiUpstreamTaggerBranch.Fill()
+   # self.digiUpstreamTagger.Delete()
+   # self.digitizeUpstreamTagger()         TR 19/6/2020 work in progress
+   # self.digiUpstreamTaggerBranch.Fill()
    self.digiMuon.Delete()
    self.digitizeMuon()
    self.digiMuonBranch.Fill()
@@ -675,12 +675,12 @@ class ShipDigiReco:
    index = 0
    hitsPerDetId = {}
    for aMCPoint in self.sTree.UpstreamTaggerPoint:
-     aHit = ROOT.UpstreamTaggerHit(aMCPoint,self.sTree.t0)
+     aHit = ROOT.UpstreamTaggerHit(aMCPoint, global_variables.modules["UpstreamTagger"], self.sTree.t0)
      if self.digiUpstreamTagger.GetSize() == index: self.digiUpstreamTagger.Expand(index+1000)
      self.digiUpstreamTagger[index]=aHit
      detID = aHit.GetDetectorID()
      if aHit.isValid():
-      if hitsPerDetId.has_key(detID):
+      if detID in hitsPerDetId:
        t = aHit.GetMeasurements()
        ct = aHit.GetMeasurements()
 # this is not really correct, only first attempt

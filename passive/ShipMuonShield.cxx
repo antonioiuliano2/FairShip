@@ -147,7 +147,7 @@ void ShipMuonShield::CreateArb8(TString arbName, TGeoMedium *medium,
   TGeoVolume *magF =
       gGeoManager->MakeArb8(arbName, medium, dZ, corners.data());
   magF->SetLineColor(color);
-  magF->SetField(magField);
+  if (fDesign != 11 || arbName.Contains("Absorb")){magF->SetField(magField);}
   tShield->AddNode(magF, 1, new TGeoTranslation(x_translation, y_translation,
 						z_translation));
 }
@@ -486,7 +486,7 @@ Int_t ShipMuonShield::Initialize(std::vector<TString> &magnetName,
       HmainSideMagOut[i] = dYOut[i] / 2;
     }
 
-  } else if (fDesign == 9 || fDesign == 10) {
+  } else if (fDesign == 9 || fDesign == 10 ||fDesign == 11) {
      magnetName = {"MagnAbsorb1", "MagnAbsorb2", "Magn1", "Magn2", "Magn3",
        "Magn4", "Magn5", "Magn6", "Magn7"
      };
@@ -726,7 +726,7 @@ void ShipMuonShield::ConstructGeometry()
     InitMedium("Concrete");
     TGeoMedium *concrete  =gGeoManager->GetMedium("Concrete");
     
-    if (fDesign >= 5 && fDesign <= 10) {
+    if (fDesign >= 5 && fDesign <= 11) {
       Double_t ironField = fField*tesla;
       TGeoUniformMagField *magFieldIron = new TGeoUniformMagField(0.,ironField,0.);
       TGeoUniformMagField *RetField     = new TGeoUniformMagField(0.,-ironField,0.);
@@ -947,12 +947,12 @@ void ShipMuonShield::ConstructGeometry()
       if (fDesign >= 7 && fFloor > 0) {
 	// Only add floor for new shield
 	TGeoBBox *box5 = new TGeoBBox("shield_floor", 10 * m, fFloor / 2.,
-				      fMuonShieldLength / 2. - dZ - 1 * mm);
+				      fMuonShieldLength / 2. - dZ - 14.2 * cm); // substract CoatWall
 	TGeoVolume *floor = new TGeoVolume("floorM", box5, concrete);
 	floor->SetLineColor(11); // grey
 	top->AddNode(floor, 1, new TGeoTranslation(0, -10 * m + fFloor / 2.,
 						   zEndOfAbsorb +
-						       fMuonShieldLength / 2. + 2 * dZ));
+						       fMuonShieldLength / 2. +dZ + 14.2 * cm)); // avoiding overlap with CoatWall
       }
       TGeoCompositeShape *compRockD =
 	  new TGeoCompositeShape("compRockD", "(box3-box4)");
