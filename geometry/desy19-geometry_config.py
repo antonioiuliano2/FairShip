@@ -20,7 +20,10 @@ with ConfigRegistry.register_config("basic") as c:
     c.EmuTarget.EmX = 12.5 * u.cm
     c.EmuTarget.EmY = 9.9 * u.cm
 
-    c.EmuTarget.PasSlabTh = 0.1 * u.cm #passive slab in ECC (lead for July 2018 measurement, molybdenum/tungsten for SHiP target replica)
+    if cRun == 7:
+        c.EmuTarget.PasSlabTh = 0.09 *u.cm
+    else:
+        c.EmuTarget.PasSlabTh = 0.1 * u.cm #passive slab in ECC (lead for July 2018 measurement, molybdenum/tungsten for SHiP target replica)
     
     c.EmuTarget.EPlW = 2* c.EmuTarget.EmTh + c.EmuTarget.PBTh
     c.EmuTarget.AllPW = c.EmuTarget.PasSlabTh + c.EmuTarget.EPlW

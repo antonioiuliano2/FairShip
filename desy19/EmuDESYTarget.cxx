@@ -176,7 +176,10 @@ void EmuDESYTarget::ConstructGeometry()
     TGeoMedium *PBase = gGeoManager->GetMedium("PlasticBase");
 
     InitMedium("lead");
-    TGeoMedium *lead = gGeoManager->GetMedium("lead");    
+    TGeoMedium *lead = gGeoManager->GetMedium("lead");  
+        
+    InitMedium("tungsten");
+    TGeoMedium *tungsten = gGeoManager->GetMedium("tungsten");  
     
     TGeoVolume *top= gGeoManager->GetTopVolume(); 
 
@@ -204,7 +207,10 @@ void EmuDESYTarget::ConstructGeometry()
     TGeoVolume *volPasLead = NULL;
     
     TGeoBBox *Passiveslab = new TGeoBBox("Passiveslab", EmulsionX/2, EmulsionY/2, PassiveSlabThickness/2);
-    TGeoVolume *volPassiveslab = new TGeoVolume("volPassiveslab",Passiveslab,lead);
+    TGeoVolume *volPassiveslab;
+    //run 7 uses tungsten as passive material
+    if (fNRun == 7) volPassiveslab = new TGeoVolume("volPassiveslab",Passiveslab,tungsten);
+    else volPassiveslab = new TGeoVolume("volPassiveslab",Passiveslab,lead);
     
     volPassiveslab->SetTransparency(1);
     volPassiveslab->SetLineColor(kGray);
