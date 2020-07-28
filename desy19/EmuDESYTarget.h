@@ -36,6 +36,7 @@ public:
  
     void SetTargetParam(Double_t TX, Double_t TY, Double_t TZ);
     void SetECCDistance(Double_t ECCdistance);
+    void SetPassiveDZ(Double_t PassiveDZ);
 
     void SetNPlates(Int_t NPlates, Int_t NPlates_second);
     void SetNRun(Int_t NRun);
@@ -114,6 +115,7 @@ protected:
     Double_t AllPlateWidth; //PlateZ + LeadThickness
 
     Double_t fECCdistance;
+    Double_t fPassiveDZ;
 
     Double_t BrickPackageX; //dimension of the brick package along X
     Double_t BrickPackageY; //dimension of the brick package along Y

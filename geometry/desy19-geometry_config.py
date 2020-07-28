@@ -41,6 +41,7 @@ with ConfigRegistry.register_config("basic") as c:
     c.EmuTarget.NPlates_second = 29 #used only in RUN8
     
     c.EmuTarget.ECCdistance = 10 #distance between the two bricks
+    c.EmuTarget.PassiveDZ = 50 *u.mm #thickness of passive brick between SciFis
     
     c.EmuTarget.cRun = cRun
 

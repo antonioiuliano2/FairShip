@@ -36,6 +36,7 @@ def configure(run,ship_geo,Gfield=''):
  EmuTarget.SetNRun(ship_geo.EmuTarget.cRun)
 
  EmuTarget.SetECCDistance(ship_geo.EmuTarget.ECCdistance)
+ EmuTarget.SetPassiveDZ(ship_geo.EmuTarget.PassiveDZ)
  
  EmuTarget.SetBrickParam(ship_geo.EmuTarget.BrX, ship_geo.EmuTarget.BrY, ship_geo.EmuTarget.BrZ, ship_geo.EmuTarget.BrPackX, ship_geo.EmuTarget.BrPackY, ship_geo.EmuTarget.BrPackZ)
  EmuTarget.SetTargetParam(ship_geo.EmuTarget.TX, ship_geo.EmuTarget.TY, ship_geo.EmuTarget.TZ)

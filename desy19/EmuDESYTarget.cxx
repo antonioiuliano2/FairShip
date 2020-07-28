@@ -112,6 +112,10 @@ void EmuDESYTarget::SetECCDistance(Double_t ECCdistance){
     fECCdistance = ECCdistance;
 }
 
+void EmuDESYTarget::SetPassiveDZ(Double_t PassiveDZ){
+    fPassiveDZ = PassiveDZ;
+}
+
 void EmuDESYTarget::SetBrickParam(Double_t BrX, Double_t BrY, Double_t BrZ, Double_t BrPackX, Double_t BrPackY, Double_t BrPackZ)
 {
   BrickPackageX = BrPackX;
@@ -229,15 +233,13 @@ void EmuDESYTarget::ConstructGeometry()
               volTarget->AddNode(volPassiveslab, npassiveslab, new TGeoTranslation(0,0,zpoint + EmPlateWidth + PassiveSlabThickness/2 + n*AllPlateWidth));
               npassiveslab++;
 	    }	
-	 zpoint = zpoint + fNPlates *AllPlateWidth + EmPlateWidth;
-
-    Double_t PassiveZ = 56 * PassiveSlabThickness;  //amount of passive layer, empty brick
+	 zpoint = zpoint + fNPlates *AllPlateWidth + EmPlateWidth;   
 
     if (fNRun < 8){
-     TGeoBBox *PassiveBrick = new TGeoBBox("PassiveBrick", EmulsionX/2, EmulsionY/2, PassiveZ/2);
+     TGeoBBox *PassiveBrick = new TGeoBBox("PassiveBrick", EmulsionX/2, EmulsionY/2, fPassiveDZ/2);
      TGeoVolume *volPassiveBrick = new TGeoVolume("volPassiveBrick",PassiveBrick,lead);
      volPassiveBrick->SetLineColor(kGray);
-     top->AddNode(volPassiveBrick,1,new TGeoTranslation(0,0,zEmuTargetPosition+ fECCdistance + PassiveZ/2.));
+     top->AddNode(volPassiveBrick,1,new TGeoTranslation(0,0,zEmuTargetPosition+ fECCdistance + fPassiveDZ/2.));
     }
     else{ //RUN8 case, also second volume active         
     	    //adding emulsions
