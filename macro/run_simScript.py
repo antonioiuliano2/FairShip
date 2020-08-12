@@ -364,8 +364,10 @@ if simEngine == "PG":
     myPgun.SetPRange(ship_geo.EmuTarget.eEnergy[ship_geo.EmuTarget.cRun-1],ship_geo.EmuTarget.eEnergy[ship_geo.EmuTarget.cRun-1])
    myPgun.SetXYZ(0.*u.cm, 0.*u.cm, ship_geo.EmuTarget.zEmuTarget-targetdz)
    fwhm = 2 * ROOT.TMath.Sqrt(2 * ROOT.TMath.Log(2)) #how much is Full Width Half Maximum in sigma units 
-   primGen.SetBeam(0.,0., 1./fwhm, 1./fwhm) #central beam
-   primGen.SmearGausVertexXY(True)
+   #primGen.SetBeam(0.,0., 1./fwhm, 1./fwhm) #central beam
+   #primGen.SmearGausVertexXY(True)
+   primGen.SetBeam(0.,0., ship_geo.EmuTarget.TX-1., ship_geo.EmuTarget.TY-1.) #Uniform distribution in x/y on the target (0.5 cm of margin at both sides)
+   primGen.SmearVertexXY(True)
 
   myPgun.SetThetaRange(0,0) # // Polar angle in lab system range [degree]
   primGen.AddGenerator(myPgun)
