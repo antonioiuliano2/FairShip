@@ -1100,7 +1100,7 @@ void MufluxSpectrometer::ConstructGeometry()
 	double distance_t34=zcenter_t4-zcenter_t3;
 
 	
-	TGeoBBox *DriftTubeCharm = new TGeoBBox("DriftTubeCharm", 1.15*m/2, 2.5*m/2, distance_t34/2+eps+22.5*cm); 
+	TGeoBBox *DriftTubeCharm = new TGeoBBox("DriftTubeCharm", 2.30*m/2, 2.60*m/2, distance_t34/2+eps+22.5*cm); 
 	TGeoVolume *volDriftTubeCharm = new TGeoVolume("volDriftTubeCharm",DriftTubeCharm,air);
 	volDriftTubeCharm->SetLineColor(kBlue-5);
 	
@@ -1180,8 +1180,9 @@ void MufluxSpectrometer::ConstructGeometry()
 	      nmplane_34 += pnb;
 	      nmplane_34 += "_module_";
 	      nmplane_34 += mnb;
-	      TGeoBBox *plane_34 = new TGeoBBox("plane box_34", ftr12xdim/2.+eps/2.+2*fTubes_pitch, ftr34ydim/2+eps/2., planewidth/2.+eps/2);	   	   
-	      TGeoVolume *planebox_34 = new TGeoVolume(nmplane_34, plane_34, air) ;          
+	      //TGeoBBox *plane_34 = new TGeoBBox("plane box_34", ftr12xdim/2.+eps/2.+2*fTubes_pitch, ftr34ydim/2+eps/2., planewidth/2.+eps/2);	   	   
+	      //TGeoVolume *planebox_34 = new TGeoVolume(nmplane_34, plane_34, air) ;            
+              TGeoVolumeAssembly *planebox_34 = new TGeoVolumeAssembly(nmplane_34); //TEST ANTONIO 
 	      
 	      //the planebox sits in the viewframe
 	      //hence z translate the plane wrt to the view
@@ -1199,8 +1200,9 @@ void MufluxSpectrometer::ConstructGeometry()
 		
 		//z translate the layerbox wrt the plane box (which is already rotated)
 		TString nmlayer_34 = nmplane_34+"_layer_"; nmlayer_34 += lnb;
-		TGeoBBox *layer_34 = new TGeoBBox("layer box_34", ftr12xdim/2.+2*fTubes_pitch, ftr34ydim/2., layerwidth/2.);
-		TGeoVolume *layerbox_34 = new TGeoVolume(nmlayer_34, layer_34, air);	
+		//TGeoBBox *layer_34 = new TGeoBBox("layer box_34", ftr12xdim/2.+2*fTubes_pitch, ftr34ydim/2., layerwidth/2.);
+		//TGeoVolume *layerbox_34 = new TGeoVolume(nmlayer_34, layer_34, air);  
+                TGeoVolumeAssembly *layerbox_34 = new TGeoVolumeAssembly(nmlayer_34); //TEST ANTONIO	
 		layerbox_34->SetVisibility(kFALSE);	        
 		planebox_34->AddNode(layerbox_34, mnb*100000000+statnb*10000000+vnb*1000000+pnb*100000+lnb*10000,new TGeoTranslation(0,0,(lnb-1./2.)*fDeltaz_layer12)); 	  
 		
@@ -1275,7 +1277,7 @@ Bool_t  MufluxSpectrometer::ProcessHits(FairVolume* vol)
 	//std::cout<< " tube_uniqueId "<<tube_uniqueId<<std::endl;	  
         // # d = |pq . u x v|/|u x v|
         TVector3 bot,top;	  
-        TubeEndPoints(tube_uniqueId,bot,top);
+        //TubeEndPoints(tube_uniqueId,bot,top);
 	  
         TLorentzVector Pos; 
         gMC->TrackPosition(Pos); 
