@@ -157,7 +157,7 @@ class DrawTracks(ROOT.FairTask):
    hitlist = {}
    hitlist[(fPos.Z(),0)] = [fPos.X(),fPos.Y()]
   # loop over all sensitive volumes to find hits
-   for P in ["BoxPoint","PixelModulesPoint"]:
+   for P in ["BoxPoint","PixelModulesPoint","SciFiPoint","MufluxSpectrometerPoint","MuonTaggerPoint"]:
     if not sTree.GetBranch(P): continue
     c=eval("sTree."+P)
     for p in c:
@@ -627,8 +627,10 @@ ShipGeo = upkl.load('ShipGeo')
 
 mcHits = {}
 mcHits['BoxPoints']  = ROOT.FairMCPointDraw("BoxPoint", ROOT.kRed, ROOT.kFullSquare)
-mcHits['PixelModulesPoints']  = ROOT.FairMCPointDraw("PixelModulesPoint", ROOT.kBlue, ROOT.kFullSquare)
-
+mcHits['PixelModulesPoints']  = ROOT.FairMCPointDraw("PixelModulesPoint", ROOT.kBlue, ROOT.kFullDiamond)
+mcHits['SciFiPoints']  = ROOT.FairMCPointDraw("SciFiPoint", ROOT.kOrange, ROOT.kFullSquare)
+mcHits['MufluxSpectrometerPoints']  = ROOT.FairMCPointDraw("MufluxSpectrometerPoint", ROOT.kGreen, ROOT.kFullDiamond)
+mcHits['MuonTaggerPoints']  = ROOT.FairMCPointDraw("MuonTaggerPoint", ROOT.kBlue, ROOT.kFullSquare)
 for x in mcHits: fMan.AddTask(mcHits[x])
 
 fMan.Init(1,4,10) # default Init(visopt=1, vislvl=3, maxvisnds=10000), ecal display requires vislvl=4
