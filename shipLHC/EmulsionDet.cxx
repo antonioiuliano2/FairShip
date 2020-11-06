@@ -218,6 +218,7 @@ void EmulsionDet::ConstructGeometry()
 	InitMedium("WNi");
 	TGeoMedium *tungsten = gGeoManager->GetMedium("WNi");
 
+
 	Int_t NPlates = number_of_plates; //Number of doublets emulsion + Pb
 	cout<< " Number of plates: "<<number_of_plates<<endl;
 

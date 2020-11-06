@@ -45,7 +45,8 @@ with ConfigRegistry.register_config("basic") as c:
 	c.MuFilter = AttrDict(z=0*u.cm)
 	c.MuFilter.ShiftDY = 2.0*u.cm
 	c.MuFilter.ShiftDYTot = 6.0*u.cm
-	c.MuFilter.X = c.EmulsionDet.xdim + 20*u.cm
+	#c.MuFilter.X = c.EmulsionDet.xdim + 20*u.cm
+	c.MuFilter.X = 61.6*u.cm
         #c.MuFilter.Y = c.EmulsionDet.ydim + 20*u.cm+10.0*u.cm
         c.MuFilter.Y = 60.0*u.cm+c.MuFilter.ShiftDYTot
         c.MuFilter.FeX = c.MuFilter.X
