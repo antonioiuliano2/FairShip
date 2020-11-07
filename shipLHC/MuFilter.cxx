@@ -285,11 +285,6 @@ void MuFilter::ConstructGeometry()
 
 	for(Int_t l=0; l<fNDownstreamPlanes; l++)
 	{
-		if(l==1||l==4)
-			dy+=fShiftDY;
-		if(l==2||l==3)
-			dy+= fShiftDY/2;
-		
 		volMuFilter->AddNode(volFeBlock,l+fNUpstreamPlanes,new TGeoTranslation(0,fMuFilterY/2-fFeBlockY/2-dy,-fMuFilterZ/2+fFeBlockZ/2+dz));
 		volMuFilter->AddNode(volDownstreamDet,l+fNUpstreamPlanes,new TGeoTranslation(0,fMuFilterY/2-fFeBlockY/2-dy,-fMuFilterZ/2+fFeBlockZ+fDownstreamDetZ/2+dz));
 		dz+=fFeBlockZ+fDownstreamDetZ;
