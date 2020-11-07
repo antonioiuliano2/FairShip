@@ -260,37 +260,21 @@ void MuFilter::ConstructGeometry()
 
 	//adding staggered bars, first part, only 11 bars, (single stations, readout on both ends)
 	
-	TGeoBBox *MuUpstreamBar = new TGeoBBox("MuUpstreamBar",fUpstreamBarX/2, fUpstreamBarY/2, fUpstreamBarZ/2 * 2.);
-
-	TGeoBBox *Rect = new TGeoBBox("Rect",fUpstreamBarX/2, fUpstreamBarOverlap/2., fUpstreamBarZ/2); //to be cutted away
-	TGeoTranslation *uppercut = new TGeoTranslation(0,fUpstreamBarY/2. - fUpstreamBarOverlap/2., fUpstreamBarZ/2.);
-	TGeoTranslation *lowercut = new TGeoTranslation(0,-fUpstreamBarY/2. + fUpstreamBarOverlap/2., fUpstreamBarZ/2.);
-	//registering transformations before applying them
-	uppercut->SetName("uppercut");
-	uppercut->RegisterYourself();
-	lowercut->SetName("lowercut");
-	lowercut->RegisterYourself();
-
-	TGeoCompositeShape *MuUpstreamStaggeredBar = new TGeoCompositeShape("MuUpstreamStaggeredBar","MuUpstreamBar - (Rect:uppercut) - (Rect:lowercut)");
-	TGeoVolume *volMuUpstreamStaggeredBar = new TGeoVolume("volMuUpstreamStaggeredBar",MuUpstreamStaggeredBar,Scint);
-	volMuUpstreamStaggeredBar->SetLineColor(kBlue+2);
-	AddSensitiveVolume(volMuUpstreamStaggeredBar);
-
-        TGeoRotation *yflip = new TGeoRotation("yflip",0,0,0);
-	yflip->RotateY(180);
+	TGeoBBox *MuUpstreamBar = new TGeoBBox("MuUpstreamBar",fUpstreamBarX/2, fUpstreamBarY/2, fUpstreamBarZ/2);
+	TGeoVolume *volMuUpstreamBar = new TGeoVolume("volMuUpstreamBar",MuUpstreamBar,Scint);
+	volMuUpstreamBar->SetLineColor(kBlue+2);
+	AddSensitiveVolume(volMuUpstreamBar);
             
        //second loop, adding bars within each detector box
 	
 	for (Int_t ibar = 0; ibar < fNUpstreamBars; ibar++){
 	  
 	  Double_t dy_bar = -fUpstreamDetY/2 + fUpstreamBarY/2. + (fUpstreamBarY - fUpstreamBarOverlap)*ibar; 
-	  Double_t dz_bar = 0.; //on the left or right side of the volume
+	  Double_t dz_bar = -fUpstreamDetZ/2. + fUpstreamBarZ/2. * (2 *(ibar%2) + 1.); //on the left or right side of the volume
 
 	  TGeoTranslation *yztrans = new TGeoTranslation(0,dy_bar,dz_bar);
-	  TGeoCombiTrans *yztrans_flipped = new TGeoCombiTrans(*yztrans, *yflip);
 	  
-	  if (ibar%2==0) volUpstreamDet->AddNode(volMuUpstreamStaggeredBar,ibar,yztrans);
-	  else volUpstreamDet->AddNode(volMuUpstreamStaggeredBar,ibar,yztrans_flipped);
+	  volUpstreamDet->AddNode(volMuUpstreamBar,ibar,yztrans);
 			   }
 	//*************************************DOWNSTREAM (high granularity) SECTION*****************//
 	//Downstream Detector planes definition
@@ -314,41 +298,16 @@ void MuFilter::ConstructGeometry()
 
 	//adding staggered bars, second part, 77 bars, each for x and y coordinates
 	
-	TGeoBBox *MuDownstreamBar_hor = new TGeoBBox("MuDownstreamBar_hor",fDownstreamBarX/2, fDownstreamBarY/2, fDownstreamBarZ/2 *2);
-       
-	TGeoBBox *Rectdownstream_hor = new TGeoBBox("Rectdownstream_hor",fDownstreamBarX/2, fDownstreamBarOverlap/2., fDownstreamBarZ/2); //to be cutted away
-	TGeoTranslation *uppercutdownstream_hor = new TGeoTranslation(0,fDownstreamBarY/2. - fDownstreamBarOverlap/2., fDownstreamBarZ/2.);
-	TGeoTranslation *lowercutdownstream_hor = new TGeoTranslation(0,-fDownstreamBarY/2. + fDownstreamBarOverlap/2., fDownstreamBarZ/2.);
-	//registering transformations before applying them
-	uppercutdownstream_hor->SetName("uppercutdownstream_hor");
-	uppercutdownstream_hor->RegisterYourself();
-	lowercutdownstream_hor->SetName("lowercutdownstream_hor");
-	lowercutdownstream_hor->RegisterYourself();
+	TGeoBBox *MuDownstreamBar_hor = new TGeoBBox("MuDownstreamBar_hor",fDownstreamBarX/2, fDownstreamBarY/2, fDownstreamBarZ/2);
+	TGeoVolume *volMuDownstreamBar_hor = new TGeoVolume("volMuDownstreamStaggeredBar_hor",MuDownstreamBar_hor,Scint);
+	volMuDownstreamBar_hor->SetLineColor(kBlue+2);
+	AddSensitiveVolume(volMuDownstreamBar_hor);
 
-	TGeoCompositeShape *MuDownstreamStaggeredBar_hor = new TGeoCompositeShape("MuDownstreamStaggeredBar_hor","MuDownstreamBar_hor - (Rectdownstream_hor:uppercutdownstream_hor) - (Rectdownstream_hor:lowercutdownstream_hor)");
-	TGeoVolume *volMuDownstreamStaggeredBar_hor = new TGeoVolume("volMuDownstreamStaggeredBar_hor",MuDownstreamStaggeredBar_hor,Scint);
-	volMuDownstreamStaggeredBar_hor->SetLineColor(kBlue+2);
-	AddSensitiveVolume(volMuDownstreamStaggeredBar_hor);
-
-        TGeoRotation *xflip = new TGeoRotation("xflip",0,0,0);
-	xflip->RotateX(180);
-
-        //vertical bars, for x measurement
-	TGeoBBox *MuDownstreamBar_ver = new TGeoBBox("MuDownstreamBar_ver",fDownstreamBarX_ver/2, fDownstreamBarY_ver/2, fDownstreamBarZ/2 *2);
-       
-	TGeoBBox *Rectdownstream_ver = new TGeoBBox("Rectdownstream_ver",fDownstreamBarX_ver/2, fDownstreamBarY_ver/2., fDownstreamBarZ/2); //to be cutted away
-	TGeoTranslation *uppercutdownstream_ver = new TGeoTranslation(fDownstreamBarX_ver/2. - fDownstreamBarOverlap/2.,0, fDownstreamBarZ/2.);
-	TGeoTranslation *lowercutdownstream_ver = new TGeoTranslation(-fDownstreamBarX_ver/2. + fDownstreamBarOverlap/2.,0, fDownstreamBarZ/2.);
-	//registering transformations before applying them
-	uppercutdownstream_ver->SetName("uppercutdownstream_ver");
-	uppercutdownstream_ver->RegisterYourself();
-	lowercutdownstream_ver->SetName("lowercutdownstream_ver");
-	lowercutdownstream_ver->RegisterYourself();
-
-	TGeoCompositeShape *MuDownstreamStaggeredBar_ver = new TGeoCompositeShape("MuDownstreamStaggeredBar_ver","MuDownstreamBar_ver - (Rectdownstream_ver:uppercutdownstream_ver) - (Rectdownstream_ver:lowercutdownstream_ver)");
-	TGeoVolume *volMuDownstreamStaggeredBar_ver = new TGeoVolume("volMuDownstreamStaggeredBar_ver",MuDownstreamStaggeredBar_ver,Scint);
-	volMuDownstreamStaggeredBar_ver->SetLineColor(kGreen+2);
-	AddSensitiveVolume(volMuDownstreamStaggeredBar_ver);
+  //vertical bars, for x measurement
+	TGeoBBox *MuDownstreamBar_ver = new TGeoBBox("MuDownstreamBar_ver",fDownstreamBarX_ver/2, fDownstreamBarY_ver/2, fDownstreamBarZ/2);
+	TGeoVolume *volMuDownstreamBar_ver = new TGeoVolume("volMuDownstreamBar_ver",MuDownstreamBar_ver,Scint);
+	volMuDownstreamBar_ver->SetLineColor(kGreen+2);
+	AddSensitiveVolume(volMuDownstreamBar_ver);
 
 	//second loop, adding bars within each detector box
 	
@@ -356,23 +315,19 @@ void MuFilter::ConstructGeometry()
 	  //adding verizontal bars for y
 
 	  Double_t dy_bar = -fDownstreamDetY/2 + fDownstreamBarY/2. + (fDownstreamBarY - fDownstreamBarOverlap)*ibar; 
-	  Double_t dz_bar_hor = -fDownstreamDetZ/2 + (fDownstreamBarZ/2*2); //on the left or right side of the volume
+          Double_t dz_bar_hor = -fDownstreamDetZ/2. + fDownstreamBarZ/2. * (2 *(ibar%2) + 1.); //on the left or right side of the volume
 
 	  TGeoTranslation *yztrans = new TGeoTranslation(0,dy_bar,dz_bar_hor);
-	  TGeoCombiTrans *yztrans_flipped = new TGeoCombiTrans(*yztrans, *yflip);
 	  
-	  if (ibar%2==0) volDownstreamDet->AddNode(volMuDownstreamStaggeredBar_hor,ibar,yztrans);
-	  else volDownstreamDet->AddNode(volMuDownstreamStaggeredBar_hor,ibar,yztrans_flipped);
-          //adding vertical bars for x
+	  volDownstreamDet->AddNode(volMuDownstreamBar_hor,ibar,yztrans);
+    //adding vertical bars for x
 
 	  Double_t dx_bar = -fDownstreamDetX/2 + fDownstreamBarX_ver/2. + (fDownstreamBarX_ver - fDownstreamBarOverlap)*ibar; 
-	  Double_t dz_bar_ver = +fDownstreamDetZ/2 - (fDownstreamBarZ/2*2); //on the left or right side of the volume
+          Double_t dz_bar_ver = -fDownstreamDetZ/2. + 2*fDownstreamBarZ + fDownstreamBarZ/2. * (2 *(ibar%2) + 1.); //after the two staggered horizontal ones	  
 
 	  TGeoTranslation *xztrans = new TGeoTranslation(dx_bar,0,dz_bar_ver);
-	  TGeoCombiTrans *xztrans_flipped = new TGeoCombiTrans(*xztrans, *xflip);
 	  
-	  if (ibar%2==0) volDownstreamDet->AddNode(volMuDownstreamStaggeredBar_ver,ibar+1E+3,xztrans);
-	  else volDownstreamDet->AddNode(volMuDownstreamStaggeredBar_ver,ibar+1E+3,xztrans_flipped);	 	  
+	  volDownstreamDet->AddNode(volMuDownstreamBar_ver,ibar+1E+3,xztrans);  
        
 			   }    
 }
