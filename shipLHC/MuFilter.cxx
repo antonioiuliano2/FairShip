@@ -43,7 +43,6 @@
 #include "ShipUnit.h"
 #include "ShipStack.h"
 
-#include "TGeoCompositeShape.h"
 #include "TGeoUniformMagField.h"
 #include <stddef.h>                     // for NULL
 #include <iostream>                     // for operator<<, basic_ostream,etc
@@ -303,7 +302,7 @@ void MuFilter::ConstructGeometry()
 	volMuDownstreamBar_hor->SetLineColor(kBlue+2);
 	AddSensitiveVolume(volMuDownstreamBar_hor);
 
-  //vertical bars, for x measurement
+	//vertical bars, for x measurement
 	TGeoBBox *MuDownstreamBar_ver = new TGeoBBox("MuDownstreamBar_ver",fDownstreamBarX_ver/2, fDownstreamBarY_ver/2, fDownstreamBarZ/2);
 	TGeoVolume *volMuDownstreamBar_ver = new TGeoVolume("volMuDownstreamBar_ver",MuDownstreamBar_ver,Scint);
 	volMuDownstreamBar_ver->SetLineColor(kGreen+2);
@@ -320,7 +319,7 @@ void MuFilter::ConstructGeometry()
 	  TGeoTranslation *yztrans = new TGeoTranslation(0,dy_bar,dz_bar_hor);
 	  
 	  volDownstreamDet->AddNode(volMuDownstreamBar_hor,ibar,yztrans);
-    //adding vertical bars for x
+	  //adding vertical bars for x
 
 	  Double_t dx_bar = -fDownstreamDetX/2 + fDownstreamBarX_ver/2. + (fDownstreamBarX_ver - fDownstreamBarOverlap)*ibar; 
           Double_t dz_bar_ver = -fDownstreamDetZ/2. + 2*fDownstreamBarZ + fDownstreamBarZ/2. * (2 *(ibar%2) + 1.); //after the two staggered horizontal ones	  
