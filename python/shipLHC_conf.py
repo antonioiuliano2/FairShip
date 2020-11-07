@@ -66,6 +66,7 @@ def configure(run,ship_geo,Gfield=''):
  MuFilter.SetDownstreamPlanesDimensions(ship_geo.MuFilter.DownstreamDetX, ship_geo.MuFilter.DownstreamDetY, ship_geo.MuFilter.DownstreamDetZ)
  MuFilter.SetNDownstreamPlanes(ship_geo.MuFilter.NDownstreamPlanes)
  MuFilter.SetDownstreamBarsDimensions(ship_geo.MuFilter.DownstreamBarX, ship_geo.MuFilter.DownstreamBarY, ship_geo.MuFilter.DownstreamBarZ)
+ MuFilter.SetDownstreamVerticalBarsDimensions(ship_geo.MuFilter.DownstreamBarX_ver, ship_geo.MuFilter.DownstreamBarY_ver, ship_geo.MuFilter.DownstreamBarZ_ver)
  MuFilter.SetOverlapDownstreamBars(ship_geo.MuFilter.OverlapDownstreamBars)
  MuFilter.SetNDownstreamBars(ship_geo.MuFilter.NDownstreamBars)
 

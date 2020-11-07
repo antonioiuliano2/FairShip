@@ -46,6 +46,7 @@ class MuFilter : public FairDetector
 		void SetDownstreamPlanesDimensions(Double_t, Double_t, Double_t);
 		void SetNDownstreamPlanes(Int_t);
 		void SetDownstreamBarsDimensions(Double_t, Double_t, Double_t);
+                void SetDownstreamVerticalBarsDimensions(Double_t, Double_t, Double_t);
 		void SetNDownstreamBars(Int_t);
 		void SetOverlapDownstreamBars(Double_t);
 
@@ -136,6 +137,10 @@ class MuFilter : public FairDetector
 			Double_t fDownstreamBarOverlap; //|Size of overlap (staggering)
 
 		        Int_t fNDownstreamBars;   //|Number of staggered bars
+
+  			Double_t fDownstreamBarX_ver; //|Staggered bars of upstream section, vertical bars for x measurement
+			Double_t fDownstreamBarY_ver;
+			Double_t fDownstreamBarZ_ver;
 
 			Double_t fCenterZ;	//|Zposition of the muon filter
 			Double_t fShiftX;	//|Shift in x-y wrt beam line

@@ -76,6 +76,10 @@ with ConfigRegistry.register_config("basic") as c:
         c.MuFilter.DownstreamBarY = (c.MuFilter.DownstreamDetY + c.MuFilter.OverlapDownstreamBars * (c.MuFilter.NDownstreamBars - 1))/c.MuFilter.NDownstreamBars #computed for staggering
         c.MuFilter.DownstreamBarZ = 1*u.cm
 
+        c.MuFilter.DownstreamBarX_ver = (c.MuFilter.DownstreamDetX + c.MuFilter.OverlapDownstreamBars * (c.MuFilter.NDownstreamBars - 1))/c.MuFilter.NDownstreamBars
+        c.MuFilter.DownstreamBarY_ver = c.MuFilter.DownstreamDetY
+        c.MuFilter.DownstreamBarZ_ver = 1*u.cm
+
         #total z thickness and position
 	c.MuFilter.Z = c.MuFilter.NUpstreamPlanes*(c.MuFilter.FeZ+c.MuFilter.UpstreamDetZ) + c.MuFilter.NDownstreamPlanes*(c.MuFilter.FeZ+c.MuFilter.DownstreamDetZ) 
 	c.MuFilter.Zcenter = c.EmulsionDet.zC+c.EmulsionDet.zdim/2+c.MuFilter.Z/2
