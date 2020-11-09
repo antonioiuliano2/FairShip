@@ -273,7 +273,7 @@ void MuFilter::ConstructGeometry()
 
 	  TGeoTranslation *yztrans = new TGeoTranslation(0,dy_bar,dz_bar);
 	  
-	  volUpstreamDet->AddNode(volMuUpstreamBar,ibar,yztrans);
+	  volUpstreamDet->AddNode(volMuUpstreamBar,ibar+1E+3,yztrans);
 			   }
 	//*************************************DOWNSTREAM (high granularity) SECTION*****************//
 	//Downstream Detector planes definition
@@ -293,7 +293,7 @@ void MuFilter::ConstructGeometry()
 	//adding staggered bars, second part, 77 bars, each for x and y coordinates
 	
 	TGeoBBox *MuDownstreamBar_hor = new TGeoBBox("MuDownstreamBar_hor",fDownstreamBarX/2, fDownstreamBarY/2, fDownstreamBarZ/2);
-	TGeoVolume *volMuDownstreamBar_hor = new TGeoVolume("volMuDownstreamStaggeredBar_hor",MuDownstreamBar_hor,Scint);
+	TGeoVolume *volMuDownstreamBar_hor = new TGeoVolume("volMuDownstreamBar_hor",MuDownstreamBar_hor,Scint);
 	volMuDownstreamBar_hor->SetLineColor(kBlue+2);
 	AddSensitiveVolume(volMuDownstreamBar_hor);
 
@@ -313,7 +313,7 @@ void MuFilter::ConstructGeometry()
 
 	  TGeoTranslation *yztrans = new TGeoTranslation(0,dy_bar,dz_bar_hor);
 	  
-	  volDownstreamDet->AddNode(volMuDownstreamBar_hor,ibar,yztrans);
+	  volDownstreamDet->AddNode(volMuDownstreamBar_hor,ibar+1E+3,yztrans);
 	  //adding vertical bars for x
 
 	  Double_t dx_bar = -fDownstreamDetX/2 + fDownstreamBarX_ver/2. + (fDownstreamBarX_ver - fDownstreamBarOverlap)*ibar; 
@@ -321,7 +321,7 @@ void MuFilter::ConstructGeometry()
 
 	  TGeoTranslation *xztrans = new TGeoTranslation(dx_bar,0,dz_bar_ver);
 	  
-	  volDownstreamDet->AddNode(volMuDownstreamBar_ver,ibar+1E+3,xztrans);  
+	  volDownstreamDet->AddNode(volMuDownstreamBar_ver,ibar+1E+5,xztrans);  
        
 			   }    
 }
