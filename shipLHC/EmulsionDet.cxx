@@ -253,7 +253,7 @@ void EmulsionDet::ConstructGeometry()
 	TGeoBBox *EmulsionFilm = new TGeoBBox("EmulsionFilm", EmulsionX/2, EmulsionY/2, EmPlateWidth/2);
 	TGeoVolume *volEmulsionFilm = new TGeoVolume("Emulsion",EmulsionFilm,Emufilm); //TOP
 	volEmulsionFilm->SetLineColor(kBlue);
-	//      AddSensitiveVolume(volEmulsionFilm);
+	AddSensitiveVolume(volEmulsionFilm);
 	for(Int_t n=0; n<NPlates+1; n++)
 	{
 		volBrick->AddNode(volEmulsionFilm, n, new TGeoTranslation(0,0,-BrickZ/2+ EmPlateWidth/2 + n*AllPlateWidth));

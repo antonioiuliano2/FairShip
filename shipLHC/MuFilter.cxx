@@ -281,6 +281,12 @@ void MuFilter::ConstructGeometry()
 	TGeoVolume *volDownstreamDet = new TGeoVolume("volDownstreamDet",DownstreamDetBox,air);
 	volDownstreamDet->SetLineColor(kRed+2);
 
+        Double_t fDownstreamDetX_Stereo = 2*fDownstreamDetX/TMath::Sqrt(2.);
+        Double_t fDownstreamDetY_Stereo = 2*fDownstreamDetY/TMath::Sqrt(2.);
+        TGeoBBox *DownstreamDetBox_Stereo = new TGeoBBox("DownstreamDetBox_Stereo",fDownstreamDetX_Stereo/2,fDownstreamDetY_Stereo/2,2*fDownstreamBarZ/2);
+        TGeoVolume *volDownstreamDet_Stereo = new TGeoVolume("volDownstreamDet_Stereo", DownstreamDetBox_Stereo,air);
+        volDownstreamDet_Stereo->SetLineColor(kRed+2);
+
         //first loop, adding detector main boxes
 
 	for(Int_t l=0; l<fNDownstreamPlanes; l++)
@@ -303,8 +309,21 @@ void MuFilter::ConstructGeometry()
 	volMuDownstreamBar_ver->SetLineColor(kGreen+2);
 	AddSensitiveVolume(volMuDownstreamBar_ver);
 
+        Double_t fDownstreamBarX_Stereo = fDownstreamDetX_Stereo; 
+        Double_t fDownstreamBarY_Stereo = (fDownstreamDetY_Stereo + fDownstreamBarOverlap * (fNDownstreamBars - 1))/fNDownstreamBars;
+
+	TGeoBBox *MuDownstreamBar_Stereo = new TGeoBBox("MuDownstreamBar_hor",fDownstreamBarX_Stereo/2, fDownstreamBarY_Stereo/2, fDownstreamBarZ/2);
+	TGeoVolume *volMuDownstreamBar_Stereo = new TGeoVolume("volMuDownstreamBar_hor",MuDownstreamBar_Stereo,Scint);
+	volMuDownstreamBar_Stereo->SetLineColor(kBlue+2);
+	AddSensitiveVolume(volMuDownstreamBar_Stereo);
+
 	//second loop, adding bars within each detector box
-	
+        TGeoRotation *stereorot = new TGeoRotation("stereorot",45,0,0);
+        stereorot->SetName("stereorot");
+        stereorot->RegisterYourself();
+        TGeoTranslation *stereopos = new TGeoTranslation(0,0,-fDownstreamDetZ/2 + 4 * fDownstreamBarZ + 2*fDownstreamBarZ/2);
+        TGeoCombiTrans * stereo = new TGeoCombiTrans(*stereopos, *stereorot);
+	volDownstreamDet->AddNode(volDownstreamDet_Stereo,1,stereo);
 	for (Int_t ibar = 0; ibar < fNDownstreamBars; ibar++){
 	  //adding verizontal bars for y
 
@@ -322,7 +341,14 @@ void MuFilter::ConstructGeometry()
 	  TGeoTranslation *xztrans = new TGeoTranslation(dx_bar,0,dz_bar_ver);
 	  
 	  volDownstreamDet->AddNode(volMuDownstreamBar_ver,ibar+1E+5,xztrans);  
-       
+
+          Double_t dy_bar_stereo = -fDownstreamDetY_Stereo/2 + fDownstreamBarY_Stereo/2. + (fDownstreamBarY_Stereo - fDownstreamBarOverlap)*ibar; 
+          Double_t dz_bar_stereo = -2*fDownstreamBarZ/2. + fDownstreamBarZ/2. * (2 *(ibar%2) + 1.); //on the left or right side of the volume
+
+	  TGeoTranslation *yztrans_stereo = new TGeoTranslation(0,dy_bar_stereo,dz_bar_stereo);
+	  
+	  volDownstreamDet_Stereo->AddNode(volMuDownstreamBar_Stereo,ibar+1E+3,yztrans_stereo);
+          
 			   }    
 }
 
