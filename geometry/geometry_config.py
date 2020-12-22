@@ -741,7 +741,7 @@ with ConfigRegistry.register_config("basic") as c:
     c.NuTauTarget.PBTh = 0.0175 * u.cm
     c.NuTauTarget.ECCPassiveTh = 0.1 * u.cm
     c.NuTauTarget.EPlW = 2* c.NuTauTarget.EmTh + c.NuTauTarget.PBTh
-    c.NuTauTarget.AllPW = c.NuTauTarget.LeadTh + c.NuTauTarget.EPlW
+    c.NuTauTarget.AllPW = c.NuTauTarget.ECCPassiveTh + c.NuTauTarget.EPlW
     c.NuTauTarget.BrX = 41.0 * u.cm
     c.NuTauTarget.BrY = 41.0 * u.cm
     c.NuTauTarget.BrPackZ = 0.1045 * u.cm
