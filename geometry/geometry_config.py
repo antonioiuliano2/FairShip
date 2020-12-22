@@ -726,7 +726,7 @@ with ConfigRegistry.register_config("basic") as c:
         c.NuTauTarget.row = 2
         c.NuTauTarget.col = 2
         c.NuTauTarget.wall = 19
-    c.NuTauTarget.n_plates = 56
+    c.NuTauTarget.n_plates = 35
      
     c.NuTauTarget.target = 1  #number of neutrino target volumes
 
@@ -739,7 +739,7 @@ with ConfigRegistry.register_config("basic") as c:
     c.NuTauTarget.EmX = 40.0 * u.cm
     c.NuTauTarget.EmY = 40.0 * u.cm
     c.NuTauTarget.PBTh = 0.0175 * u.cm
-    c.NuTauTarget.LeadTh = 0.1 * u.cm
+    c.NuTauTarget.ECCPassiveTh = 0.1 * u.cm
     c.NuTauTarget.EPlW = 2* c.NuTauTarget.EmTh + c.NuTauTarget.PBTh
     c.NuTauTarget.AllPW = c.NuTauTarget.LeadTh + c.NuTauTarget.EPlW
     c.NuTauTarget.BrX = 41.0 * u.cm

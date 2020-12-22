@@ -307,8 +307,8 @@ void Target::ConstructGeometry()
   
   TGeoMedium *Emufilm = new TGeoMedium("EmulsionFilm",100,emufilmmixture);
 
-  InitMedium("lead");
-  TGeoMedium *lead = gGeoManager->GetMedium("lead");
+  InitMedium("tungsten");
+  TGeoMedium *ECCPassiveMedium = gGeoManager->GetMedium("tungsten");
     
   InitMedium("rohacell");
   TGeoMedium *rohacell = gGeoManager->GetMedium("rohacell");
@@ -386,15 +386,14 @@ void Target::ConstructGeometry()
   volBrick->SetLineColor(kCyan);
   volBrick->SetTransparency(1);   
     
-  TGeoBBox *Lead = new TGeoBBox("Pb", EmulsionX/2, EmulsionY/2, LeadThickness/2);
-  TGeoVolume *volLead = new TGeoVolume("Lead",Lead,lead);
-  volLead->SetTransparency(1);
-  volLead->SetLineColor(kGray);
-  //volLead->SetField(magField2);
+  TGeoBBox *PassiveBlock = new TGeoBBox("ECCPassiveBlock", EmulsionX/2, EmulsionY/2, ECCPassiveThickness/2);
+  TGeoVolume *volPassive = new TGeoVolume("ECCPassive",PassiveBlock,ECCPassiveMedium);
+  volPassive->SetTransparency(1);
+  volPassive->SetLineColor(kGray);
     
   for(Int_t n=0; n<NPlates; n++)
     {
-      volBrick->AddNode(volLead, n, new TGeoTranslation(0,0,-BrickZ/2+BrickPackageZ/2+ EmPlateWidth + LeadThickness/2 + n*AllPlateWidth)); //LEAD
+      volBrick->AddNode(volPassive, n, new TGeoTranslation(0,0,-BrickZ/2+BrickPackageZ/2+ EmPlateWidth + ECCPassiveThickness/2 + n*AllPlateWidth)); //Passive blocks
     }
   if (fsingleemulsionfilm){  //simplified configuration, unique sensitive layer for the whole emulsion plate
    TGeoBBox *EmulsionFilm = new TGeoBBox("EmulsionFilm", EmulsionX/2, EmulsionY/2, EmPlateWidth/2);
