@@ -171,14 +171,14 @@ void Target::SetDetectorDimension(Double_t xdim, Double_t ydim, Double_t zdim)
   ZDimension = zdim;
 }
 
-void Target::SetEmulsionParam(Double_t EmTh, Double_t EmX, Double_t EmY, Double_t PBTh, Double_t EPlW,Double_t LeadTh, Double_t AllPW)
+void Target::SetEmulsionParam(Double_t EmTh, Double_t EmX, Double_t EmY, Double_t PBTh, Double_t EPlW,Double_t ECCPassiveTh, Double_t AllPW)
 {
   EmulsionThickness = EmTh;
   EmulsionX = EmX;
   EmulsionY = EmY;
   PlasticBaseThickness = PBTh;
   EmPlateWidth = EPlW;
-  LeadThickness = LeadTh;
+  ECCPassiveThickness = ECCPassiveTh;
   AllPlateWidth = AllPW;
 }
 
