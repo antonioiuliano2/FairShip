@@ -262,7 +262,7 @@ def configure(run,ship_geo):
    NuTauTarget.SetDetectorDimension(ship_geo.NuTauTarget.xdim, ship_geo.NuTauTarget.ydim, ship_geo.NuTauTarget.zdim)
    if hasattr(ship_geo.NuTauTarget,"WallXDim") and hasattr(ship_geo.NuTauTarget,"WallYDim") and hasattr(ship_geo.NuTauTarget,"WallZDim"):
     NuTauTarget.SetTargetWallDimension(ship_geo.NuTauTarget.WallXDim, ship_geo.NuTauTarget.WallYDim, ship_geo.NuTauTarget.WallZDim)
-   NuTauTarget.SetEmulsionParam(ship_geo.NuTauTarget.EmTh, ship_geo.NuTauTarget.EmX, ship_geo.NuTauTarget.EmY, ship_geo.NuTauTarget.PBTh,ship_geo.NuTauTarget.EPlW, ship_geo.NuTauTarget.LeadTh, ship_geo.NuTauTarget.AllPW)
+   NuTauTarget.SetEmulsionParam(ship_geo.NuTauTarget.EmTh, ship_geo.NuTauTarget.EmX, ship_geo.NuTauTarget.EmY, ship_geo.NuTauTarget.PBTh,ship_geo.NuTauTarget.EPlW, ship_geo.NuTauTarget.ECCPassiveTh, ship_geo.NuTauTarget.AllPW)
 ##
    if not hasattr(ship_geo.NuTauTarget,"n_plates"): #for backward compatibility
     ship_geo.NuTauTarget.n_plates = 56
