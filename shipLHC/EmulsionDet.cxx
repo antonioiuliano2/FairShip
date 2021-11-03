@@ -181,6 +181,11 @@ void EmulsionDet::SetTTzdimension(Double_t TTZ)
  TTrackerZ = TTZ;
 }
 
+void EmulsionDet::MergeTopBot(Bool_t SingleEmFilm)
+{
+  fsingleemulsionfilm=SingleEmFilm;
+}
+
 void EmulsionDet::ConstructGeometry()
 {   
 	TGeoVolume *top=gGeoManager->GetTopVolume();       
@@ -264,15 +269,39 @@ void EmulsionDet::ConstructGeometry()
 		volBrick->AddNode(volPassive, n, new TGeoTranslation(0,0,-BrickZ/2+ EmPlateWidth + PassiveThickness/2 + n*AllPlateWidth)); //LEAD
 	}
 
-	TGeoBBox *EmulsionFilm = new TGeoBBox("EmulsionFilm", EmulsionX/2, EmulsionY/2, EmPlateWidth/2);
-	TGeoVolume *volEmulsionFilm = new TGeoVolume("Emulsion",EmulsionFilm,Emufilm); //TOP
-	volEmulsionFilm->SetLineColor(kBlue);
-	LOG(INFO) << "EmulsionDet : Passive option (0: all active, 1: all passive) set to " << fPassiveOption ;
-	if (fPassiveOption == 0) AddSensitiveVolume(volEmulsionFilm);
-	for(Int_t n=0; n<NPlates+1; n++)
-	{
-		volBrick->AddNode(volEmulsionFilm, n, new TGeoTranslation(0,0,-BrickZ/2+ EmPlateWidth/2 + n*AllPlateWidth));
+	if (fsingleemulsionfilm){  //simplified configuration, unique sensitive layer for the whole emulsion plate
+	  TGeoBBox *EmulsionFilm = new TGeoBBox("EmulsionFilm", EmulsionX/2, EmulsionY/2, EmPlateWidth/2);
+	  TGeoVolume *volEmulsionFilm = new TGeoVolume("Emulsion",EmulsionFilm,Emufilm); //TOP
+	  volEmulsionFilm->SetLineColor(kBlue);
+	  LOG(INFO) << "EmulsionDet : Passive option (0: all active, 1: all passive) set to " << fPassiveOption ;
+	  if (fPassiveOption == 0) AddSensitiveVolume(volEmulsionFilm);
+	  for(Int_t n=0; n<NPlates+1; n++)
+	    {
+	      volBrick->AddNode(volEmulsionFilm, n, new TGeoTranslation(0,0,-BrickZ/2+ EmPlateWidth/2 + n*AllPlateWidth));
+	    }
 	}
+	else { //more accurate configuration, two emulsion films divided by a plastic base
+	  TGeoBBox *EmulsionFilm = new TGeoBBox("EmulsionFilm", EmulsionX/2, EmulsionY/2, EmulsionThickness/2);
+	  TGeoVolume *volEmulsionFilm = new TGeoVolume("Emulsion",EmulsionFilm,NEmu); //TOP
+	  TGeoVolume *volEmulsionFilm2 = new TGeoVolume("Emulsion2",EmulsionFilm,NEmu); //BOTTOM
+	  volEmulsionFilm->SetLineColor(kBlue);
+	  volEmulsionFilm2->SetLineColor(kBlue);
+	  
+	  if(fPassiveOption==0)
+	    {
+	      AddSensitiveVolume(volEmulsionFilm);
+	      AddSensitiveVolume(volEmulsionFilm2);
+	    }
+	  TGeoBBox *PlBase = new TGeoBBox("PlBase", EmulsionX/2, EmulsionY/2, PlasticBaseThickness/2);
+	  TGeoVolume *volPlBase = new TGeoVolume("PlasticBase",PlBase,PBase);
+	  volPlBase->SetLineColor(kYellow-4);
+	  for(Int_t n=0; n<NPlates+1; n++)
+	    {
+	      volBrick->AddNode(volEmulsionFilm2, n, new TGeoTranslation(0,0,-BrickZ/2+ EmulsionThickness/2 + n*AllPlateWidth)); //BOTTOM
+	      volBrick->AddNode(volEmulsionFilm, n+10000, new TGeoTranslation(0,0,-BrickZ/2+3*EmulsionThickness/2+PlasticBaseThickness+n*AllPlateWidth)); //TOP
+	      volBrick->AddNode(volPlBase, n, new TGeoTranslation(0,0,-BrickZ/2+EmulsionThickness+PlasticBaseThickness/2+n*AllPlateWidth)); //PLASTIC BASE
+	    }    
+	} //end else
 
 	volBrick->SetVisibility(kTRUE);
 
@@ -343,10 +372,26 @@ Bool_t  EmulsionDet::ProcessHits(FairVolume* vol)
         Double_t ymean = (fPos.Y()+Pos.Y())/2. ;      
         Double_t zmean = (fPos.Z()+Pos.Z())/2. ;     
         
-	
-	AddHit(fTrackID,fVolumeID, TVector3(xmean, ymean,  zmean),
-               TVector3(fMom.Px(), fMom.Py(), fMom.Pz()), fTime, fLength,
-               fELoss, pdgCode);
+	if (fsingleemulsionfilm){ //simplified configuration, unique sensitive layer for the whole emulsion plate
+	  AddHit(fTrackID,fVolumeID, TVector3(xmean, ymean,  zmean),
+		 TVector3(fMom.Px(), fMom.Py(), fMom.Pz()), fTime, fLength,
+		 fELoss, pdgCode);
+	}
+        else{ //more accurate configuration, two emulsion films divided by a plastic base
+	  if (fVolumeID < 10000.) //bottom, using position at the end
+	    {
+	      AddHit(fTrackID,fVolumeID, TVector3(Pos.X(), Pos.Y(), Pos.Z()),
+		     TVector3(fMom.Px(), fMom.Py(), fMom.Pz()), fTime, fLength,
+		     fELoss, pdgCode);
+	    }
+	  
+	  else //top, using position at the start
+	    {
+	      AddHit(fTrackID,fVolumeID, TVector3(fPos.X(), fPos.Y(), fPos.Z()),
+		     TVector3(fMom.Px(), fMom.Py(), fMom.Pz()), fTime, fLength,
+		     fELoss, pdgCode);
+	    }
+	}
 	
         // Increment number of muon det points in TParticle
         ShipStack* stack = (ShipStack*) gMC->GetStack();

@@ -8,7 +8,8 @@ with ConfigRegistry.register_config("basic") as c:
         c.cave = AttrDict(z=0*u.cm)
 
         c.EmulsionDet = AttrDict(z=0*u.cm)
-        c.EmulsionDet.PassiveOption = 1 #0 makes emulsion volumes active, 1 makes all emulsion volumes passive
+        c.EmulsionDet.PassiveOption = 0 #0 makes emulsion volumes active, 1 makes all emulsion volumes passive
+        c.EmulsionDet.SingleEmFilm = False
         c.EmulsionDet.row = 2
         c.EmulsionDet.col = 2
         c.EmulsionDet.wall= 5

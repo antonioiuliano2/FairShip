@@ -41,6 +41,7 @@ void SetEmulsionParam(Double_t EmTh, Double_t EmX, Double_t EmY, Double_t PBTh,D
  void SetCenterZ(Double_t z);
    void SetDisplacement(Double_t x, Double_t y) {ShiftX=x; ShiftY=y;}
   void SetEmulsionPassiveOption(Int_t PassiveOption);
+  void MergeTopBot(Bool_t SingleEmFilm);
     /**      Initialization of the detector is done here    */
     virtual void Initialize();
     
@@ -126,6 +127,7 @@ protected:
     Double_t BrickX;
 
     Int_t fPassiveOption; //passive option 1 passive all emulsions, 0 active all emulsions
+    Bool_t fsingleemulsionfilm; //0 = both top and bottom layers active, separated by plastic base; 1 = only one active layer
 
 
     //TargetTrackers

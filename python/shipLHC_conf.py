@@ -30,6 +30,7 @@ def configure(run,ship_geo,Gfield=''):
  EmulsionDet.SetTTzdimension(ship_geo.EmulsionDet.TTz)
  EmulsionDet.SetDisplacement(ship_geo.EmulsionDet.ShiftX, ship_geo.EmulsionDet.ShiftY)
  EmulsionDet.SetEmulsionPassiveOption(ship_geo.EmulsionDet.PassiveOption)
+ EmulsionDet.MergeTopBot(ship_geo.EmulsionDet.SingleEmFilm)
  detectorList.append(EmulsionDet)
 
  Scifi = ROOT.Scifi("Scifi", ship_geo.Scifi.xdim, ship_geo.Scifi.ydim, ship_geo.Scifi.zdim, ROOT.kTRUE)
