@@ -289,7 +289,7 @@ void EmulsionDet::ConstructGeometry()
 	  
 	  if(fPassiveOption==0)
 	    {
-	      AddSensitiveVolume(volEmulsionFilm);
+	      //AddSensitiveVolume(volEmulsionFilm); //only one of two sensitive
 	      AddSensitiveVolume(volEmulsionFilm2);
 	    }
 	  TGeoBBox *PlBase = new TGeoBBox("PlBase", EmulsionX/2, EmulsionY/2, PlasticBaseThickness/2);
@@ -371,27 +371,10 @@ Bool_t  EmulsionDet::ProcessHits(FairVolume* vol)
         Double_t xmean = (fPos.X()+Pos.X())/2. ;      
         Double_t ymean = (fPos.Y()+Pos.Y())/2. ;      
         Double_t zmean = (fPos.Z()+Pos.Z())/2. ;     
-        
-	if (fsingleemulsionfilm){ //simplified configuration, unique sensitive layer for the whole emulsion plate
-	  AddHit(fTrackID,fVolumeID, TVector3(xmean, ymean,  zmean),
+       
+	AddHit(fTrackID,fVolumeID, TVector3(xmean, ymean,  zmean),
 		 TVector3(fMom.Px(), fMom.Py(), fMom.Pz()), fTime, fLength,
 		 fELoss, pdgCode);
-	}
-        else{ //more accurate configuration, two emulsion films divided by a plastic base
-	  if (fVolumeID < 10000.) //bottom, using position at the end
-	    {
-	      AddHit(fTrackID,fVolumeID, TVector3(Pos.X(), Pos.Y(), Pos.Z()),
-		     TVector3(fMom.Px(), fMom.Py(), fMom.Pz()), fTime, fLength,
-		     fELoss, pdgCode);
-	    }
-	  
-	  else //top, using position at the start
-	    {
-	      AddHit(fTrackID,fVolumeID, TVector3(fPos.X(), fPos.Y(), fPos.Z()),
-		     TVector3(fMom.Px(), fMom.Py(), fMom.Pz()), fTime, fLength,
-		     fELoss, pdgCode);
-	    }
-	}
 	
         // Increment number of muon det points in TParticle
         ShipStack* stack = (ShipStack*) gMC->GetStack();
