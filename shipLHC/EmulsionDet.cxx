@@ -362,7 +362,7 @@ Bool_t  EmulsionDet::ProcessHits(FairVolume* vol)
         fTrackID  = gMC->GetStack()->GetCurrentTrackNumber();
 	gMC->CurrentVolID(fVolumeID);
 	
-	if (fELoss == 0. ) { return kFALSE; }
+	//if (fELoss == 0. ) { return kFALSE; }
         TParticle* p=gMC->GetStack()->GetCurrentTrack();
 	Int_t pdgCode = p->GetPdgCode();
 	
