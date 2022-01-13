@@ -131,7 +131,7 @@ bool MuFilterHit::isVertical(){
 }
 
 bool MuFilterHit::isShort(Int_t i){
-  if (shortSiPM.find(i+1) != shortSiPM.end()) {return kTRUE;}
+  if (i%8==3 || i%8==6) {return kTRUE;}
   else{return kFALSE;}
 }
 
@@ -191,29 +191,72 @@ Float_t MuFilterHit::GetDeltaT(Bool_t mask)
           }
           return dT;
 }
+// -----   Public method Get mean time  -----------------
+Float_t MuFilterHit::GetImpactT(Bool_t mask)
+{
+          Float_t mean[] = {0,0}; 
+          Int_t count[] = {0,0}; 
+          Float_t dT = -999.;
+          Float_t dL;
+          MuFilter* MuFilterDet = dynamic_cast<MuFilter*> (gROOT->GetListOfGlobals()->FindObject("MuFilter"));
+          if (floor(fDetectorID/10000==3)) { 
+             dL = MuFilterDet->GetConfParF("MuFilterDet/DownstreamBarX") / MuFilterDet->GetConfParF("MuFilter/DsPropSpeed");}
+          else if (floor(fDetectorID/10000==2)) { 
+             dL = MuFilterDet->GetConfParF("MuFilterDet/UpstreamBarX") / MuFilterDet->GetConfParF("MuFilter/VandUpPropSpeed");}
+          else { 
+             dL = MuFilterDet->GetConfParF("MuFilterDet/VeoBarX") / MuFilterDet->GetConfParF("MuFilter/VandUpPropSpeed");}
 
-Float_t MuFilterHit::SumOfSignals(char* opt,Bool_t mask)
-{   
-/*    use cases for Veto and US, for DS small/large ignored
-        sum of signals left large SiPM: LL
-        sum of signals left small SiPM: LS
-        sum of signals right large SiPM: RL
-        sum of signals right small SiPM: RS
-*/
-          Float_t theSum = 0;
-/* work in progress          if (strcmp(opt,"LL")){}
           for (unsigned int s=0; s<nSides; ++s){
               for (unsigned int j=0; j<nSiPMs; ++j){
                unsigned int channel = j+s*nSiPMs;
                if (signals[channel]> 0){
                  if (!fMasked[channel] || !mask){
-                    theSum+= signals[channel];
+                    mean[s] += times[channel];
+                    count[s] += 1;
                     }
                 }
               }
           }
-*/
+          if (count[0]>0 && count[1]>0) {
+                dT = (mean[0]/count[0] + mean[1]/count[1])/2.*6.25 -  dL/2.; // TDC to ns = 6.25
+          }
+          return dT;
+}
 
+std::map<TString,Float_t> MuFilterHit::SumOfSignals(Bool_t mask)
+{   
+/*    use cases, for Veto and DS small/large ignored
+        sum of signals left large SiPM:    LL
+        sum of signals right large SiPM: RL
+        sum of signals left small SiPM:    LS
+        sum of signals right small SiPM: RS
+        sum of signals left and right:  
+*/
+          Float_t theSumL     = 0;
+          Float_t theSumR    = 0;
+          Float_t theSumLS   = 0;
+          Float_t theSumRS  = 0;
+          for (unsigned int s=0; s<nSides; ++s){
+              for (unsigned int j=0; j<nSiPMs; ++j){
+               unsigned int channel = j+s*nSiPMs;
+               if (signals[channel]> 0){
+                 if (!fMasked[channel] || !mask){
+                    if (s==0 and !isShort(j)){theSumL+= signals[channel];}
+                    if (s==0 and isShort(j)){theSumLS+= signals[channel];}
+                    if (s==1 and !isShort(j)){theSumR+= signals[channel];}
+                    if (s==1 and isShort(j)){theSumRS+= signals[channel];}
+                    }
+                }
+              }
+          }
+         std::map<TString,Float_t> sumSignals;
+         sumSignals["SumL"]=theSumL;
+         sumSignals["SumR"]=theSumR;
+         sumSignals["SumLS"]=theSumLS;
+         sumSignals["SumRS"]=theSumRS;
+         sumSignals["Sum"]=theSumL+theSumR;
+         sumSignals["SumS"]=theSumLS+theSumRS;
+         return sumSignals;
 }
 
 // -----   Public method Print   -------------------------------------------
