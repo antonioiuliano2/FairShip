@@ -15,9 +15,10 @@ saturationLimit     = 0.95
 from argparse import ArgumentParser
 parser = ArgumentParser()
 parser.add_argument("-r", "--runNumber", dest="runNumber", help="run number", type=int,required=True)
+parser.add_argument("-P", "--partition", dest="partition", help="partition of data", type=int,required=False,default=-1)
 parser.add_argument("-p", "--path", dest="path", help="path to raw data", default='/mnt/hgfs/VMgate/')
 parser.add_argument("-n", "--nEvents", dest="nEvents", help="number of events to process", type=int,default=-1)
-parser.add_argument("-t", "--nStart", dest="nStart", help="first event to process", type=int,default=-1)
+parser.add_argument("-t", "--nStart", dest="nStart", help="first event to process", type=int,default=0)
 parser.add_argument("-d", "--Debug", dest="debug", help="debug", default=False)
 parser.add_argument("-s",dest="stop", help="do not start running", default=False)
 parser.add_argument("-zM",dest="minMuHits", help="noise suppresion min MuFi hits", default=-1, type=int)
@@ -30,7 +31,14 @@ withGeoFile = False
 options = parser.parse_args()
 runNr   = str(options.runNumber).zfill(6)
 path      = options.path+'run_'+ runNr+'/'
-outFile = "sndsw_raw_"+runNr
+
+if options.partition < 0:
+  inFile   = 'data.root'
+  outFile = "sndsw_raw_"+runNr+'.root'
+else:
+  part = str(options.partition).zfill(4)
+  inFile   = 'data_'+part+'.root'
+  outFile = "sndsw_raw_"+runNr+'-'+part+'.root'
 
 local = False
 
@@ -42,7 +50,7 @@ if options.FairTask_convRaw:
   X=''
   server = os.environ['EOSSHIP']
   if not local: X = server
-  fIN = ROOT.TFile.Open(X+path+'data_0000.root')
+  fIN = ROOT.TFile.Open(X+path+inFile)
   # Pass raw data file as input object
   ioman.RegisterInputObject("rawData", fIN)
 
@@ -63,14 +71,22 @@ if options.FairTask_convRaw:
   ioman.RegisterInputObject('withGeoFile', ROOT.TObjString(str(withGeoFile)))
 
   # Set output
-  outfile = ROOT.FairRootFileSink(outFile+'_CPP.root')
+  outfile = ROOT.FairRootFileSink(outFile.replace('.root','_CPP.root'))
   run.SetSink(outfile)
 
   run.AddTask(ROOT.ConvRawData())
   # Don't use FairRoot's default event header settings
   run.SetEventHeaderPersistence(False)
+  xrdb = ROOT.FairRuntimeDb.instance()
+  xrdb.getContainer("FairBaseParSet").setStatic()
+  xrdb.getContainer("FairGeoParSet").setStatic()
   run.Init()
   run.Run(options.nStart, nEvents)
+  # overwrite cbmsim 
+  F = outfile.GetRootFile()
+  T = F.Get("cbmsim")
+  T.SetName('rawConv')
+  T.Write()
 
 else:
   timerCSV = ROOT.TStopwatch()
@@ -215,7 +231,7 @@ else:
   def time_calibration(board_id,tofpet_id,channel,tac,t_coarse,t_fine,TDC=0):
       par = qdc_cal[board_id][tofpet_id][channel][tac][TDC]
       x = t_fine
-      ftdc = (-par['b']-ROOT.TMath.Sqrt(par['b']**2-4*par['a']*(par['c']-x)))/(2*par['a'])+par['d']
+      ftdc = (-par['b']-ROOT.TMath.Sqrt(par['b']**2-4*par['a']*(par['c']-x)))/(2*par['a'])
       timestamp = t_coarse+ftdc
       return timestamp
     
@@ -223,7 +239,7 @@ else:
       par  = qdc_cal[board_id][tofpet_id][channel][tac]
       parT = par[TDC]
       x    = t_fine
-      ftdc = (-parT['b']-ROOT.TMath.Sqrt(parT['b']**2-4*parT['a']*(parT['c']-x)))/2*parT['a'] #   Ettore 28/01/2022 +par['d']
+      ftdc = (-parT['b']-ROOT.TMath.Sqrt(parT['b']**2-4*parT['a']*(parT['c']-x)))/(2*parT['a']) #   Ettore 28/01/2022 +parT['d']
       timestamp = t_coarse + ftdc
       tf = timestamp - t_coarse
       x = v_coarse - tf
@@ -331,7 +347,7 @@ else:
   # reading hits and converting to event information
   X=''
   if not local: X = server
-  f0=ROOT.TFile.Open(X+path+'data_0000.root')
+  f0=ROOT.TFile.Open(X+path+inFile)
   if options.nEvents<0:  nEvent = f0.event.GetEntries()
   else: nEvent = min(options.nEvents,f0.event.GetEntries())
   print('converting ',nEvent,' events ',' of run',options.runNumber)
@@ -342,7 +358,7 @@ else:
           if name.find('board')!=0: continue
           boards[name]=f0.Get(name)
 
-  fSink = ROOT.FairRootFileSink(outFile+'.root')
+  fSink = ROOT.FairRootFileSink(outFile)
   sTree     = ROOT.TTree('rawConv','raw data converted')
   ROOT.gDirectory.pwd()
   header  = ROOT.FairEventHeader()
