@@ -106,11 +106,14 @@ if path.find('eos')>0:
         else: break
 else:
 # check for partitions
-       dirlist  = os.listdir(options.path+"run_"+runNr)
-       for x in dirlist:
-        data = "raw-"+ str(partitions).zfill(4)
-        if x.find(data)>0:
-            partitions+=1
+       data = "sndsw_raw_"+runNr+".root"
+       dirlist = os.listdir(options.path)
+       if  not data in dirlist:
+          dirlist  = os.listdir(options.path+"run_"+runNr)
+          for x in dirlist:
+            data = "raw-"+ str(partitions).zfill(4)
+            if x.find(data)>0:
+               partitions+=1
 
 import SndlhcGeo
 if (options.geoFile).find('../')<0: geo = SndlhcGeo.GeoInterface(path+options.geoFile)
@@ -332,7 +335,8 @@ xrdb.getContainer("FairBaseParSet").setStatic()
 xrdb.getContainer("FairGeoParSet").setStatic()
 
 run.Init()
-eventTree = ioman.GetInTree()
+if partitions>0:  eventTree = ioman.GetInChain()
+else:                 eventTree = ioman.GetInTree()
 # backward compatbility for early converted events
 eventTree.GetEvent(0)
 if eventTree.GetBranch('Digi_MuFilterHit'): eventTree.Digi_MuFilterHits = eventTree.Digi_MuFilterHit
@@ -377,29 +381,39 @@ def Scifi_hitMaps(Nev=options.nEvents):
  scifi = geo.modules['Scifi']
  A=ROOT.TVector3()
  B=ROOT.TVector3()
+ 
  for s in range(10):
     ut.bookHist(h,'posX_'+str(s),'x',2000,-100.,100.)
     ut.bookHist(h,'posY_'+str(s),'y',2000,-100.,100.)
+    if s%2==1: ut.bookHist(h,'mult_'+str(s),'mult vertical station '+str(s//2+1),100,-0.5,99.5)
+    else: ut.bookHist(h,'mult_'+str(s),'mult horizontal station '+str(s//2+1),100,-0.5,99.5)
  for mat in range(30):
     ut.bookHist(h,'mat_'+str(mat),'hit map / mat',512,-0.5,511.5)
     ut.bookHist(h,'sig_'+str(mat),'signal / mat',150,0.0,150.)
+    ut.bookHist(h,'tdc_'+str(mat),'tdc / mat',100,0.0,4.)
  N=-1
  if Nev < 0 : Nev = eventTree.GetEntries()
  for event in eventTree:
     N+=1
     if N%options.heartBeat == 0: print('event ',N,' ',time.ctime())
     if N>Nev: break
+    mult = [0]*10
     for aHit in event.Digi_ScifiHits:
         if not aHit.isValid(): continue
         X =  Scifi_xPos(aHit.GetDetectorID())
         rc = h['mat_'+str(X[0]*3+X[1])].Fill(X[2])
         rc  = h['sig_'+str(X[0]*3+X[1])].Fill(aHit.GetSignal(0))
+        rc  = h['tdc_'+str(X[0]*3+X[1])].Fill(aHit.GetTime(0))
         scifi.GetSiPMPosition(aHit.GetDetectorID(),A,B)
         if aHit.isVertical(): rc = h['posX_'+str(X[0])].Fill(A[0])
         else:                     rc = h['posY_'+str(X[0])].Fill(A[1])
+        mult[X[0]]+=1
+    for s in range(10):
+       rc = h['mult_'+str(s)].Fill(mult[s])
 
  ut.bookCanvas(h,'hitmaps',' ',1024,768,6,5)
  ut.bookCanvas(h,'signal',' ',1024,768,6,5)
+ ut.bookCanvas(h,'tdc',' ',1024,768,6,5)
  for mat in range(30):
     tc = h['hitmaps'].cd(mat+1)
     A = h['mat_'+str(mat)].GetSumOfWeights()/512.
@@ -407,8 +421,24 @@ def Scifi_hitMaps(Nev=options.nEvents):
     h['mat_'+str(mat)].Draw()
     tc = h['signal'].cd(mat+1)
     h['sig_'+str(mat)].Draw()
+    tc = h['tdc'].cd(mat+1)
+    h['tdc_'+str(mat)].Draw()
 
- for canvas in ['hitmaps','signal']:
+ ut.bookCanvas(h,'positions',' ',2048,768,5,2)
+ ut.bookCanvas(h,'mult',' ',2048,768,5,2)
+ for s in range(5):
+    tc = h['positions'].cd(s+1)
+    h['posY_'+str(2*s)].Draw()
+    tc = h['positions'].cd(s+6)
+    h['posX_'+str(2*s+1)].Draw()
+    tc = h['mult'].cd(s+1)
+    tc.SetLogy(1)
+    h['mult_'+str(2*s)].Draw()
+    tc = h['mult'].cd(s+6)
+    tc.SetLogy(1)
+    h['mult_'+str(2*s+1)].Draw()
+
+ for canvas in ['hitmaps','signal','mult']:
       h[canvas].Update()
       myPrint(h[canvas],"Scifi-"+canvas)
 
@@ -783,11 +813,9 @@ def smallVsLargeSiPMs(Nev=-1):
       myPrint(h['cor'+side+str(l)],'QDCcor'+side+str(l))
 
 
-def makeIndiviualPlots(run=options.runNumber):
+def makeIndividualPlots(run=options.runNumber):
    ut.bookCanvas(h,'dummy','',900,800,1,1)
    if not "run"+str(run) in os.listdir(): os.system("mkdir run"+str(run))
-   tc=h['dummy'].cd()
-   tc.SetLogz(1)
    for l in range(5):
        for side in ['L','R']:
            f=ROOT.TFile('QDCcor'+side+str(l)+'-run'+str(run)+'.root')
@@ -800,6 +828,10 @@ def makeIndiviualPlots(run=options.runNumber):
                  tmp = hname.split('_')
                  bar = tmp[1][2]
                  pname = 'corUS'+str(l)+'-'+str(bar)+side+'_'+tmp[0][3:]
+                 aHist.SetDirectory(ROOT.gROOT)
+                 ROOT.gROOT.cd()
+                 tc=h['dummy'].cd()
+                 tc.SetLogz(1)
                  aHist.Draw('colz')
                  tc.Update()
                  stats = aHist.FindObject('stats')
@@ -808,8 +840,10 @@ def makeIndiviualPlots(run=options.runNumber):
                  stats.SetY1NDC(0.75)
                  stats.SetX2NDC(0.35)
                  stats.SetY2NDC(0.88)
+                 h['dummy'].Update()
                  tc.Print('run'+str(run)+'/'+pname+'.png')
-   os.system("convert -delay 120 -loop 0 run"+str(run)+"/corUS*.png corUS-"+str(run)+".gif")
+                 tc.Print('run'+str(run)+'/'+pname+'.root')
+   #os.system("convert -delay 120 -loop 0 run"+str(run)+"/corUS*.png corUS-"+str(run)+".gif")
 
 def makeLogVersion(run):
    for l in range(5):
@@ -825,34 +859,77 @@ def makeLogVersion(run):
 
 
 def eventTime(Nev=options.nEvents):
- Tprev = -1
  if Nev < 0 : Nev = eventTree.GetEntries()
  ut.bookHist(h,'Etime','delta event time; dt [s]',100,0.0,1.)
  ut.bookHist(h,'EtimeZ','delta event time; dt [ns]',1000,0.0,10000.)
- ut.bookCanvas(h,'T',' ',1024,2*768,1,2)
- eventTree.GetEvent(0)
- t0 =  eventTree.EventHeader.GetEventTime()/160.E6
- eventTree.GetEvent(Nev-1)
- tmax = eventTree.EventHeader.GetEventTime()/160.E6
- ut.bookHist(h,'time','elapsed time; t [s]',1000,0,tmax-t0)
+ ut.bookCanvas(h,'T',' ',1024,3*768,1,3)
+ 
+# need to make extra gymnastiques since absolute time is missing
+ Ntinter = []
+ N = 0
+ for f in eventTree.GetListOfFiles():
+    dN =  f.GetEntries()
+    rc = eventTree.GetEvent(N)
+    t0 = eventTree.EventHeader.GetEventTime()/freq
+    rc = eventTree.GetEvent(N+dN-1)
+    tmax = eventTree.EventHeader.GetEventTime()/freq
+    Ntinter.append([t0,tmax])
+    N+=dN
+
+ Tduration = 0
+ for x in Ntinter:
+    Tduration += (x[1]-x[0])
+ tsep = 3600.
+ t0 =  Ntinter[0][0]
+ tmax = Tduration+(tsep*(len(Ntinter)-1)) 
+ nbins = 1000
+ yunit = "events per %5.0F s"%( (tmax-t0)/nbins)
+ if 'time' in h: h.pop('time').Delete()
+ ut.bookHist(h,'time','elapsed time; t [s];'+yunit,nbins,0,tmax-t0)
 
  N=-1
+ Tprev  = 0
+ Toffset = 0
  for event in eventTree:
     N+=1
     if N>Nev: break
-    T = event.EventHeader.GetEventTime()
-    dT = 0
-    if Tprev >0: dT = T-Tprev
+    T   = event.EventHeader.GetEventTime()
+    dT = T-Tprev
+    if N>0 and dT >0:
+           rc = h['Etime'].Fill( dT/freq )
+           rc = h['EtimeZ'].Fill( dT*1E9/freq )
+           rc = h['time'].Fill( (T+Toffset)/freq-t0 )
+    elif dT<0: 
+           Toffset+=tsep*freq+Tprev
+           rc = h['time'].Fill( (T+Toffset)/freq-t0 )
+    else: rc = h['time'].Fill( T/freq-t0 ) # very first event
     Tprev = T
-    rc = h['Etime'].Fill(dT/freq)
-    rc = h['EtimeZ'].Fill(dT*1E9/160.E6)
-    rc = h['time'].Fill( (T/freq-t0))
+
  tc = h['T'].cd(1)
+ h['time'].SetStats(0)
+ h['time'].Draw()
+ tend = 0
+ for x in Ntinter:
+    tend += x[1]+tsep/2.
+    m = str(int(tend))
+    h['line'+m]=ROOT.TLine(tend,0,tend,h['time'].GetMaximum())
+    h['line'+m].SetLineColor(ROOT.kRed)
+    h['line'+m].Draw()
+    tend += tsep/2.
+ tc = h['T'].cd(2)
  tc.SetLogy(1)
  h['EtimeZ'].Draw()
- tc.Update()
- tc = h['T'].cd(2)
- h['time'].Draw()
+ rc = h['EtimeZ'].Fit('expo','S','',0.,250.)
+ h['T'].Update()
+ stats = h['EtimeZ'].FindObject('stats')
+ stats.SetOptFit(1111111)
+ tc = h['T'].cd(3)
+ tc.SetLogy(1)
+ h['Etime'].Draw()
+ rc = h['Etime'].Fit('expo','S')
+ h['T'].Update()
+ stats = h['Etime'].FindObject('stats')
+ stats.SetOptFit(1111111)
  h['T'].Update()
  myPrint(h['T'],'time')
 
@@ -1174,7 +1251,7 @@ def Mufi_Efficiency(Nev=options.nEvents,optionTrack=options.trackType,NbinsRes=1
  if Nev < 0 : Nev = eventTree.GetEntries()
  N=0
  for event in eventTree:
-    rc = ioman.GetInTree().GetEvent(N)
+    rc = eventTree.GetEvent(N)
     N+=1
     if N>Nev: break
     if optionTrack=='DS': theTrack = DS_track()
@@ -1193,13 +1270,12 @@ def Mufi_Efficiency(Nev=options.nEvents,optionTrack=options.trackType,NbinsRes=1
     rc = h['NdofvsNMeas'].Fill(fitStatus.getNdf(),theTrack.getNumPointsWithMeasurement())
 # map clusters to hit keys
     DetID2Key={}
-    if event.FindBranch("ScifiClusters") or hasattr(eventTree,'ScifiClusters'):
+    if eventTree.FindBranch("ScifiClusters") or hasattr(eventTree,'ScifiClusters'):
      for aCluster in event.ScifiClusters:
         for nHit in range(event.Digi_ScifiHits.GetEntries()):
             if event.Digi_ScifiHits[nHit].GetDetectorID()==aCluster.GetFirst():
                DetID2Key[aCluster.GetFirst()] = nHit
-
-    for aCluster in event.ScifiClusters:
+     for aCluster in event.ScifiClusters:
          detID = aCluster.GetFirst()
          s = int(detID/1000000)
          p= int(detID/100000)%10
@@ -3171,7 +3247,7 @@ def Scifi_residuals(Nev=options.nEvents,NbinsRes=100,xmin=-2000.,alignPar=False)
        if p.find('mean')==0:
           for n in range(globalPos[p].GetN()):
              rc = globalPos[p].GetPoint(n,S,M)
-             print("station %i: offset %s =  %5.2F"%(S.value,p[4:5],M.value))
+             print("station %i: offset %s =  %5.2F um"%(S.value,p[4:5],M.value))
              s = int(S.value*10)
              if p[4:5] == "V": s+=1
              alignPar["Scifi/LocD"+str(s)] = M.value
@@ -3184,7 +3260,7 @@ def Scifi_residuals(Nev=options.nEvents,NbinsRes=100,xmin=-2000.,alignPar=False)
        if p.find('mean')==0:
           for n in range(h['globalPosM'][p].GetN()):
              rc = h['globalPosM'][p].GetPoint(n,S,M)
-             print("station %i: offset %s =  %5.2F"%(S.value,p[4:5],M.value))
+             print("station %i: offset %s =  %5.2F um"%(S.value,p[4:5],M.value))
              s = int(S.value*10)
              if p[4:5] == "V": s+=1
              alignPar["Scifi/LocM"+str(s)] = M.value
@@ -3353,6 +3429,7 @@ def minimizeAlignScifi(first=True,level=1,minuit=False):
        #gMinuit.FixParameter(28)
        #gMinuit.FixParameter(29)
 
+    h['iter'] = 0
     strat = array('d',[0])
     gMinuit.mnexcm("SET STR",strat,1,ierflg) # 0 faster, 2 more reliable
     gMinuit.mnexcm("SIMPLEX",vstart,npar,ierflg)
@@ -3368,6 +3445,7 @@ def minimizeAlignScifi(first=True,level=1,minuit=False):
 
 def FCN(npar, gin, f, par, iflag):
 #calculate chisquare
+   h['iter']+=1
    chisq  = 0
    alignPar = {}
    for p in range(h['npar']):
@@ -3385,7 +3463,7 @@ def FCN(npar, gin, f, par, iflag):
    X = Scifi_residuals(Nev=h['Nevents'],NbinsRes=100,xmin=h['xmin'],alignPar=alignPar)
    for name in X:
        chisq += abs(X[name])
-   print('chisq=',chisq,iflag)
+   print('chisq=',chisq,iflag,h['iter'])
    f.value = int(chisq)
    h['chisq'].append(chisq)
    return
@@ -3507,6 +3585,17 @@ def plotsForCollabMeeting():
    myPrint(h['TUS'],'dTvsX_US')
    myPrint(h['TDS'],'dTvsX_DS')
 #
+def testReversChannelMapping():
+  import reverseMapping
+  R = reverseMapping.reversChannelMapping()
+  p = options.path.replace("convertedData","raw_data")+"/data/run_"+runNr
+  R.Init(p)
+  for event in eventTree:
+     for aHit in eventTree.Digi_MuFilterHits:
+        allChannels = map2Dict(aHit,'GetAllSignals')
+        for c in allChannels:
+           print(R.daqChannel(aHit,c))
+
 if options.command:
     tmp = options.command.split(';')
 
