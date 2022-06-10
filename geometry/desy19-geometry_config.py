@@ -21,7 +21,7 @@ with ConfigRegistry.register_config("basic") as c:
     c.EmuTarget.EmY = 9.9 * u.cm
 
     if cRun == 7:
-        c.EmuTarget.PasSlabTh = 0.09 *u.cm
+        c.EmuTarget.PasSlabTh = 0.1 *u.cm #now tungsten is 1 mm (SNDLHC)
     else:
         c.EmuTarget.PasSlabTh = 0.1 * u.cm #passive slab in ECC (lead for July 2018 measurement, molybdenum/tungsten for SHiP target replica)
     
@@ -37,7 +37,7 @@ with ConfigRegistry.register_config("basic") as c:
     
     c.EmuTarget.BrZ = 54 * c.EmuTarget.AllPW + c.EmuTarget.EPlW +c.EmuTarget.BrPackZ
     
-    c.EmuTarget.NPlates = [56, 42, 28, 14, 28, 28, 18, 14] #number of passive slabs for each DESY19 RUN
+    c.EmuTarget.NPlates = [56, 42, 28, 14, 28, 28, 4, 14] #number of passive slabs for each DESY19 RUN
     c.EmuTarget.NPlates_second = 29 #used only in RUN8
     
     c.EmuTarget.ECCdistance = 10 #distance between the two bricks

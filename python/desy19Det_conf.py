@@ -47,7 +47,7 @@ def configure(run,ship_geo,Gfield=''):
  SciFi.SetBoxDimensions(ship_geo.SciFi.DX,ship_geo.SciFi.DY,ship_geo.SciFi.DZ)
  SciFi.SetStationDimensions(ship_geo.SciFi.StatDX,ship_geo.SciFi.StatDY,ship_geo.SciFi.StatDZ)
  SciFi.SetStationPositions(ship_geo.SciFi.zpos1,ship_geo.SciFi.zpos2)
- detectorList.append(SciFi)
+ #detectorList.append(SciFi) #studying cosmics in a brick of emulsion only
 
  #detectorList.append(MuonTagger)
  for x in detectorList:

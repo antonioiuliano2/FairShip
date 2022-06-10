@@ -1,7 +1,7 @@
 //
 //  EmuDESYTarget.cxx 
 //  Target file: 6  different run configurations can be done, setting the number of the variable nrun.
-//
+//  Ehi!
 //
 //
 
@@ -236,10 +236,10 @@ void EmuDESYTarget::ConstructGeometry()
 	 zpoint = zpoint + fNPlates *AllPlateWidth + EmPlateWidth;   
 
     if (fNRun < 8){
-     TGeoBBox *PassiveBrick = new TGeoBBox("PassiveBrick", EmulsionX/2, EmulsionY/2, fPassiveDZ/2);
-     TGeoVolume *volPassiveBrick = new TGeoVolume("volPassiveBrick",PassiveBrick,lead);
-     volPassiveBrick->SetLineColor(kGray);
-     top->AddNode(volPassiveBrick,1,new TGeoTranslation(0,0,zEmuTargetPosition+ fECCdistance + fPassiveDZ/2.));
+     //TGeoBBox *PassiveBrick = new TGeoBBox("PassiveBrick", EmulsionX/2, EmulsionY/2, fPassiveDZ/2);
+     //TGeoVolume *volPassiveBrick = new TGeoVolume("volPassiveBrick",PassiveBrick,lead);
+     //volPassiveBrick->SetLineColor(kGray);
+     //top->AddNode(volPassiveBrick,1,new TGeoTranslation(0,0,zEmuTargetPosition+ fECCdistance + fPassiveDZ/2.)); //commenting passive block for cosmics study
     }
     else{ //RUN8 case, also second volume active         
     	    //adding emulsions
