@@ -359,7 +359,7 @@ class EventLoop(ROOT.FairTask):
      p = ROOT.gEve.GetCurrentEvent().FindChild(mcHits[x].GetName())
      if p: 
       p.SetPickable(ROOT.kTRUE)
-      p.SetTitle(p.__repr__())
+      #p.SetTitle(p.__repr__())
  def rotateView(self,hor=0,ver=0):
   v   = ROOT.gEve.GetDefaultGLViewer()
   cam  = v.CurrentCamera()
