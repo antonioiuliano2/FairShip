@@ -206,7 +206,14 @@ void EmuDESYTarget::ConstructGeometry()
     volTarget->SetLineColor(kCyan);
     volTarget->SetTransparency(1);
       
-    top->AddNode(volTarget,1,new TGeoTranslation(0,0,zEmuTargetPosition-TargetZ/2)); //Box ends at origin
+    const Double_t targetxrotation = 90.; //rotation around x
+    TGeoTranslation *trans = new TGeoTranslation("trans",0,0,zEmuTargetPosition-TargetZ/2);
+    TGeoRotation *rot = new TGeoRotation("rot");
+    rot->RotateX(targetxrotation);
+    TGeoCombiTrans *combi = new TGeoCombiTrans(*trans,*rot);     
+    combi->RegisterYourself();
+
+    top->AddNode(volTarget,1,combi); //Box ends at origin
 
     TGeoVolume *volPasLead = NULL;
     
