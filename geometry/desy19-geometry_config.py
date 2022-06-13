@@ -37,7 +37,7 @@ with ConfigRegistry.register_config("basic") as c:
     
     c.EmuTarget.BrZ = 54 * c.EmuTarget.AllPW + c.EmuTarget.EPlW +c.EmuTarget.BrPackZ
     
-    c.EmuTarget.NPlates = [56, 42, 28, 14, 28, 28, 4, 14] #number of passive slabs for each DESY19 RUN
+    c.EmuTarget.NPlates = [56, 42, 28, 14, 28, 28, 3, 14] #number of passive slabs for each DESY19 RUN
     c.EmuTarget.NPlates_second = 29 #used only in RUN8
     
     c.EmuTarget.ECCdistance = 10 #distance between the two bricks

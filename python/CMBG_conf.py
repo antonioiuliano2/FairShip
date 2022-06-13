@@ -13,11 +13,11 @@ def configure(CMBG, ship_geo):
 
     # CMBG production area
     CMBG.xdist = 12 # production area size [cm]
-    CMBG.zdist = 1.0 # production area size [cm]
+    CMBG.zdist = 0.5 # production area size [cm]
     # DetectorBox
-    CMBG.yBox = 12 # box top layer [cm]
-    CMBG.xBox = 12 # box side layer [cm]
-    CMBG.zBox = 0.6 # box length [cm]
+    CMBG.yBox = 10.0 # box top layer [cm]
+    CMBG.xBox = 12.5 # box side layer [cm]
+    CMBG.zBox = 0.43 # box length [cm]
     CMBG.z0 = zmiddle # relative coordinate system [cm] (Z_muonstation + (Z_veto - 2 * Z_Tub1))/2,... Z_veto <0 ! ->z0 = 716, sets the middle of the production area
     #setup
     CMBG.n_EVENTS = 400000; # #simulated events per "spill"
