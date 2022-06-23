@@ -34,6 +34,8 @@ def configure(run,ship_geo,Gfield=''):
  
  EmuTarget.SetNPlates(ship_geo.EmuTarget.NPlates[ship_geo.EmuTarget.cRun-1],ship_geo.EmuTarget.NPlates_second)
  EmuTarget.SetNRun(ship_geo.EmuTarget.cRun)
+ 
+ EmuTarget.SetTargetXRotation(ship_geo.EmuTarget.TargetXRotation)
 
  EmuTarget.SetECCDistance(ship_geo.EmuTarget.ECCdistance)
  EmuTarget.SetPassiveDZ(ship_geo.EmuTarget.PassiveDZ)

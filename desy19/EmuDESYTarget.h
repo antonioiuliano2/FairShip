@@ -41,6 +41,8 @@ public:
     void SetNPlates(Int_t NPlates, Int_t NPlates_second);
     void SetNRun(Int_t NRun);
     
+    void SetTargetXRotation(Double_t TargetXRotation);
+    
     /**      Initialization of the detector is done here    */
     virtual void Initialize();
     
@@ -127,6 +129,8 @@ protected:
     Int_t fNRun;
     Int_t fNPlates;
     Int_t fNPlates_second;
+    
+    Double_t fTargetXRotation; //set rotation of target around x
 };
 
 #endif

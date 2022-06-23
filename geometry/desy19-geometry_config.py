@@ -50,6 +50,8 @@ with ConfigRegistry.register_config("basic") as c:
     c.EmuTarget.TX = c.EmuTarget.EmX
     c.EmuTarget.TY = c.EmuTarget.EmY
     c.EmuTarget.TZ = c.EmuTarget.NPlates[cRun-1] * c.EmuTarget.AllPW +  c.EmuTarget.EPlW
+    
+    c.EmuTarget.TargetXRotation = 90 #rotation around x (initially vertical)
 
 
     ##SCIFIs

@@ -142,6 +142,10 @@ void EmuDESYTarget::SetNRun(Int_t NRun){
   fNRun = NRun;
 }
 
+void EmuDESYTarget::SetTargetXRotation(Double_t TargetXRotation){
+  fTargetXRotation = TargetXRotation;
+}
+
 
 // -----   Private method InitMedium
 Int_t EmuDESYTarget::InitMedium(const char* name)
@@ -206,10 +210,9 @@ void EmuDESYTarget::ConstructGeometry()
     volTarget->SetLineColor(kCyan);
     volTarget->SetTransparency(1);
       
-    const Double_t targetxrotation = 90.; //rotation around x
     TGeoTranslation *trans = new TGeoTranslation("trans",0,0,zEmuTargetPosition-TargetZ/2);
     TGeoRotation *rot = new TGeoRotation("rot");
-    rot->RotateX(targetxrotation);
+    rot->RotateX(fTargetXRotation);//rotation around x
     TGeoCombiTrans *combi = new TGeoCombiTrans(*trans,*rot);     
     combi->RegisterYourself();
 
