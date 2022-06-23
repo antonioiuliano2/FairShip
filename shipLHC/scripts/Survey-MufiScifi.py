@@ -1,6 +1,7 @@
 #python -i MufiScifi.py -r 46 -p /eos/experiment/sndlhc/testbeam/MuFilter/TB_data_commissioning/sndsw/ -g geofile_sndlhc_H6.root
 
 import ROOT,os,subprocess
+import atexit
 import time
 import ctypes
 from array import array
@@ -49,7 +50,10 @@ void fixRoot(std::vector<genfit::TrackPoint*>& points, std::vector<int>& d,std::
     }
 }
 """)
-
+def pyExit():
+       print("Make suicide until solution found for freezing")
+       os.system('kill '+str(os.getpid()))
+atexit.register(pyExit)
 
 Tkey  = ROOT.std.vector('TString')()
 Ikey   = ROOT.std.vector('int')()
@@ -91,7 +95,8 @@ options = parser.parse_args()
 runNr   = str(options.runNumber).zfill(6)
 path     = options.path
 partitions = 0
-if path.find('eos')>0:
+if options.runNumber > 0: 
+ if path.find('eos')>0:
     path     = os.environ['EOSSHIP']+options.path
     dirlist  = str( subprocess.check_output("xrdfs "+os.environ['EOSSHIP']+" ls "+options.path,shell=True) )
 # single file, before Feb'22
@@ -104,7 +109,7 @@ if path.find('eos')>0:
         if dirlist.find(data)>0:
             partitions+=1
         else: break
-else:
+ else:
 # check for partitions
        data = "sndsw_raw_"+runNr+".root"
        dirlist = os.listdir(options.path)
@@ -137,7 +142,7 @@ def systemAndOrientation(s,plane):
 systemAndChannels     = {1:[8,0],2:[6,2],3:[1,0]}
 sdict                     = {1:'Veto',2:'US',3:'DS'}
 
-freq      = 160.E6
+freq      = 160.316E6
 TDC2ns = 1E9/freq
 
 # some helper functions
@@ -301,9 +306,10 @@ if options.runNumber>0:
                        eventChain.Add(path+'run_'+runNr+'/sndsw_raw-'+str(p).zfill(4)+'.root')
 
 else:
-# for MC data
+# for MC data and other files
               f=ROOT.TFile.Open(options.fname)
-              eventChain = f.cbmsim
+              if f.Get('rawConv'):   eventChain = f.rawConv
+              else:                        eventChain = f.cbmsim
 eventChain.GetEvent(0)
 
 run      = ROOT.FairRunAna()
@@ -325,7 +331,7 @@ if houghTransform:
    run.AddTask(muon_reco_task)
 else:
    import SndlhcTracking
-   trackTask = SndlhcTracking.Tracking() 
+   trackTask = SndlhcTracking.Tracking()
    trackTask.SetName('simpleTracking')
    run.AddTask(trackTask)
 
@@ -340,6 +346,9 @@ else:                 eventTree = ioman.GetInTree()
 # backward compatbility for early converted events
 eventTree.GetEvent(0)
 if eventTree.GetBranch('Digi_MuFilterHit'): eventTree.Digi_MuFilterHits = eventTree.Digi_MuFilterHit
+
+ioman = ROOT.FairRootManager.Instance()
+OT = ioman.GetSink().GetOutTree()
 
 # wait for user action 
 
@@ -389,8 +398,8 @@ def Scifi_hitMaps(Nev=options.nEvents):
     else: ut.bookHist(h,'mult_'+str(s),'mult horizontal station '+str(s//2+1),100,-0.5,99.5)
  for mat in range(30):
     ut.bookHist(h,'mat_'+str(mat),'hit map / mat',512,-0.5,511.5)
-    ut.bookHist(h,'sig_'+str(mat),'signal / mat',150,0.0,150.)
-    ut.bookHist(h,'tdc_'+str(mat),'tdc / mat',100,0.0,4.)
+    ut.bookHist(h,'sig_'+str(mat),'signal / mat',200,-50.0,150.)
+    ut.bookHist(h,'tdc_'+str(mat),'tdc / mat',200,-1.,4.)
  N=-1
  if Nev < 0 : Nev = eventTree.GetEntries()
  for event in eventTree:
@@ -845,6 +854,16 @@ def makeIndividualPlots(run=options.runNumber):
                  tc.Print('run'+str(run)+'/'+pname+'.root')
    #os.system("convert -delay 120 -loop 0 run"+str(run)+"/corUS*.png corUS-"+str(run)+".gif")
 
+def makeQDCcorHTML(run=options.runNumber):
+   F = ROOT.TFile.Open('QDCcorrelations-run'+str(run)+'.root','recreate')
+   for l in range(5):
+       for side in ['L','R']:
+           key = side+str(l)
+           f=ROOT.TFile('QDCcor'+key+'-run'+str(run)+'.root')
+           tcanv = f.Get('cor'+key).Clone()
+           F.mkdir(key)
+           F.cd(key)
+           tc.Write()
 def makeLogVersion(run):
    for l in range(5):
       for side in ['L','R']:
@@ -1045,69 +1064,14 @@ def beamSpot():
 
          aTrack.Delete()
 
-def DS_track():
-# check for low occupancy and enough hits in DS stations
-    stations = {}
-    for s in systemAndPlanes:
-       for plane in range(systemAndPlanes[s]): 
-          stations[s*10+plane] = {}
-    k=-1
-    for aHit in eventTree.Digi_MuFilterHits:
-         k+=1
-         if not aHit.isValid(): continue
-         s = aHit.GetDetectorID()//10000
-         p = (aHit.GetDetectorID()//1000)%10
-         bar = aHit.GetDetectorID()%1000
-         plane = s*10+p
-         if s==3:
-           if bar<60 or p==3: plane = s*10+2*p
-           else:  plane = s*10+2*p+1
-         stations[plane][k] = aHit
-    success = True
-    for p in range(30,34):
-         if len(stations[p])>2 or len(stations[p])<1: success = False
-    if not success: return -1
- # build trackCandidate
-    hitlist = {}
-    for p in range(30,34):
-         k = list(stations[p].keys())[0]
-         hitlist[k] = stations[p][k]
-    theTrack = trackTask.fitTrack(hitlist)
-    return theTrack
-
-def Scifi_track(nPlanes = 8, nClusters = 11):
-# check for low occupancy and enough hits in Scifi
-    clusters = trackTask.scifiCluster()
-    stations = {}
-    for s in range(1,6):
-       for o in range(2):
-          stations[s*10+o] = []
-    for cl in clusters:
-         detID = cl.GetFirst()
-         s  = detID//1000000
-         o = (detID//100000)%10
-         stations[s*10+o].append(detID)
-    nclusters = 0
-    check = {}
-    for s in range(1,6):
-       for o in range(2):
-            if len(stations[s*10+o]) > 0: check[s*10+o]=1
-            nclusters+=len(stations[s*10+o])
-    if len(check)<nPlanes or nclusters > nClusters: return -1
-# build trackCandidate
-    hitlist = {}
-    for k in range(len(clusters)):
-           hitlist[k] = clusters[k]
-    theTrack = trackTask.fitTrack(hitlist)
-    eventTree.ScifiClusters = clusters
-    return theTrack
-
 def USshower(Nev=options.nEvents):
+    zUS0 = zPos['MuFilter'][20] -  10
+    zUS4 = zPos['MuFilter'][24] + 10
     for x in ['','-small']:
-       ut.bookHist(h,'shower'+x,'energy vs z',200,0.,10000.,20,-250.,-100.)
-       ut.bookHist(h,'showerX'+x,'energy vs z',200,0.,10000.,20,-250.,-100.)
+       ut.bookHist(h,'shower'+x,'energy vs z',200,0.,10000.,20,zUS0,zUS4)
+       ut.bookHist(h,'showerX'+x,'energy vs z',200,0.,10000.,20,zUS0,zUS4)
        ut.bookHist(h,'wshower'+x,'z weighted energy ',100,-300.,0.)
-       ut.bookHist(h,'zyshower'+x,'y vs z weighted energy ',20,-250.,-100.,11,-0.5,10.5)
+       ut.bookHist(h,'zyshower'+x,'y vs z weighted energy ',20,zUS0,zUS4,11,-0.5,10.5)
     for p in range(systemAndPlanes[2]):
        ut.bookHist(h,'SvsL'+str(p),'small vs large Sipms plane' +str(p)+';large   [QCD]; small   [QCD] ',100,0.1,250.,100,0.1,100.)
     if Nev < 0 : Nev = eventTree.GetEntries()
@@ -1183,7 +1147,7 @@ def USshower(Nev=options.nEvents):
         h['SvsL'+str(p)].Draw('colz')
     myPrint(h['CorLS'],'QCDsmallCSQCDlarge')
 
-def Mufi_Efficiency(Nev=options.nEvents,optionTrack=options.trackType,NbinsRes=100,X=10.):
+def Mufi_Efficiency(Nev=options.nEvents,optionTrack=options.trackType,withReco='True',NbinsRes=100,X=10.):
  
  projs = {1:'Y',0:'X'}
  for s in range(1,6):
@@ -1204,8 +1168,8 @@ def Mufi_Efficiency(Nev=options.nEvents,optionTrack=options.trackType,NbinsRes=1
         for proj in ['X','Y']:
           xmin = -X*NbinsRes/100. * scale
           xmax = -xmin
-          ut.bookHist(h,'res'+proj+'_'+sdict[s]+side+str(s*10+l),'residual  '+proj+str(s*10+l),NbinsRes,xmin,xmax,40,-20.,100.)
-          ut.bookHist(h,'gres'+proj+'_'+sdict[s]+side+str(s*10+l),'residual  '+proj+str(s*10+l),NbinsRes,xmin,xmax,40,-20.,100.)
+          ut.bookHist(h,'res'+proj+'_'+sdict[s]+side+str(s*10+l),'residual  '+proj+str(s*10+l),NbinsRes,xmin,xmax,100,-100.,100.)
+          ut.bookHist(h,'gres'+proj+'_'+sdict[s]+side+str(s*10+l),'residual  '+proj+str(s*10+l),NbinsRes,xmin,xmax,100,-100.,100.)
           if side=='S': continue
           if side=='':
              if s==1: ut.bookHist(h,'resBar'+proj+'_'+sdict[s]+str(s*10+l),'residual '+proj+str(s*10+l),NbinsRes,xmin,xmax,7,-0.5,6.5)
@@ -1254,28 +1218,39 @@ def Mufi_Efficiency(Nev=options.nEvents,optionTrack=options.trackType,NbinsRes=1
     rc = eventTree.GetEvent(N)
     N+=1
     if N>Nev: break
-    if optionTrack=='DS': theTrack = DS_track()
-    else                                   : theTrack = Scifi_track()
-    if not hasattr(theTrack,"getFittedState"): continue
+    if withReco:
+       if optionTrack=='DS': rc = trackTask.ExecuteTask("DS")
+       else                         : rc = trackTask.ExecuteTask("Scifi")
+    if not OT.Reco_MuonTracks.GetEntries()==1: continue
+    theTrack = OT.Reco_MuonTracks[0]
     if not theTrack.getFitStatus().isFitConverged() and optionTrack!='DS':   # for H8 where only two planes / proj were avaiable
-                 theTrack.Delete()
                  continue
-# now extrapolate to US and check for hits.
+# only take horizontal tracks
     state = theTrack.getFittedState(0)
     pos   = state.getPos()
     mom = state.getMom()
+    slopeX= mom.X()/mom.Z()
+    slopeY= mom.Y()/mom.Z()
+    if abs(mom.x()/mom.z())>0.25: continue   # 4cm distance, 250mrad = 1cm
+    if abs(mom.y()/mom.z())>0.1: continue
+
+# now extrapolate to US and check for hits.
     fitStatus = theTrack.getFitStatus()
     chi2Ndof = fitStatus.getChi2()/(fitStatus.getNdf()+1E-10)
     rc = h['tracksChi2Ndof'].Fill(chi2Ndof,fitStatus.getNdf())
     rc = h['NdofvsNMeas'].Fill(fitStatus.getNdf(),theTrack.getNumPointsWithMeasurement())
 # map clusters to hit keys
     DetID2Key={}
-    if eventTree.FindBranch("ScifiClusters") or hasattr(eventTree,'ScifiClusters'):
-     for aCluster in event.ScifiClusters:
+    if hasattr(event,"Cluster_Scifi"):
+               clusters = event.Cluster_Scifi
+    else:
+               clusters = OT.Cluster_Scifi
+
+    for aCluster in clusters:
         for nHit in range(event.Digi_ScifiHits.GetEntries()):
             if event.Digi_ScifiHits[nHit].GetDetectorID()==aCluster.GetFirst():
                DetID2Key[aCluster.GetFirst()] = nHit
-     for aCluster in event.ScifiClusters:
+    for aCluster in clusters:
          detID = aCluster.GetFirst()
          s = int(detID/1000000)
          p= int(detID/100000)%10
@@ -1321,7 +1296,7 @@ def Mufi_Efficiency(Nev=options.nEvents,optionTrack=options.trackType,NbinsRes=1
          L0 = X.Mag()/v
          # need to correct for signal propagation along fibre
          clkey  = W.getHitId()
-         aCl = event.ScifiClusters[clkey]
+         aCl = event.Cluster_Scifi[clkey]
          T0track = aCl.GetTime() - L0
          TZero    = aCl.GetTime()
          Z0track = pos[2]
@@ -1333,7 +1308,7 @@ def Mufi_Efficiency(Nev=options.nEvents,optionTrack=options.trackType,NbinsRes=1
             W = M.getRawMeasurement()
             detID = W.getDetId()
             clkey = W.getHitId()
-            aCl = event.ScifiClusters[clkey]
+            aCl = event.Cluster_Scifi[clkey]
             aHit = event.Digi_ScifiHits[ DetID2Key[detID] ]
             geo.modules['Scifi'].GetSiPMPosition(detID,A,B)
             if aHit.isVertical(): X = B-posM
@@ -1360,6 +1335,12 @@ def Mufi_Efficiency(Nev=options.nEvents,optionTrack=options.trackType,NbinsRes=1
 
     muHits = {}
     for s in systemAndPlanes:
+       for p in range(systemAndPlanes[s]):
+          if s == 3:
+             muHits[s*10+2*p]=[]
+             muHits[s*10+2*p+1]=[]
+          else:
+             muHits[s*10+p]=[]
        for p in range(systemAndPlanes[s]): muHits[s*10+p]=[]
     for aHit in event.Digi_MuFilterHits:
          if not aHit.isValid(): continue
@@ -1369,7 +1350,7 @@ def Mufi_Efficiency(Nev=options.nEvents,optionTrack=options.trackType,NbinsRes=1
          plane = s*10+p
          if s==3:
            if aHit.isVertical(): plane = s*10+2*p+1
-           else:                         plane = s*10+2*p
+           else:                     plane = s*10+2*p
          muHits[plane].append(aHit)
 
 # get T0 from VETO
@@ -2756,7 +2737,7 @@ def TimeCalibrationNtuple(Nev=options.nEvents,nStart=0):
             M = theTrack.getPointWithMeasurement(nM)
             W = M.getRawMeasurement()
             clkey  = W.getHitId()
-            aCl = eventTree.ScifiClusters[clkey]
+            aCl = eventTree.Cluster_Scifi[clkey]
             fTime[0] = aCl.GetTime()
             for nh in range(aCl.GetN()):
                  detID = aCl.GetFirst() + nh
@@ -3080,11 +3061,33 @@ def Scifi_slopes(Nev=options.nEvents):
              for s2 in range(s1+1,5):
                 if len(proj[p][s2]) !=1: continue
 
-def mergeSignals(hstore):
+def mergeScifiSignals(hstore):
   ut.bookHist(hstore,'signalAll','signal all mat',150,0.0,150.)
   for mat in range(30):
     hstore['signalAll'].Add(hstore['sig_'+str(mat)])
   hstore['signalAll'].Scale(1./hstore['signalAll'].GetSumOfWeights())
+
+def mergeMuFilterSignals(hstore,tag='signalT',system='',fname=None):
+     if fname: F=ROOT.TFile(fname)
+     ROOT.gROOT.cd()
+     if system == '': s = [1,2,3]
+     else:                 s = [system]
+     for x in s:
+        for side in ['L','R']:
+          hname = tag+side+'_'+sdict[x]
+          xname = tag+side+'_'+sdict[x]+str(x*10)+'_'+'0'
+          if F: 
+               hstore[xname] = F.Get(xname).Clone(xname)
+          hstore[hname] = hstore[tag+side+'_'+sdict[x]+str(x*10)+'_'+'0'].Clone(hname)
+          hstore[hname].Reset()
+          hstore[hname].SetTitle('QDC '+sdict[x]+'; QDC [a.u.]; d [cm]')
+          for l in range(systemAndPlanes[x]):
+            for bar in range(systemAndBars[x]):
+               xname = tag+side+'_'+sdict[x]+str(x*10+l)+'_'+str(bar)
+               if F:
+                   hstore[xname] = F.Get(xname).Clone(xname)
+               hstore[hname].Add(hstore[xname])
+          print('summary histogram:',hname)
 
 def signalZoom(smax):
   for mat in range(30):
@@ -3133,16 +3136,22 @@ def Scifi_residuals(Nev=options.nEvents,NbinsRes=100,xmin=-2000.,alignPar=False)
              Scifi.SetConfPar(x,alignPar[x])
     for event in eventTree:
        N+=1
+       if N%100000==0: print('now at event ',N)
        if N>Nev: break
-# select events with clusters in each plane
-       theTrack = Scifi_track(nPlanes = 10, nClusters = 11)
-       if not hasattr(theTrack,"getFittedState"): continue
-       theTrack.Delete()
+
+       if not hasattr(event,"Cluster_Scifi"):
+               trackTask.scifiCluster()
+               clusters = OT.Cluster_Scifi
+       else:
+               clusters = event.Cluster_Scifi
+
        sortedClusters={}
-       for aCl in eventTree.ScifiClusters:
+       for aCl in clusters:
            so = aCl.GetFirst()//100000
            if not so in sortedClusters: sortedClusters[so]=[]
            sortedClusters[so].append(aCl)
+# select events with clusters in each plane
+       if len(sortedClusters)<10: continue
 
        for s in range(1,6):
 # build trackCandidate
@@ -3189,13 +3198,33 @@ def Scifi_residuals(Nev=options.nEvents,NbinsRes=100,xmin=-2000.,alignPar=False)
                 rc = h['track_Scifi'+str(testPlane)].Fill(xEx,yEx)
                 for aCl in sortedClusters[testPlane]:
                    aCl.GetPosition(A,B)
-                   if o==1 :   D = (A[0]+B[0])/2. - xEx
-                   else:         D = (A[1]+B[1])/2. - yEx
+# apply rotation 
+                   nav.cd('/cave_1/Detector_0')
+                   gA = array('d',[A[0],A[1],A[2]])
+                   gB = array('d',[B[0],B[1],B[2]])
+                   lA =  array('d',[0,0,0])
+                   lB =  array('d',[0,0,0])
+                   nav.MasterToLocal(gA,lA)
+                   nav.MasterToLocal(gB,lB)
+                   xCl = (lA[0]+lB[0])/2.
+                   yCl = (lA[1]+lB[1])/2.
+                   zCl = (lA[2]+lB[2])/2.
+                   gpos =  array('d',[pos[0],pos[1],pos[2]])
+                   gmom =  array('d',[mom[0],mom[1],mom[2]])
+                   lpos =  array('d',[0,0,0])
+                   lmom =  array('d',[0,0,0])
+                   nav.MasterToLocal(gpos,lpos)
+                   nav.MasterToLocal(gmom,lmom)
+                   lam = (zCl-lpos[2])/lmom[2]
+                   lxEx = lpos[0]+lam*lmom[0]
+                   lyEx = lpos[1]+lam*lmom[1]
+                   if o==1 :   D = xCl - lxEx
+                   else:       D = yCl - lyEx
                    detID = aCl.GetFirst()
                    channel = detID%1000 + ((detID%10000)//1000)*128 + (detID%100000//10000)*512
                    rc = h['res'+projs[o]+'_Scifi'+str(testPlane)].Fill(D/u.um)
-                   rc = h['resX'+projs[o]+'_Scifi'+str(testPlane)].Fill(D/u.um,xEx)
-                   rc = h['resY'+projs[o]+'_Scifi'+str(testPlane)].Fill(D/u.um,yEx)
+                   rc = h['resX'+projs[o]+'_Scifi'+str(testPlane)].Fill(D/u.um,lxEx)
+                   rc = h['resY'+projs[o]+'_Scifi'+str(testPlane)].Fill(D/u.um,lyEx)
                    rc = h['resC'+projs[o]+'_Scifi'+str(testPlane)].Fill(D/u.um,channel)
 
             theTrack.Delete()
@@ -3292,7 +3321,7 @@ def printScifi_residuals(tag='v0'):
     h['trackSlopes'].Draw('colz')
     myPrint(h['beamSpot'],tag+'-beamSpot')
 
-def minimizeAlignScifi(first=True,level=1,minuit=False):
+def minimizeAlignScifi(first=True,level=1,migrad=False):
     h['chisq'] = []
     npar = 30
     vstart  = array('d',[0]*npar)
@@ -3433,7 +3462,7 @@ def minimizeAlignScifi(first=True,level=1,minuit=False):
     strat = array('d',[0])
     gMinuit.mnexcm("SET STR",strat,1,ierflg) # 0 faster, 2 more reliable
     gMinuit.mnexcm("SIMPLEX",vstart,npar,ierflg)
-    if minuit: gMinuit.mnexcm("MIGRAD",vstart,npar,ierflg)
+    if migrad: gMinuit.mnexcm("MIGRAD",vstart,npar,ierflg)
 
     h['gChisq']=ROOT.TGraph()
     for n in range(len(h['chisq'])):
@@ -3585,10 +3614,10 @@ def plotsForCollabMeeting():
    myPrint(h['TUS'],'dTvsX_US')
    myPrint(h['TDS'],'dTvsX_DS')
 #
-def testReversChannelMapping():
+def testReversChannelMapping(p=None):
   import reverseMapping
   R = reverseMapping.reversChannelMapping()
-  p = options.path.replace("convertedData","raw_data")+"/data/run_"+runNr
+  if not p: p = options.path.replace("convertedData","raw_data")+"/data/run_"+runNr
   R.Init(p)
   for event in eventTree:
      for aHit in eventTree.Digi_MuFilterHits:
@@ -3611,8 +3640,6 @@ if options.command:
     print('executing ' + command + "for run ",options.runNumber)
     eval(command)
     print('finished ' + command + "for run ",options.runNumber)
-    print("make suicid")
-    os.system('kill '+str(os.getpid()))
 else:
     print ('waiting for command. Enter help() for more infomation')
 
