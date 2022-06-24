@@ -25,5 +25,5 @@ def configure(CMBG, ship_geo):
     CMBG.zBox = ROOT.TMath.Abs(TargetSize.Z()) # box length [cm]
     
     #setup
-    CMBG.n_EVENTS = 1; # keeping original normalization (square meters per second)
+    CMBG.n_EVENTS = 323698; #horizontal configuration: 149.86m-2s-1 *1e-4 * 12.5cm2 * 10.0cm2 * 48h * 3600
     CMBG.minE = 0.5 #low energy limit for the Low-energy simulation [GeV]

@@ -114,7 +114,7 @@ Bool_t CosmicsGenerator::Init(Bool_t largeMom){
 	}
 	weight_flux = FluxIntegral*xdist*zdist/n_EVENTS/10000;
 	nInside = 0;  nTest = 0; weighttest = 0; // book keeping
-	y = 1900; //all muons start 19m over beam axis
+	y = 0.31; //all muons start 1 mm above the target
 	for (; nInside < 10*n_EVENTS;){
 		GenerateDynamics();
 	}
