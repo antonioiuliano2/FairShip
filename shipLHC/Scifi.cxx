@@ -229,8 +229,8 @@ void Scifi::ConstructGeometry()
   PlasticBarVolume->SetLineColor(kGray-4);
   PlasticBarVolume->SetVisibility(1);
 
-  PlasticAirVolume->AddNode(PlasticBarVolume, 0, new TGeoTranslation(- fXDimension/2 + fXPlastBar/2, 0, 0));  //bars are placed || to y
-  PlasticAirVolume->AddNode(PlasticBarVolume, 1, new TGeoTranslation(+ fXDimension/2 - fXPlastBar/2, 0, 0));
+  //PlasticAirVolume->AddNode(PlasticBarVolume, 0, new TGeoTranslation(- fXDimension/2 + fXPlastBar/2, 0, 0));  //bars are placed || to y
+  //PlasticAirVolume->AddNode(PlasticBarVolume, 1, new TGeoTranslation(+ fXDimension/2 - fXPlastBar/2, 0, 0));
 
   //Fiber volume that contains the scintillating core and double cladding
   TGeoVolumeAssembly *FiberVolume = new TGeoVolumeAssembly("FiberVolume");
@@ -239,9 +239,9 @@ void Scifi::ConstructGeometry()
   TGeoVolume *Clad1Vol = gGeoManager->MakeTube("Clad1Vol", PMMA, fClad1_rmin, fClad1_rmax, fFiberLength/2); 
   TGeoVolume *Clad2Vol = gGeoManager->MakeTube("Clad2Vol", PMMA2, fClad2_rmin, fClad2_rmax, fFiberLength/2); 
   
-  FiberVolume->AddNode(ScintCoreVol, 0);
-  FiberVolume->AddNode(Clad1Vol, 0);
-  FiberVolume->AddNode(Clad2Vol, 0);
+  //FiberVolume->AddNode(ScintCoreVol, 0);
+  //FiberVolume->AddNode(Clad1Vol, 0);
+  //FiberVolume->AddNode(Clad2Vol, 0);
   FiberVolume->SetVisDaughters(kFALSE);
 
   //Add SciFi fiber as sensitive unit
@@ -264,7 +264,7 @@ void Scifi::ConstructGeometry()
   int dummy_station = 1;
   int dummy_mat = 1;
   //Adding horizontal fibers
-  for (int irow = 0; irow < fNFibers_z; irow++){
+  /*for (int irow = 0; irow < fNFibers_z; irow++){
     zPosM =  -fZScifiMat/2 + fClad2_rmax/2 + irow*fVertPitch;
     if (irow%2 == 0){
       for (int ifiber = 0; ifiber < fNFibers_Srow; ifiber++){
@@ -277,7 +277,8 @@ void Scifi::ConstructGeometry()
       }
     }
   }
-  
+  */
+  /*
   //Adding vertical fibers
   for (int irow = 0; irow < fNFibers_z; irow++){
     zPosM =  -fZScifiMat/2 + fClad2_rmax/2 + irow*fVertPitch;
@@ -292,6 +293,7 @@ void Scifi::ConstructGeometry()
       }
     }
   }
+  */
 
   // DetID is of the form: 
   // first digit - station number
@@ -334,6 +336,7 @@ void Scifi::ConstructGeometry()
       //Placing mats along X
       ScifiVertPlaneVol->AddNode(VertMatVolume, 1e6*(istation+1) + 1e5 + 1e4*(imat + 1), new TGeoTranslation((imat-1)*(fWidthScifiMat+fGapScifiMat), 0, 0));
     }
+    
   }
 
 }
