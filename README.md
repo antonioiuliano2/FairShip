@@ -23,6 +23,8 @@ the [FairShip](https://github.com/ShipSoft/FairShip) framework developed by the 
 based on [FairRoot](https://github.com/FairRootGroup/FairRoot/), making use of the automatic python bindings provided by
 PyROOT.
 
+This my private fork of the master repository branch (Antonio Iuliano)
+
 ## Contact and communication
 
 If you have questions or problems, please feel free to contact the 
