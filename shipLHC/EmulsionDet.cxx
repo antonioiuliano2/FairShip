@@ -451,4 +451,31 @@ EmulsionDetPoint* EmulsionDet::AddHit(Int_t trackID,Int_t detID,
     return new(clref[size]) EmulsionDetPoint(trackID,detID, pos, mom,
 					time, length, eLoss, pdgCode,Lpos,Lmom);
 }
+
+void EmulsionDet::GetPosition(Int_t id, const Double_t* localpos, Double_t* globalpos){
+	//from emulsion micron to sndsw cm and from corner to center (our scanning takes 0,0 in a corner)
+	Double_t centerpos[3];
+	centerpos[0] = localpos[0]*1e-4 - 9.6;
+	centerpos[1] = localpos[1]*1e-4 - 9.6;
+	centerpos[2] = localpos[2]*1e-4;
+
+	//get full path
+	TString pathtoplate = PathBrickID(id); 
+	TGeoNavigator* nav = gGeoManager->GetCurrentNavigator();
+	//going there
+  	nav->cd(pathtoplate.Data());
+	//returning position to master
+	nav->LocalToMaster(centerpos, globalpos);
+}
+
+void EmulsionDet::GetAngles(Int_t id, const Double_t* localang, Double_t* globalang){
+
+	//get full path
+	TString pathtoplate = PathBrickID(id); 
+	TGeoNavigator* nav = gGeoManager->GetCurrentNavigator();
+	//going there
+  	nav->cd(pathtoplate.Data());
+	//returning position to master
+	nav->LocalToMasterVect(localang, globalang);
+}
 ClassImp(EmulsionDet)
