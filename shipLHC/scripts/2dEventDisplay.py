@@ -1,8 +1,22 @@
-import ROOT,os
+import ROOT
+import os,sys,subprocess,atexit
 import rootUtils as ut
 from array import array
 import shipunit as u
 import SndlhcMuonReco
+import json
+import time
+from XRootD import client
+
+from datetime import datetime
+from pathlib import Path
+
+def pyExit():
+       "unfortunately need as bypassing an issue related to use xrootd"
+       os.system('kill '+str(os.getpid()))
+atexit.register(pyExit)
+
+
 A,B = ROOT.TVector3(),ROOT.TVector3()
 freq      =  160.316E6
 
@@ -14,6 +28,7 @@ parser.add_argument("-p", "--path", dest="path", help="run number",required=Fals
 parser.add_argument("-f", "--inputFile", dest="inputFile", help="input file MC",default="",required=False)
 parser.add_argument("-g", "--geoFile", dest="geoFile", help="geofile", required=True)
 parser.add_argument("-P", "--partition", dest="partition", help="partition of data", type=int,required=False,default=-1)
+parser.add_argument("--server", dest="server", help="xrootd server",default=os.environ["EOSSHIP"])
 
 parser.add_argument("-H", "--houghTransform", dest="houghTransform", help="do not use hough transform for track reco", action='store_false',default=True)
 parser.add_argument("-t", "--tolerance", dest="tolerance",  type=float, help="How far away from Hough line hits assigned to the muon can be. In cm.", default=0.)
@@ -91,8 +106,27 @@ if options.houghTransform:
 
 nav = ROOT.gGeoManager.GetCurrentNavigator()
 
+startTimeOfRun = {}
+def getStartTime(runNumber):
+      if runNumber in startTimeOfRun : return startTimeOfRun[runNumber]
+      runDir = "/eos/experiment/sndlhc/raw_data/commissioning/TI18/data/run_"+str(runNumber).zfill(6)
+      jname = "run_timestamps.json"
+      dirlist  = str( subprocess.check_output("xrdfs "+options.server+" ls "+runDir,shell=True) ) 
+      if not jname in dirlist: return False
+      with client.File() as f:
+               f.open(options.server+runDir+"/run_timestamps.json")
+               status, jsonStr = f.read()
+               f.close()
+      date = json.loads(jsonStr)
+      time_str = date['start_time'].replace('Z','')
+      time_obj = time.strptime(time_str, '%Y-%m-%dT%H:%M:%S')
+      startTimeOfRun[runNumber] = time.mktime(time_obj)
+      return startTimeOfRun[runNumber]
+
+
 Nlimit = 4
 onlyScifi = False
+
 def goodEvent(event):
 # can be replaced by any user selection
            stations = {'Scifi':{},'Mufi':{}}
@@ -240,7 +274,7 @@ def loopEvents(start=0,save=False,goodEvents=False,withTrack=-1,nTracks=0,minSip
                    if qdc < 0 and qdc > -900:  h[F][systems[system]][1]+=1
                    elif not qdc<0:   
                        h[F][systems[system]][0]+=1
-                       #h[F][systems[system]][2+side]+=qdc
+                       h[F][systems[system]][2+side]+=qdc
     h['hitCollectionY']['Scifi'][1].SetMarkerColor(ROOT.kBlue+2)
     h['hitCollectionX']['Scifi'][1].SetMarkerColor(ROOT.kBlue+2)
     k = 1
@@ -564,7 +598,7 @@ def emptyNodes():
          except:
             notFilled = 1
 
-def drawInfo(pad, k, run, event, time):
+def drawInfo(pad, k, run, event, timestamp):
    drawLogo = True
    drawText = True
    if drawLogo:
@@ -580,7 +614,14 @@ def drawInfo(pad, k, run, event, time):
       pad.cd(k)
 
    if drawText:
-      padText = ROOT.TPad("info","info",0.19,0.1,0.4,0.3)
+      runNumber = eventTree.EventHeader.GetRunId()
+      timestamp_start = getStartTime(runNumber)
+      if  timestamp_start:
+           TDC2ns = 6.23768   #conversion factor from 160MHz clock to ns
+           timestamp_s = timestamp * TDC2ns * 1E-9
+           timestamp_event = int(timestamp_start + timestamp_s)
+           time_event = datetime.fromtimestamp(timestamp_event)
+      padText = ROOT.TPad("info","info",0.19,0.1,0.6,0.3)
       padText.SetFillStyle(4000)
       padText.Draw()
       padText.cd()
@@ -590,6 +631,6 @@ def drawInfo(pad, k, run, event, time):
       textInfo.SetTextSize(.15)
       textInfo.DrawLatex(0, 0.6, 'SND@LHC Experiment, CERN')
       textInfo.DrawLatex(0, 0.4, 'Run / Event: '+str(run)+' / '+str(event))
-      #textInfo.DrawLatex(0, 0.2, 'Time Stamp: {} a.u.'.format(time))
-      #waiting for more informative time estimate
+      if timestamp_start:
+           textInfo.DrawLatex(0, 0.2, 'Time (GMT): {}'.format(time_event))
       pad.cd(k)

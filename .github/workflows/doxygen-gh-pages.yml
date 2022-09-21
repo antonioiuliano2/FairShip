@@ -1,16 +1,27 @@
+<<<<<<< HEAD
 name: Doxygen GitHub Pages Deploy Action
+=======
+#name: Doxygen GitHub Pages Deploy Action
+>>>>>>> origin/master
 
 on:
   push:
     branches:
+<<<<<<< HEAD
       - sndsw_master
+=======
+      - master
+>>>>>>> origin/master
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+<<<<<<< HEAD
     
+=======
+>>>>>>> origin/master
       - name: Install Graphviz
         run: sudo apt-get install graphviz -y
         shell: bash

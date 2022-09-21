@@ -3,6 +3,24 @@ from array import array
 import shipunit as u
 A,B = ROOT.TVector3(),ROOT.TVector3()
 
+ROOT.gInterpreter.Declare("""
+#include <KalmanFitterInfo.h>
+#include <Track.h>
+#include <MeasuredStateOnPlane.h>
+#include <stddef.h>     
+
+const genfit::MeasuredStateOnPlane& getFittedState(genfit::Track* theTrack, int nM){
+      try{
+        return theTrack->getFittedState(nM);
+      }
+      catch(genfit::Exception& e){
+        std::cerr<<"Exception "<< e.what() <<std::endl;
+        const genfit::MeasuredStateOnPlane* state(NULL);
+        return *state;
+      }
+}
+""")
+
 class Tracking(ROOT.FairTask):
  " Tracking "
  def Init(self,online=False):
@@ -18,6 +36,7 @@ class Tracking(ROOT.FairTask):
 
    # internal storage of clusters
    self.clusScifi   = ROOT.TObjArray(100)
+   self.DetID2Key = {}
    self.clusMufi   = ROOT.TObjArray(100)
    
    self.fitter = ROOT.genfit.KalmanFitter()
@@ -28,6 +47,7 @@ class Tracking(ROOT.FairTask):
    self.sigmaScifi_spatial = 2*150.*u.um
    self.sigmaMufiUS_spatial = 2.*u.cm
    self.sigmaMufiDS_spatial = 0.3*u.cm
+   self.scifi_vsignal = 15.*u.cm/u.ns
    self.Debug = False
    self.ioman = ROOT.FairRootManager.Instance()
    self.sink = self.ioman.GetSink()
@@ -165,6 +185,7 @@ class Tracking(ROOT.FairTask):
 
  def scifiCluster(self):
        clusters = []
+       self.DetID2Key.clear()
        hitDict = {}
        for k in range(self.event.Digi_ScifiHits.GetEntries()):
             d = self.event.Digi_ScifiHits[k]
@@ -202,7 +223,12 @@ class Tracking(ROOT.FairTask):
                             clusters.append(aCluster)
                    cprev = c
        self.clusScifi.Delete()            
-       for c in clusters:  self.clusScifi.Add(c)
+       for c in clusters:  
+            self.clusScifi.Add(c)
+# map clusters to hit keys
+            for nHit in range(self.event.Digi_ScifiHits.GetEntries()):
+              if self.event.Digi_ScifiHits[nHit].GetDetectorID()==c.GetFirst():
+                 self.DetID2Key[c.GetFirst()] = nHit
 
  def dsCluster(self):
        clusters = []
@@ -364,3 +390,49 @@ class Tracking(ROOT.FairTask):
             detID = rawM.getDetId()
             print(detID,"weights",info.getWeights()[0],info.getWeights()[1],fitStatus.getNdf())
     return theTrack
+
+ def trackDir(self,theTrack):
+      if theTrack.GetUniqueID()>1: return False # for the moment, only the scifi is time calibrated
+      fitStatus   = theTrack.getFitStatus()
+      if not fitStatus.isFitConverged() : return [100,-100]
+      state = ROOT.getFittedState(theTrack,0)
+      pos = state.getPos()
+# start with first measurement
+      M = theTrack.getPointWithMeasurement(0)
+      W      = M.getRawMeasurement()
+      detID = W.getDetId()
+      aHit   = self.event.Digi_ScifiHits[ self.DetID2Key[detID] ]
+      self.scifiDet.GetSiPMPosition(detID,A,B)
+      X = B-pos
+      L0 = X.Mag()/self.scifi_vsignal
+      # need to correct for signal propagation along fibre
+      clkey  = W.getHitId()
+      aCl = self.clusScifi[clkey]
+      T0track = aCl.GetTime() - L0
+      TZero    = aCl.GetTime()
+      Z0track = pos[2]
+      self.Tline = ROOT.TGraph()
+      for nM in range(theTrack.getNumPointsWithMeasurement()):
+            state = ROOT.getFittedState(theTrack,nM)
+            if not state: continue
+            posM   = state.getPos()
+            M = theTrack.getPointWithMeasurement(nM)
+            W = M.getRawMeasurement()
+            detID = W.getDetId()
+            clkey = W.getHitId()
+            aCl = self.clusScifi[clkey]
+            aHit = self.event.Digi_ScifiHits[ self.DetID2Key[detID] ]
+            self.scifiDet.GetSiPMPosition(detID,A,B)
+            if aHit.isVertical(): X = B-posM
+            else: X = A-posM
+            L = X.Mag()/self.scifi_vsignal
+         # need to correct for signal propagation along fibre
+            corTime = self.scifiDet.GetCorrectedTime(detID, aCl.GetTime(), 0)
+            dT = corTime - L - T0track - (posM[2] -Z0track)/u.speedOfLight
+            dZ = posM[2] - Z0track
+            self.Tline.AddPoint(dZ,dT)
+      rc = self.Tline.Fit('pol1','SQ')
+      fitResult =  rc.Get()
+      slope = fitResult.Parameter(1)
+      return [slope,slope/(fitResult.ParError(1)+1E-13)]
+

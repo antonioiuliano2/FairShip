@@ -65,6 +65,9 @@ class Monitoring():
    def __init__(self,options,FairTasks):
         self.options = options
         self.EventNumber = -1
+        self.TStart = -1
+        self.TEnd   = -1
+
 # MuFilter mapping of planes and bars 
         self.systemAndPlanes  = {1:2,2:5,3:7}
         self.systemAndBars     = {1:7,2:10,3:60}
@@ -114,6 +117,8 @@ class Monitoring():
             self.converter.Init(options)
             self.options.online = self.converter
             self.eventTree = options.online.fSink.GetOutTree()
+            self.Nkeys = 38   # need to find a way to get this number automatically
+            if self.converter.newFormat: self.Nkeys = 1
             for t in self.FairTasks:
                T = self.FairTasks[t]
                self.converter.run.AddTask(T)
@@ -157,6 +162,14 @@ class Monitoring():
                        eventChain.Add(path+'run_'+self.runNr+'/'+p)
 
             rc = eventChain.GetEvent(0)
+            self.TStart = eventChain.EventHeader.GetEventTime()
+            if options.nEvents <0:
+               rc = eventChain.GetEvent(eventChain.GetEntries()-1)
+            else:
+               rc = eventChain.GetEvent(options.nEvents-1)
+            self.TEnd = eventChain.EventHeader.GetEventTime()
+            rc = eventChain.GetEvent(0)
+
 # start FairRunAna
             self.run  = ROOT.FairRunAna()
             ioman = ROOT.FairRootManager.Instance()
@@ -187,13 +200,12 @@ class Monitoring():
                self.Reco_MuonTracks = self.trackTask.fittedTracks
                self.clusMufi        = self.trackTask.clusMufi
                self.clusScifi       = self.trackTask.clusScifi
-
-   def modtime(self,fname):
-      dirname = fname[fname.rfind('//')+1:fname.rfind('/')]
-      status, listing = self.myclient.dirlist(dirname, DirListFlags.STAT)
-      fileName = fname[fname.rfind('/')+1:]
-      for entry in listing:
-        if entry.name==fileName: return entry.statinfo.modtimestr
+   def GetEntries(self):
+       if  self.options.online:
+         if  self.converter.newFormat:  return self.converter.fiN.Get('data').GetEntries()
+         else:                                   return self.converter.fiN.event.GetEntries()
+       else:
+           return self.eventTree.GetEntries()
 
    def updateSource(self,fname):
    # only needed in auto mode
@@ -205,22 +217,37 @@ class Monitoring():
           print('too many attempts to read the file ',fname,' I am exiting.')
           quit()
       nIter+=1
-      time1 = self.modtime(fname)
-      self.converter.fiN = ROOT.TFile.Open(fname)
-      time.sleep(6) # sleep 6 seconds, and check if file is modified. Writing takes 5sec
-      time2 = self.modtime(fname)
-      if time1 != time2:
-          notOK = True
-          continue
-      notOK = False
-      for b in self.converter.fiN.GetListOfKeys():
-            name = b.GetName()
-            if not self.converter.fiN.Get(name): 
-               notOK = True
-               time.sleep(5)
-               break
+      if self.converter.fiN.GetName() != fname:
+          self.converter.fiN = ROOT.TFile.Open(fname)
+      else:
+          self.converter.fiN = ROOT.TFile.Open(fname)
+          Nkeys = self.converter.fiN.ReadKeys()
+          if Nkeys != self.Nkeys:
+              time.sleep(10)
+              self.converter.fiN = ROOT.TFile.Open(fname)
+              print('wrong number of keys',Nkeys)
+              continue
+
+      listOfKeys = []
+      for b in self.converter.fiN.GetListOfKeys(): listOfKeys.append(b.GetName())
+      for name in listOfKeys:
+        exec("self.converter.fiN."+name+".Refresh()")
+
+      first = -1
+      for name in listOfKeys:
+          nentries = eval("self.converter.fiN."+name+".GetEntries()")
+          if first<0: first = nentries
+          if first != nentries:
+              print('wrong number of entries',first,nentries)
+              first = -1
+              break
+      if first<0: continue
+
+      for name in listOfKeys:
             if name.find('board')==0:
-                self.converter.boards[name]=self.converter.fiN.Get(name)
+                self.converter.boards[name]=eval("self.converter.fiN."+name)
+
+      notOK = False
 
    def GetEvent(self,n):
       if not self.options.online:   # offline, FairRoot in charge
@@ -228,71 +255,155 @@ class Monitoring():
             for aTrack in self.eventTree.Reco_MuonTracks:
                 if aTrack: aTrack.Delete()
             self.eventTree.Reco_MuonTracks.Delete()
-      
+         if "simpleTracking" in self.FairTasks:
+            self.Reco_MuonTracks.Delete()
+
       if self.options.online:
             online = self.options.online
             online.executeEvent(n)
             self.Reco_MuonTracks.Delete()
+            if self.options.FairTask_convRaw:
+                self.options.online.sTree.GetEvent(self.options.online.sTree.GetEntries()-1)
             for t in self.FairTasks: self.FairTasks[t].ExecuteTask()
             self.eventTree = self.options.online.sTree
       else: 
             self.eventTree.GetEvent(n)
+            for t in self.FairTasks: self.FairTasks[t].ExecuteTask()
       self.EventNumber = n
       return self.eventTree
 
    def publishRootFile(self):
    # try to copy root file with TCanvas to EOS
        self.presenterFile.Close()
+       if self.options.online:
+           wwwPath = "/eos/experiment/sndlhc/www/online"
+       else:    
+           wwwPath = "/eos/experiment/sndlhc/www/offline"
        if self.options.sudo: 
          try:
-            rc = os.system("xrdcp -f "+self.presenterFile.GetName()+"  "+os.environ['EOSSHIP']+"/eos/experiment/sndlhc/www/online")
+            rc = os.system("xrdcp -f "+self.presenterFile.GetName()+"  "+os.environ['EOSSHIP']+wwwPath)
          except:
             print("copy of root file failed. Token expired?")
          self.presenterFile = ROOT.TFile('run'+self.runNr+'.root','update')
 
+   def purgeMonitorHistos(self):
+        wwwPath = "/eos/experiment/sndlhc/www/online/"
+        for r in options.runNumbers.split(','):
+            if r!= '': runList.append(int(r))
+        for r in runList:
+              runNr   = str(r).zfill(6)+'.root'
+              f = ROOT.TFile.Open(options.server+wwwPath+ runNr)
+              g = ROOT.TFile('tmp.root','recreate')
+              for d in f.GetListOfKeys():
+                  D = f.Get(d.GetName())
+                  D.Purge()
+              for d in f.GetListOfKeys():
+                name = d.GetName()
+                s = f.Get(name)
+                g.mkdir(name)
+                g.cd(name)
+                for x in s.GetListOfKeys():
+                    s.Get(x.GetName()).Write()
+        g.Close()
+        f.Close()
+        os.system('xrdcp -f tmp.root  '+options.server+options.path+rName)
+
    def updateHtml(self):
-      rc = os.system("xrdcp -f "+os.environ['EOSSHIP']+"/eos/experiment/sndlhc/www/online.html  . ")
-      old = open("online.html")
+      if self.options.online: destination="online"
+      else: destination="offline"
+      rc = os.system("xrdcp -f "+os.environ['EOSSHIP']+"/eos/experiment/sndlhc/www/"+destination+".html  . ")
+      old = open(destination+".html")
       oldL = old.readlines()
       old.close()
       tmp = open("tmp.html",'w')
       found = False
       for L in oldL:
            if not L.find(self.runNr)<0: return
-           if L.find("https://snd-lhc-monitoring.web.cern.ch/online")>0 and not found:
+           if L.find("https://snd-lhc-monitoring.web.cern.ch/"+destination+"/run.html?file=run")>0 and not found:
               r = str(self.options.runNumber)
-              Lnew = '            <li> <a href="https://snd-lhc-monitoring.web.cern.ch/online/run.html?file=run'
-              Lnew+= self.runNr+'.root&lastcycle">run '+r+'  '+self.options.startTime +' </a> \n'
+              Lnew = '            <li> <a href="https://snd-lhc-monitoring.web.cern.ch/'+destination+'/run.html?file=run'
+              Lnew+= self.runNr+'.root&lastcycle">run '+r+' </a>'+self.options.startTime
+              if self.options.postScale>1: Lnew+="  post scaled:"+str(self.options.postScale)
+              Lnew+='\n'
               tmp.write(Lnew)
               found = True
            tmp.write(L)
       tmp.close()
-      os.system('cp tmp.html online.html')
+      os.system('cp '+destination+'.html '+destination+time.ctime().replace(' ','')+'.html ')  # make backup
+      os.system('cp tmp.html '+destination+'.html')
       try:
-            rc = os.system("xrdcp -f online.html  "+os.environ['EOSSHIP']+"/eos/experiment/sndlhc/www/")
+            rc = os.system("xrdcp -f "+destination+".html  "+os.environ['EOSSHIP']+"/eos/experiment/sndlhc/www/")
       except:
             print("copy of html failed. Token expired?")
-   def cleanUpHtml(self):
-      rc = os.system("xrdcp -f "+os.environ['EOSSHIP']+"/eos/experiment/sndlhc/www/online.html  . ")
-      old = open("online.html")
+
+   def cleanUpHtml(self,destination="online"):
+      rc = os.system("xrdcp -f "+os.environ['EOSSHIP']+"/eos/experiment/sndlhc/www/"+destination+".html  . ")
+      old = open(destination+".html")
       oldL = old.readlines()
       old.close()
       tmp = open("tmp.html",'w')
-      dirlist  = str( subprocess.check_output("xrdfs "+os.environ['EOSSHIP']+" ls /eos/experiment/sndlhc/www/online/",shell=True) ) 
+      dirlist  = str( subprocess.check_output("xrdfs "+os.environ['EOSSHIP']+" ls /eos/experiment/sndlhc/www/"+destination+"/",shell=True) ) 
       for L in oldL:
            OK = True
-           if L.find("https://snd-lhc-monitoring.web.cern.ch/online")>0:
+           if L.find("https://snd-lhc-monitoring.web.cern.ch/"+destination)>0:
               k = L.find("file=")+5
               m =  L.find(".root")+5
               R = L[k:m]
               if not R in dirlist: OK = False  
            if OK: tmp.write(L)
       tmp.close()
-      os.system('cp tmp.html online.html')
+      os.system('cp tmp.html '+destination+'.html')
       try:
-            rc = os.system("xrdcp -f online.html  "+os.environ['EOSSHIP']+"/eos/experiment/sndlhc/www/")
+            rc = os.system("xrdcp -f "+destination+".html  "+os.environ['EOSSHIP']+"/eos/experiment/sndlhc/www/")
       except:
             print("copy of html failed. Token expired?")
+
+   def checkAlarm(self,minEntries=1000):
+      self.alarms = {'scifi':[]}
+      # check for empty histograms in scifi signal
+      entries = {}
+      for mat in range(30):
+           entries[mat] = self.h['scifi-mat_'+str(mat)].GetEntries()
+      res = sorted(entries.items(), key=operator.itemgetter(1),reverse=True)
+      if res[0][1]>minEntries: # choose limit which makes it sensitive to check for empty mats
+          for mat in range(30):
+              if entries[mat] < 1:
+                   s = mat//6 + 1
+                   if mat%6 < 3 : p='H'
+                   else : p='V'
+                   e = str(s)+p+str(mat%3)
+                   self.alarms['scifi'].append(e)
+      if len(self.alarms['scifi']) > 0:  self.sendAlarm()
+
+      self.alarms['Veto']=[]
+      # check for empty histograms in veto signal
+      entries = {}
+      s = 1
+      for p in range(2):
+         for side in ['L','R']:
+             entries[str(10*s+p)+side] = self.h['mufi-sig'+p+str(10*s+p)].GetEntries()
+      res = sorted(entries.items(), key=operator.itemgetter(1),reverse=True)
+      if res[0][1]>minEntries: # choose limit which makes it sensitive to check for empty boards
+       for p in range(2):
+         for side in ['L','R']:
+             if entries[str(10*s+p)+side] < 1:
+                self.alarms['Veto'].append(str(10*s+p)+side())
+      # check for empty histograms in US signal
+      entries = {}
+      s = 2
+      for p in range(5):
+         for side in ['L','R']:
+             entries[str(s*10+p)+side] = self.h['mufi-sig2'+p+str(s*10+p)].GetEntries()
+      res = sorted(entries.items(), key=operator.itemgetter(1),reverse=True)
+      if res[0][1]>1000: # choose limit which makes it sensitive to check for empty boards
+       for p in range(5):
+         for side in ['L','R']:
+             if entries[str(s*10+p)+side] < 1:
+                self.alarms['Veto'].append(str(s*10+p)+side())
+
+
+   def sendAlarm(self):
+       print('ALARM',self.alarms)
 
    def systemAndOrientation(self,s,plane):
       if s==1 or s==2: return "horizontal"
