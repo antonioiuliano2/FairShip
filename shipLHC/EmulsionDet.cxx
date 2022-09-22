@@ -124,8 +124,8 @@ void EmulsionDet::DecodeBrickID(Int_t detID, Int_t &NWall, Int_t &NRow, Int_t &N
   Int_t NTransverse = (detID - NWall*1E4)/1E3;
   switch (NTransverse){
     case (1):  
-      NColumn = 1;
-      NRow = 2;
+      NColumn = 2;
+      NRow = 1;
       break;
       
     case (2):
@@ -139,8 +139,8 @@ void EmulsionDet::DecodeBrickID(Int_t detID, Int_t &NWall, Int_t &NRow, Int_t &N
       break;
 
     case (4):
-      NColumn = 2;
-      NRow = 1;
+      NColumn = 1;
+      NRow = 2;
       break;
     }
 
