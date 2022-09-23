@@ -1,5 +1,6 @@
 '''Conversion tools from FEDRA to SNDSW'''
 
+from xml.sax.handler import feature_external_ges
 import ROOT as r
 import fedrarootlogon
 import numpy as np
@@ -23,12 +24,12 @@ def convertseg(seg,brickID,refplate = 60):
  
 
  localarr = np.array([seg.X(), seg.Y(), seg.Z()])
- globalarr = np.array([0., 0., 0.])
+ globalarr = np.zeros(3)
 
  emureader.GetPosition(detID,localarr,globalarr)
 
  anglocalarr = np.array([seg.TX(), seg.TY(), 1.])
- angglobalarr = np.array([0., 0., 0.])
+ angglobalarr = np.zeros(3)
 
  emureader.GetAngles(detID,anglocalarr,angglobalarr)
 
@@ -54,3 +55,26 @@ def converttrack(track,brickID, refplate=60, fittedsegments = False):
 
  globaltrackarr = np.array(globaltracklist)
  return globaltrackarr
+
+def convertvertex(vertex, brickID, refplate=60, fittedsegments=False):
+ '''Converting EdbVertex position into SNDSW system
+         vertex: EdbVertex instance;
+         brickID: number of the brick the vertex was reconstructed in (ex. 31)
+         fittedsegments: used fitted segments instead of true segments (default False)
+         refplate: which is our reference plate
+ '''
+ detID = int(brickID * 1e3 + refplate)
+ #vertex position
+ localvarr = np.arr([vertex.VX(),vertex.VY(),vertex.VZ()])
+ globalvarr = np.zeros(3)
+ emureader.GetPosition(detID,localvarr,globalvarr)
+ #track info
+ ntracks = vertex.N()
+ globaltracklist = []
+ for itrack in range(ntracks):
+    track = vertex.GetTrack(itrack)
+    globaltrackarr = converttrack(track,brickID,refplate,fittedsegments)
+    globaltracklist.append(globaltrackarr)
+
+ globaltracksarr = np.array(globaltracklist)
+ return globalvarr, globaltracksarr
