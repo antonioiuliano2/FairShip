@@ -65,7 +65,7 @@ def convertvertex(vertex, brickID, refplate=60, fittedsegments=False):
  '''
  detID = int(brickID * 1e3 + refplate)
  #vertex position
- localvarr = np.arr([vertex.VX(),vertex.VY(),vertex.VZ()])
+ localvarr = np.array([vertex.VX(),vertex.VY(),vertex.VZ()])
  globalvarr = np.zeros(3)
  emureader.GetPosition(detID,localvarr,globalvarr)
  #track info
@@ -78,3 +78,40 @@ def convertvertex(vertex, brickID, refplate=60, fittedsegments=False):
 
  globaltracksarr = np.array(globaltracklist)
  return globalvarr, globaltracksarr
+
+def convertmcpoint(emupoint, MCEventID, EmulsionID = 0, weight = 70):
+  ''' Converting EmuPoint from MCEventID into EdbSegP'''
+
+  detID = emupoint.GetDetectorID()
+  momentum = r.TMath.Sqrt(pow(emupoint.GetPx(),2) + pow(emupoint.GetPy(),2) + pow(emupoint.GetPz(),2))
+  #first, convert positions
+  globalpos = np.array([emupoint.GetX(),emupoint.GetY(),emupoint.GetZ()])
+  localpos = np.zeros(3)
+
+  emureader.GetLocalPosition(detID, globalpos, localpos)
+
+  xem = localpos[0]
+  yem = localpos[1]
+
+  #second, convert angles
+  globalang = np.array([emupoint.GetPx(),emupoint.GetPy(),emupoint.GetPz()])
+  localang = np.zeros(3)
+
+  emureader.GetLocalAngles(detID, globalang, localang)
+  #angles in TX, TY format
+  tx = globalang[0]/globalang[2] #px/pz
+  ty = globalang[1]/globalang[2] #py/pz
+  #MCTruth info
+  pdgcode = emupoint.PdgCode()
+  trackID = emupoint.GetTrackID()
+
+  #ready to write the segment
+  emuseg = r.EdbSegP()
+  emuseg.Set(EmulsionID, xem, yem, tx, ty, weight, 1)
+  emuseg.SetMC(MCEventID, emupoint.GetTrackID())
+  emuseg.SetP(momentum)
+  emuseg.SetVid(pdgcode,0)
+
+  emuseg.SetZ(localpos[2]) #0 is the center of the volume (center of plastic base in emulsion film)
+
+  return emuseg

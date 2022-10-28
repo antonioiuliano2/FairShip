@@ -460,7 +460,7 @@ void EmulsionDet::GetPosition(Int_t id, const Double_t* localpos, Double_t* glob
 	centerpos[2] = localpos[2]*1e-4;
 
 	//get full path
-	TString pathtoplate = PathBrickID(id); 
+	TString pathtoplate = PathBrickID(id);
 	TGeoNavigator* nav = gGeoManager->GetCurrentNavigator();
 	//going there
   	nav->cd(pathtoplate.Data());
@@ -471,11 +471,39 @@ void EmulsionDet::GetPosition(Int_t id, const Double_t* localpos, Double_t* glob
 void EmulsionDet::GetAngles(Int_t id, const Double_t* localang, Double_t* globalang){
 
 	//get full path
-	TString pathtoplate = PathBrickID(id); 
+	TString pathtoplate = PathBrickID(id);
 	TGeoNavigator* nav = gGeoManager->GetCurrentNavigator();
 	//going there
   	nav->cd(pathtoplate.Data());
 	//returning position to master
 	nav->LocalToMasterVect(localang, globalang);
 }
+
+void EmulsionDet::GetLocalPosition(Int_t id, const Double_t* globalpos, Double_t* localpos){
+	Double_t centerpos[3];
+	//get full path
+	TString pathtoplate = PathBrickID(id);
+	TGeoNavigator* nav = gGeoManager->GetCurrentNavigator();
+	//going there
+	nav->cd(pathtoplate.Data());
+	//returning position to local
+	nav->MasterToLocal(globalpos, centerpos);
+
+	localpos[0] = (centerpos[0] + 9.6)*1e+4;
+	localpos[1] = (centerpos[1] + 9.6)*1e+4;
+	localpos[2] = centerpos[2]*1e+4;
+
+	//from sndsw cm to emulsion micron and from center to corner (our scanning takes 0,0 in a corner)
+}
+
+void EmulsionDet::GetLocalAngles(Int_t id, const Double_t* globalang, Double_t* localang){
+	//get full path
+	TString pathtoplate = PathBrickID(id);
+	TGeoNavigator* nav = gGeoManager->GetCurrentNavigator();
+	//going there
+	nav->cd(pathtoplate.Data());
+	//returning position to master
+	nav->LocalToMaster(globalang, localang);
+}
+
 ClassImp(EmulsionDet)
