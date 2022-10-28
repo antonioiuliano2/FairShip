@@ -834,7 +834,7 @@ def fillNode(node):
 
 def drawInfo(pad, k, run, event, timestamp):
    drawLogo = True
-   drawText = True
+   drawText = False
    if drawLogo:
       padLogo = ROOT.TPad("logo","logo",0.1,0.1,0.2,0.3)
       padLogo.SetFillStyle(4000)
@@ -873,3 +873,88 @@ def drawInfo(pad, k, run, event, timestamp):
       if timestamp_start:
            textInfo.DrawLatex(0, 0.2, 'Time (GMT): {}'.format(time_event))
       pad.cd(k)
+gemuzx = ROOT.TGraphErrors()
+gemuzy = ROOT.TGraphErrors()
+def drawEmuTrack(itrack, brickID, trackfile = "b000031.0.0.0.25upstream_trk.root"):
+
+   import fedrarootlogon
+   import numpy as np
+   import Fedra2sndsw as EmuConv
+   #needed initializations for ReadTracksTree
+   dproc = ROOT.EdbDataProc()
+   ali = ROOT.EdbPVRec()
+   scancond = ROOT.EdbScanCond()
+   ali.SetScanCond(scancond)
+
+   dproc.ReadTracksTree(ali,trackfile,"trid=={}".format(itrack))
+   #in this case, the list of tracks is only one track
+   track = ali.eTracks[0]
+   #read track, applying conversion
+   globaltrackarr = EmuConv.converttrack(track,brickID)
+   for x,y,z,tx,ty,tz in globaltrackarr:
+      gemuzx.AddPoint(z,x)
+      gemuzy.AddPoint(z,y)
+
+   gemuzx.Print()
+   h['simpleDisplay'].cd(1)
+   gemuzx.SetMarkerStyle(20)
+   gemuzx.SetMarkerSize(0.1)
+   gemuzx.Draw("sameP")
+   h['simpleDisplay'].cd(2)
+   gemuzy.SetMarkerStyle(20)
+   gemuzy.SetMarkerSize(0.1)
+   gemuzy.Draw("sameP")
+   gemuzy.Print()
+
+   h['simpleDisplay'].Update()
+   h['simpleDisplay'].Draw()
+
+def drawEmuVertex(ivertex, brickID, vertexfile = "vertextree.root"):
+
+   import fedrarootlogon
+   import numpy as np
+   import Fedra2sndsw as EmuConv
+   #needed initializations for ReadTracksTree
+   dproc = ROOT.EdbDataProc()
+   ali = ROOT.EdbPVRec()
+   scancond = ROOT.EdbScanCond()
+   ali.SetScanCond(scancond)
+
+   #setting parameters as in vertexing.C
+   vertexrec = ROOT.EdbVertexRec()
+   vertexrec.SetPVRec(ali)
+   vertexrec.eDZmax=3000.
+   vertexrec.eProbMin=0.0001
+   vertexrec.eImpMax=15.
+   vertexrec.eUseMom=False
+   vertexrec.eUseSegPar=True
+   vertexrec.eQualityMode=0
+
+   dproc.ReadVertexTree(vertexrec, vertexfile, "vID=={}".format(ivertex)) #22044
+   #in this case, the list of tracks is only one vertex
+   vertex = ali.eVTX[0]
+   ntracks = vertex.N()
+   for itrack in range(ntracks):
+    track = vertex.GetTrack(itrack)
+    #read track, applying conversion
+    globaltrackarr = EmuConv.converttrack(track,brickID)
+    for x,y,z,tx,ty,tz in globaltrackarr:
+      gemuzx.AddPoint(z,x)
+      gemuzy.AddPoint(z,y)
+
+   gemuzx.Print()
+   h['simpleDisplay'].cd(1)
+   gemuzx.SetMarkerStyle(20)
+   gemuzx.SetMarkerSize(0.1)
+   gemuzx.Draw("sameP")
+   h['simpleDisplay'].cd(2)
+   gemuzy.SetMarkerStyle(20)
+   gemuzy.SetMarkerSize(0.1)
+   gemuzy.Draw("sameP")
+   gemuzy.Print()
+
+   h['simpleDisplay'].Update()
+   h['simpleDisplay'].Draw()
+   
+   
+
