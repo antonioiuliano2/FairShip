@@ -453,10 +453,15 @@ EmulsionDetPoint* EmulsionDet::AddHit(Int_t trackID,Int_t detID,
 }
 
 void EmulsionDet::GetPosition(Int_t id, const Double_t* localpos, Double_t* globalpos){
+        
+	TGeoBBox *emubox = (TGeoBBox*) gGeoManager->GetVolume("Emulsion")->GetShape();
+
+	Double_t EmulsionDX = emubox->GetDX();
+	Double_t EmulsionDY = emubox->GetDY();
 	//from emulsion micron to sndsw cm and from corner to center (our scanning takes 0,0 in a corner)
 	Double_t centerpos[3];
-	centerpos[0] = localpos[0]*1e-4 - 9.6;
-	centerpos[1] = localpos[1]*1e-4 - 9.6;
+	centerpos[0] = localpos[0]*1e-4 - EmulsionDX;
+	centerpos[1] = localpos[1]*1e-4 - EmulsionDY;
 	centerpos[2] = localpos[2]*1e-4;
 
 	//get full path
@@ -489,8 +494,13 @@ void EmulsionDet::GetLocalPosition(Int_t id, const Double_t* globalpos, Double_t
 	//returning position to local
 	nav->MasterToLocal(globalpos, centerpos);
 
-	localpos[0] = (centerpos[0] + 9.6)*1e+4;
-	localpos[1] = (centerpos[1] + 9.6)*1e+4;
+        TGeoBBox *emubox = (TGeoBBox*) gGeoManager->GetVolume("Emulsion")->GetShape();
+
+	Double_t EmulsionDX = emubox->GetDX();
+	Double_t EmulsionDY = emubox->GetDY();	
+
+	localpos[0] = (centerpos[0] + EmulsionDX)*1e+4;
+	localpos[1] = (centerpos[1] + EmulsionDY)*1e+4;
 	localpos[2] = centerpos[2]*1e+4;
 
 	//from sndsw cm to emulsion micron and from center to corner (our scanning takes 0,0 in a corner)
