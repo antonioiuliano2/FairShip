@@ -99,8 +99,8 @@ def convertmcpoint(emupoint, MCEventID, EmulsionID = 0, weight = 70):
 
   emureader.GetLocalAngles(detID, globalang, localang)
   #angles in TX, TY format
-  tx = globalang[0]/globalang[2] #px/pz
-  ty = globalang[1]/globalang[2] #py/pz
+  tx = localang[0]/localang[2] #px/pz
+  ty = localang[1]/localang[2] #py/pz
   #MCTruth info
   pdgcode = emupoint.PdgCode()
   trackID = emupoint.GetTrackID()

@@ -512,8 +512,8 @@ void EmulsionDet::GetLocalAngles(Int_t id, const Double_t* globalang, Double_t* 
 	TGeoNavigator* nav = gGeoManager->GetCurrentNavigator();
 	//going there
 	nav->cd(pathtoplate.Data());
-	//returning position to master
-	nav->LocalToMaster(globalang, localang);
+	//returning position to local
+	nav->MasterToLocalVect(globalang, localang);
 }
 
 ClassImp(EmulsionDet)
