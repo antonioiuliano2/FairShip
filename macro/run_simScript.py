@@ -428,8 +428,9 @@ if simEngine == "Genie":
  ut.checkFileExists(inputFile)
  primGen.SetTarget(0., 0.) # do not interfere with GenieGenerator
  Geniegen = ROOT.GenieGenerator()
- Geniegen.Init(inputFile,options.firstEvent)
- Geniegen.SetPositions(ship_geo.target.z0, ship_geo.tauMudet.zMudetC-5*u.m, ship_geo.TrackStation2.z)
+ Geniegen.Init(inputFile,options.firstEvent) 
+ #Geniegen.SetPositions(ship_geo.target.z0, ship_geo.tauMudet.zMudetC-5*u.m, ship_geo.TrackStation2.z)
+ Geniegen.SetPositions(ship_geo.target.z0, ship_geo.NuTauTarget.zC - ship_geo.NuTauTarget.zdim/2., ship_geo.NuTauTarget.zC + ship_geo.NuTauTarget.zdim/2.)
  primGen.AddGenerator(Geniegen)
  options.nEvents = min(options.nEvents,Geniegen.GetNevents())
  run.SetPythiaDecayer("DecayConfigNuAge.C")
