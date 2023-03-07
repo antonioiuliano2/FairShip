@@ -33,7 +33,7 @@ simEngine    = "Pythia8"  # "Genie" # Ntuple
 inclusive    = "c"    # True = all processes if "c" only ccbar -> HNL, if "b" only bbar -> HNL, if "bc" only Bc+/Bc- -> HNL, and for darkphotons: if meson = production through meson decays, pbrem = proton bremstrahlung, qcd = ffbar -> DP.
 
 MCTracksWithHitsOnly   = False  # copy particles which produced a hit and their history
-MCTracksWithEnergyCutOnly = True # copy particles above a certain kin energy cut
+MCTracksWithEnergyCutOnly = False # copy particles above a certain kin energy cut
 MCTracksWithHitsOrEnergyCut = False # or of above, factor 2 file size increase compared to MCTracksWithEnergyCutOnly
 
 charmonly    = False  # option to be set with -A to enable only charm decays, charm x-sec measurement  
