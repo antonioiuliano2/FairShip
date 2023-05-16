@@ -228,6 +228,11 @@ def configure(run,ship_geo):
      taumuondetector.SetRpcDimensions(ship_geo.tauMudet.XRpc,ship_geo.tauMudet.YRpc, ship_geo.tauMudet.ZRpc)
      taumuondetector.SetGapMiddle(ship_geo.tauMudet.GapM)
      taumuondetector.SetMagneticField(ship_geo.tauMudet.B)
+     #now adding magnetized info
+     taumuondetector.SetReturnYokeDimensions(ship_geo.tauMudet.XRyoke,ship_geo.tauMudet.YRyoke, ship_geo.tauMudet.ZRyoke)
+     taumuondetector.SetSmallerYokeDimensions(ship_geo.tauMudet.XRyoke_s,ship_geo.tauMudet.YRyoke_s, ship_geo.tauMudet.ZRyoke_s)
+     taumuondetector.SetCoilParameters(ship_geo.tauMudet.CoilH, ship_geo.tauMudet.CoilW, ship_geo.tauMudet.N, ship_geo.tauMudet.CoilG)
+    
    detectorList.append(taumuondetector)
    if ship_geo.nuTauTargetDesign==0 or ship_geo.nuTauTargetDesign==1 or ship_geo.nuTauTargetDesign==3:
     EmuMagnet = ROOT.EmulsionMagnet("EmuMagnet",ship_geo.EmuMagnet.zC,"EmulsionMagnet")

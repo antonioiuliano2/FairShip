@@ -763,14 +763,16 @@ void NuTauMudet::ConstructGeometry()
       TGeoVolume *volMuFilter = new TGeoVolume("volMuFilter",MuFilter,air); //MuFilter
       volMuFilter->SetLineColor(kGray);
 
-      TGeoBBox *MagCheckBox = new TGeoBBox("MagCheckBox",fXtot/2., fYtot/2., fGapMiddle/2.);
+/*    TGeoBBox *MagCheckBox = new TGeoBBox("MagCheckBox",fXtot/2., fYtot/2., fGapMiddle/2.);
       TGeoVolume *volMagCheckRegion = new TGeoVolume("volMagCheckRegion",MagCheckBox,air); //Magnetized Region for taumudet
       volMagCheckRegion->SetLineColor(kGray);
-      volMagCheckRegion->SetVisibility(kFALSE);
+      volMagCheckRegion->SetVisibility(kFALSE);*/
 
       tTauNuDet->AddNode(volMuFilter,1,new TGeoTranslation(0,0,fZcenter));
 
-      TGeoBBox *RPC = new TGeoBBox("RPC", fXRpc/2.,fYRpc/2.,fZRpc/2.);
+      TGeoUniformMagField *magcheckfield    = new TGeoUniformMagField(-fField,0.,0.); //for now along x direction;     
+
+/*    TGeoBBox *RPC = new TGeoBBox("RPC", fXRpc/2.,fYRpc/2.,fZRpc/2.);
       TGeoVolume *volRPC = new TGeoVolume("volRPC",RPC,RPCmat); //RPC
       volRPC->SetLineColor(kRed);
       AddSensitiveVolume(volRPC);
@@ -784,8 +786,68 @@ void NuTauMudet::ConstructGeometry()
       volMuFilter->AddNode(volMagCheckRegion,1,new TGeoTranslation(0,0,0.));
       //last two counters downstream
       volMuFilter->AddNode(volRPC,3,new TGeoTranslation(0,0,+fGapMiddle/2. + fZRpc/2.));
-      volMuFilter->AddNode(volRPC,4,new TGeoTranslation(0,0,+fZtot/2. - fZRpc/2.));
+      volMuFilter->AddNode(volRPC,4,new TGeoTranslation(0,0,+fZtot/2. - fZRpc/2.));*/
+      //code by Daniele from ADVSND air core magnet
+      //for now, putting values by hand (units in cm)
+      Double_t  fInMagX   =  120;
+      Double_t  fInMagY   =  60;
+      Double_t  fIronYokeX = 30;
+      Double_t  fIronYokeY = 25;
+      Double_t  fCoilX = fInMagX;
+      Double_t  fCoilY = 23;
+      Double_t  fOutMagX = fInMagX + 2*fIronYokeX;
+      Double_t  fOutMagY = fInMagX + 2*(fCoilY+fIronYokeY);
+      Double_t  fMagZ = 200;
 
+      Double_t  fTrackerZ = 0.5;
+      Double_t  fTSpacingZ = 2;
+      Double_t  fLevArm = 50;
+      //applying the values in the geometry
+
+
+      // Shapes creation
+      TGeoBBox *CoilContainer = new TGeoBBox("CoilContainer", fOutMagX/2., fOutMagY/2., fMagZ/2.);
+      TGeoBBox *MagRegion = new TGeoBBox("MagRegion", fInMagX/2., fInMagY/2., fMagZ/2.+0.5);
+      TGeoBBox *Coil = new TGeoBBox("Coil", fCoilX/2., fCoilY/2., fMagZ/2.+0.5);
+
+      // Translations
+      TGeoTranslation *CoilUpPos = new TGeoTranslation("CoilUpPos", 0, (fInMagY+fCoilY)/2.-0.001, 0);
+      TGeoTranslation *CoilDownPos = new TGeoTranslation("CoilDownPos", 0, -(fInMagY+fCoilY)/2.+0.001, 0);
+      CoilUpPos->RegisterYourself();
+      CoilDownPos->RegisterYourself();
+
+      // Yoke shape
+      TGeoCompositeShape *FeYoke = new TGeoCompositeShape("FeYoke", "CoilContainer-MagRegion-(Coil:CoilUpPos)-(Coil:CoilDownPos)");
+
+      // Volumes
+      TGeoVolume *volFeYoke = new TGeoVolume("volFeYoke", FeYoke, Iron);
+      volFeYoke->SetLineColor(kGray);
+      TGeoVolume *volCoil = new TGeoVolume("volCoil", Coil, Cu);
+      volCoil->SetLineColor(kOrange+1);
+      TGeoVolume *volMagRegion = new TGeoVolume("volMagRegion", MagRegion, air);
+      volMagRegion->SetField(magcheckfield);
+
+      // Positioning
+      volMuFilter->AddNode(volFeYoke, 0);
+      volMuFilter->AddNode(volCoil, 0, new TGeoTranslation(0, (fInMagY+fCoilY)/2., 0));
+      volMuFilter->AddNode(volCoil, 1, new TGeoTranslation(0, -(fInMagY+fCoilY)/2., 0));
+      volMuFilter->AddNode(volMagRegion, 0, 0);
+
+
+      TGeoBBox *TrackPlane = new TGeoBBox("TrackPlane", fInMagX/2., fInMagY/2., fTrackerZ/2.);
+
+     // TO BE PROPERLY ADDED
+     TGeoVolume *volTrackPlane = new TGeoVolume("volTrackPlane", TrackPlane, Cu); // add medium
+     volTrackPlane->SetLineColorAlpha(kBlue, 0.4);
+     AddSensitiveVolume(volTrackPlane);
+
+      volMuFilter->AddNode(volTrackPlane, 1, new TGeoTranslation(0, 0, -fMagZ/2.-fTSpacingZ-fTrackerZ/2.));
+      volMuFilter->AddNode(volTrackPlane, 2, new TGeoTranslation(0, 0, +fMagZ/2.+fTSpacingZ+fTrackerZ/2.));
+      volMuFilter->AddNode(volTrackPlane, 0, new TGeoTranslation(0, 0, -fMagZ/2.-fTSpacingZ-fTrackerZ-fLevArm-fTrackerZ/2.));
+      volMuFilter->AddNode(volTrackPlane, 3, new TGeoTranslation(0, 0, +fMagZ/2.+fTSpacingZ+fTrackerZ+fLevArm+fTrackerZ/2.));
+
+      //detector->AddNode(MagnetVol, 0, new TGeoTranslation(fShiftX,fShiftY,fShiftZ)); // see Alberto implementation
+      
     } //end option 4
 
 }
