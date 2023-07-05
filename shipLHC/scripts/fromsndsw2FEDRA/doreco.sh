@@ -1,8 +1,20 @@
 #!/bin/bash
-cp $SNDSW_ROOT/track.rootrc ./
+SCRIPTFOLDER=$SNDSW_ROOT/shipLHC/scripts/fromsndsw2FEDRA/
+echo "There are two possible track.rootrc files in ${SCRIPTFOLDER} which one do you wish to use ?"
+select yn in "DEFAULT" "EXPERIMENTAL" "OTHER"; do
+	case $yn in
+		DEFAULT ) echo "You selected track.rootrc";cp $SCRIPTFOLDER/track.rootrc ./; break;;
+        EXPERIMENTAL ) echo "You selected track_experimental.rootrc";cp $SCRIPTFOLDER/track_experimental.rootrc ./track.rootrc;break;;
+	OTHER ) echo "You selected OTHER, please edit your track.rootrc file. Press enter to continue, q to abort";read -rsn1 -p $"" key
+                if [[ "$key" == "q" ]]
+                        then
+                                echo ""
+                                return
+                fi;break;;    
+	esac
+done
 cat track.rootrc
-echo "track.rootrc has been copied from home/simsndlhc/macros-snd/FEDRA/"
-read -n1 -r -s -p $"If it's ok for you press enter to continue, otherwise edit it before proceeding (press q to abort)" key
+read -n1 -r -s -p $"If it's ok for you press enter to continue, q to abort" key
 if [[ "$key" == "q" ]] 
    then 
    		echo ""
@@ -24,7 +36,7 @@ for ibrick in $(seq 0 19)
   fi
   emtra -set=${brickIDs[ibrick]}.0.0.0 -new -v=2
   ln -s b0000${brickIDs[ibrick]}.0.0.0.trk.root linked_tracks.root
-  cp $SNDSW_ROOT/vertexing.C ./
+  cp $SCRIPTFOLDER/vertexing.C ./
   root -l -q vertexing.C\(${brickIDs[ibrick]}\)
   cd ..
  done
