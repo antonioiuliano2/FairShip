@@ -5,7 +5,7 @@ for ibrick in $(seq 0 19)
   echo "processing brick ${brickIDs[ibrick]}"
   cd b0000${brickIDs[ibrick]}
 
-   python /home/simsndlhc/macros-snd/FEDRA/add_brickID_number.py ${brickIDs[ibrick]}
+   python $SNDSW_ROOT/shipLHC/scripts/fromsndsw2FEDRA/add_brickID_number.py ${brickIDs[ibrick]}
 
   cd ..
  done

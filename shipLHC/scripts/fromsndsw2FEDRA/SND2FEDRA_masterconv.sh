@@ -22,7 +22,6 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
 	return
 fi
-cp $SNDSW_ROOT/shipLHC/scripts/fromsndsw2FEDRA/preparebricks.sh .
 cp $SNDSW_ROOT/shipLHC/scripts/fromsndsw2FEDRA/doreco.sh .
 cp $SNDSW_ROOT/shipLHC/scripts/fromsndsw2FEDRA/csvconversion.sh .
 cp $SNDSW_ROOT/shipLHC/scripts/fromsndsw2FEDRA/addvertexinfo.sh .
