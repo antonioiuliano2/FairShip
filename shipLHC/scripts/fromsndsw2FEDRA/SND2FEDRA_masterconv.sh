@@ -9,19 +9,8 @@ NC=$'\033[0m' #No coloring
 SIMFILE=$(ls sndLHC*.root)
 GEOFILE=$(ls geofile*.root)
 [ ! -d "$SIMFILE" ] && echo "${RED}++${NC} You are about to convert $SIMFILE ${RED}++${NC}"
-read -p "Please confirm (y/n) " -n 1 -r
-echo ""
-if [[ ! $REPLY =~ ^[Yy]$ ]]
-then
-	return
-fi
 echo "${RED}++${NC} Bricks and plates folders will be created in the following directory: $(pwd) ${RED}++${NC}"
-read -p "Please confirm (y/n) " -n 1 -r
-echo ""
-if [[ ! $REPLY =~ ^[Yy]$ ]]
-then
-	return
-fi
+cp $SNDSW_ROOT/shipLHC/scripts/fromsndsw2FEDRA/preparebricks.sh .
 cp $SNDSW_ROOT/shipLHC/scripts/fromsndsw2FEDRA/doreco.sh .
 cp $SNDSW_ROOT/shipLHC/scripts/fromsndsw2FEDRA/csvconversion.sh .
 cp $SNDSW_ROOT/shipLHC/scripts/fromsndsw2FEDRA/addvertexinfo.sh .
@@ -34,14 +23,8 @@ for i in $(seq 1 5)
 		mkdir b0000${i}{1..4}/p0{01..60}
 	done
 echo "++++++++++++++++"
+echo "FairShip2Fedra parameters are the following:"
 cat FairShip2Fedra.rootrc
-echo "${RED}++${NC} Check the settings above !! ${RED}++${NC}"
-read -p "Do you wish to proceed ? (y/n) " -n 1 -r
-echo ""
-if [[ ! $REPLY =~ ^[Yy]$ ]]
-then
-	return
-fi
 ulimit -n 1500 #to create many files together
 root -l -q fromsndsw2FEDRA.C\(\"$SIMFILE\",\"$GEOFILE\"\)
 echo "${RED}++${NC} Proceeding to doreco.sh ${RED}++${NC}"
