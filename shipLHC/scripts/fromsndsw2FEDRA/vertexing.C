@@ -4,6 +4,8 @@
 // with nbrick number of the brick which we are analyzing (11,12,13,14,21,22...51,52,53,54)
 //----------------------------------------------------------------------------
 
+R__EXTERN Int_t gEDBDEBUGLEVEL;
+
 EdbDataProc  *dproc=0;
 EdbPVRec     *gAli=0;
 EdbVertexRec *gEVR=0;
@@ -37,6 +39,7 @@ namespace VERTEX_PAR
 void vertexing(int brID = 0, char* dset = 0)
 {
 
+  gEDBDEBUGLEVEL=0;
   //trvol(dset);
   //trvol(dset,"nseg>1 && TMath::Abs(s.eY-50000)<5000 && TMath::Abs(s.eX-50000)<5000");   
    BRICKID = brID;
