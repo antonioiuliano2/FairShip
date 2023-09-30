@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 '''Conversion tools from FEDRA to SNDSW'''
 
 from xml.sax.handler import feature_external_ges
