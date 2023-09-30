@@ -1,10 +1,9 @@
 #!/bin/bash
 SCRIPTFOLDER=$SNDSW_ROOT/shipLHC/scripts/fromsndsw2FEDRA/
-echo "There are two possible track.rootrc files in ${SCRIPTFOLDER} which one do you wish to use ?"
 echo "Using default parameters for tracking, as listed here:"
 cp $SCRIPTFOLDER/track.rootrc ./
 cat ./track.rootrc
-brickIDs=(11 12 13 14 21 22 23 24 31 32 33 34 41 42 43 44 51 52 53 54) #ehi, I have written an array in BASH!
+brickIDs=({1..5}{1..4})
 for ibrick in $(seq 0 19)
  do
   echo "processing brick ${brickIDs[ibrick]}"
