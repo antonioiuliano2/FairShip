@@ -1,4 +1,4 @@
-//tool to load hit from emulsion to FEDRA (13 aprile 2018) //updated to work with the new TTreeReader structure (6 March)
+//tool to load hit from emulsion to FEDRA (13 aprile 2018) //updated to work with the new TTreeReader structure (6 March 2019)
 //to use it, go in a directory and create the folders b000001/p001 to b000001/p029
 //then launch it from the directory mother of b000001
 
