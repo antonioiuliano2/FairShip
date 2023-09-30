@@ -875,8 +875,8 @@ def drawInfo(pad, k, run, event, timestamp):
       pad.cd(k)
 gemuzx = ROOT.TGraphErrors()
 gemuzy = ROOT.TGraphErrors()
-def drawEmuTrack(itrack, brickID, trackfile = "b000031.0.0.0.25upstream_trk.root"):
 
+def drawEmuTrack(itrack, brickID, trackfile):
    import fedrarootlogon
    import numpy as np
    import Fedra2sndsw as EmuConv
@@ -909,8 +909,7 @@ def drawEmuTrack(itrack, brickID, trackfile = "b000031.0.0.0.25upstream_trk.root
    h['simpleDisplay'].Update()
    h['simpleDisplay'].Draw()
 
-def drawEmuVertex(ivertex, brickID, vertexfile = "vertextree.root"):
-
+def drawEmuVertex(ivertex, brickID, vertexfile):
    import fedrarootlogon
    import numpy as np
    import Fedra2sndsw as EmuConv
