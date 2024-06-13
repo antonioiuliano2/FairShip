@@ -14,6 +14,7 @@
 #include "TGeoBBox.h"
 #include "TGeoTrd1.h"
 #include "TGeoTrd2.h"
+#include "TGeoArb8.h"
 #include "TGeoCompositeShape.h"
 #include "TGeoTube.h"
 #include "TGeoMaterial.h"
@@ -37,6 +38,7 @@
 #include "ShipStack.h"
 
 #include "TGeoUniformMagField.h"
+#include "TGeoGlobalMagField.h"
 #include <stddef.h>                     // for NULL
 #include <iostream>                     // for operator<<, basic_ostream, etc
 
@@ -311,6 +313,9 @@ void NuTauMudet::ConstructGeometry()
 
   InitMedium("Aluminum"); //new
   TGeoMedium *Al =gGeoManager->GetMedium("Aluminum"); //new
+
+  InitMedium("silicon");
+  TGeoMedium *Silicon = gGeoManager->GetMedium("silicon");
 
   TGeoUniformMagField *retFieldU    = new TGeoUniformMagField(0.,0.,-fField); //magnetic field up return yoke
   TGeoUniformMagField *retFieldL   = new TGeoUniformMagField(0.,0.,fField); //magnetic field low return yoke
@@ -827,6 +832,124 @@ void NuTauMudet::ConstructGeometry()
       volMagRegion->AddNode(volRPC,8,new TGeoTranslation(0,0,+fZtot/2. - fZRpc/2.));
 
     } //end option 4
+    //option 5 from AdvSND
+  if (fDesign == 5){
+/* copy here files from advgeometry for copy
+
+*/
+    //putting geometry values hard coded for first test
+    Int_t fNplanes = 22;
+    Double_t fFeGap = 2.0;
+    //muon system plane size
+    Double_t fMuonSysPlaneX = 60.;
+    Double_t fMuonSysPlaneY = fMuonSysPlaneX;
+    //coil size
+    Double_t fCoilX = fMuonSysPlaneX;
+    Double_t fCoilY = 9.2;
+    //iron size
+    Double_t fFeX = 2*fMuonSysPlaneX;
+    Double_t fFeY = 2*fMuonSysPlaneY+3*fCoilY;
+    Double_t fFeZ = 8.0;
+    //
+    Double_t fCoilZ         = (fNplanes)*(fFeZ+fFeGap)-fFeGap;
+    Double_t fCutOffset = 3.0;
+    // yoke and cuts
+     Double_t fFeYokeX       = (fFeX-fMuonSysPlaneX)/2.;
+    Double_t fFeYokeY       = (fFeY-fMuonSysPlaneY-fCoilY)/2.;
+    Double_t fFeCutX        = fFeYokeX - fCutOffset;
+    Double_t fFeCutY        = fFeYokeY - fCutOffset;
+
+    TGeoVolumeAssembly *volMuFilter = new TGeoVolumeAssembly("volMuFilter");
+    //TGeoBBox *MuFilter = new TGeoBBox("MuFilter",fXtot/2., fYtot/2., fZtot/2.);
+    //TGeoVolume *volMuFilter = new TGeoVolume("volMuFilter",MuFilter,air); //MuFilter
+  
+    Double_t fTargetWallX = 50.; //cm
+    //TVector3 EmWall0_survey(5.35+42.2/2.-(fTargetWallX-42.2)/2., 17.2+42.2/2., 288.92+10/2.+100); // cm
+
+    //detector->AddNode(volAdvMuFilter,0,new TGeoTranslation(-2.4244059999999976-EmWall0_survey.X(), 38.3, 354.862+3+1+fFeZ/2.-41.895793+1.-3.854227000000008+3.7497190000000046)); // hardcoded, try to find and elegant solution
+    tTauNuDet->AddNode(volMuFilter,1,new TGeoTranslation(0,0,fZcenter));
+    TGeoBBox *FeWall = new TGeoBBox("FeWall", fFeX/2., fFeY/2., fFeZ/2.);
+    TGeoBBox *MuonSysPlane = new TGeoBBox("MuonSysPlane", fMuonSysPlaneX/2., fMuonSysPlaneY/2., fFeZ/2.+0.001);
+    TGeoBBox *CoilSpace = new TGeoBBox("CoilSpace", fCoilX/2., fCoilY/2.+0.005, fFeZ/2.+0.05);
+    TGeoBBox *Coil = new TGeoBBox("Coil", fCoilX/2., fCoilY/2., fCoilZ/2.);
+    //TGeoBBox *MuonSysDet = new TGeoBBox("MuonSysDet", fMuonSysPlaneX/2., fMuonSysPlaneY/2., fFeGap/2.); //unused
+
+    TGeoBBox *VertCoil = new TGeoBBox("VertCoil", fCoilX/2., fMuonSysPlaneY/2., fCoilY/2.);
+
+    Double_t cutvers[8][2];
+    cutvers[0][0] = 0;
+    cutvers[0][1] = 0;
+    cutvers[1][0] = 0;
+    cutvers[1][1] = -fFeCutY;
+    cutvers[2][0] = 0;
+    cutvers[2][1] = -fFeCutY;
+    cutvers[3][0] = +fFeCutX;
+    cutvers[3][1] = 0;
+
+    cutvers[4][0] = 0;
+    cutvers[4][1] = 0;
+    cutvers[5][0] = 0;
+    cutvers[5][1] = -fFeCutY;
+    cutvers[6][0] = 0;
+    cutvers[6][1] = -fFeCutY;
+    cutvers[7][0] = +fFeCutX;
+    cutvers[7][1] = 0;
+    TGeoArb8 *FeCut = new TGeoArb8("FeCut", fFeZ/2.+0.001, (Double_t *)cutvers);
+
+    TGeoTranslation *CutUpRight = new TGeoTranslation("CutUpRight", -fFeX/2.-0.001, fFeY/2.+0.001, 0);
+    CutUpRight->RegisterYourself();
+    TGeoCombiTrans *CutDownRight = new TGeoCombiTrans( TGeoTranslation(-fFeX/2.-0.001, -fFeY/2.-0.001, 0), TGeoRotation("rot", 0, 0, 90));
+    CutDownRight->SetName("CutDownRight");
+    CutDownRight->RegisterYourself();
+    TGeoCombiTrans *CutDownLeft = new TGeoCombiTrans(TGeoTranslation(+fFeX/2.+0.001, -fFeY/2.-0.001, 0), TGeoRotation("rot1", 0, 0, 180));
+    CutDownLeft->SetName("CutDownLeft");
+    CutDownLeft->RegisterYourself();
+    TGeoCombiTrans *CutUpLeft = new TGeoCombiTrans(TGeoTranslation(+fFeX/2.+0.001, +fFeY/2.+0.001, 0), TGeoRotation("rot2", 0, 0, -90));
+    CutUpLeft->SetName("CutUpLeft");
+    CutUpLeft->RegisterYourself();
+
+
+    TGeoTranslation *CoilUp = new TGeoTranslation("CoilUp", 0, fMuonSysPlaneY/2.+fCoilY/2., 0);
+    TGeoTranslation *CoilDown = new TGeoTranslation("CoilDown", 0, -fMuonSysPlaneY/2.-fCoilY/2., 0);
+    CoilUp->RegisterYourself();
+    CoilDown->RegisterYourself();
+
+    TGeoCompositeShape *MuonSysFe = new TGeoCompositeShape("MuonSysFe", "FeWall-MuonSysPlane-(CoilSpace:CoilUp)-(CoilSpace:CoilDown)");
+    TGeoVolume *volFeWall = new TGeoVolume("volFeWall", MuonSysFe, Iron);
+    TGeoVolume *volMagFe = new TGeoVolume("volMagFe", MuonSysPlane, Iron);
+    volFeWall->SetLineColor(kGreen-4);
+    volMagFe->SetLineColor(kGreen);
+  
+    //fField = 1 * u.Tesla;
+    LOG(INFO) << " Mag field: " << fField/10. << " Tesla" << endl;
+    TGeoUniformMagField *magField = new TGeoUniformMagField(-fField,0, 0);
+    TGeoGlobalMagField::Instance()->SetField(magField);
+    volMagFe->SetField(magField);
+
+    TGeoVolume *volCoil = new TGeoVolume("volCoil", Coil, Cu);
+    volCoil->SetLineColor(kOrange+1);
+    TGeoVolume *volVertCoil = new TGeoVolume("volVertCoil", VertCoil, Cu);
+    volVertCoil->SetLineColor(kOrange+1);
+
+    // Minimal configuration includes Silicon strip detectors, for now only a sensitive plane is implemented
+    TGeoBBox *MuonSysDet = new TGeoBBox("MuonSysDet", fMuonSysPlaneX/2., fMuonSysPlaneY/2., fFeGap/2.);
+    TGeoVolume *volMuonSysDet = new TGeoVolume("volMuonSysDet", MuonSysDet, Silicon);
+    volMuonSysDet->SetLineColor(kGray-2);
+    AddSensitiveVolume(volMuonSysDet);
+
+    volMuFilter->AddNode(volVertCoil, 0, new TGeoTranslation(0, 0, 0));
+    for(int i = 0; i<fNplanes; i++)
+    {
+      volMuFilter->AddNode(volFeWall, i, new TGeoTranslation(0, 0, (fCoilY+fFeZ)/2+i*(fFeZ+fFeGap)));
+      volMuFilter->AddNode(volMagFe, i, new TGeoTranslation(0, 0, (fCoilY+fFeZ)/2+i*(fFeZ+fFeGap)));
+      if (i == fNplanes-1) continue;
+      volMuFilter->AddNode(volMuonSysDet, i, new TGeoTranslation(0, 0, (fCoilY+fFeZ)/2+(fFeZ+fFeGap)/2.+i*(fFeZ+fFeGap)));
+    }
+    volMuFilter->AddNode(volCoil, 0, new TGeoTranslation(0, fMuonSysPlaneY/2.+fCoilY/2., (fCoilY+fFeZ)/2+fCoilZ/2.-fFeZ/2.));
+    volMuFilter->AddNode(volCoil, 1, new TGeoTranslation(0, -fMuonSysPlaneY/2.-fCoilY/2., (fCoilY+fFeZ)/2+fCoilZ/2.-fFeZ/2.));
+    volMuFilter->AddNode(volVertCoil, 1, new TGeoTranslation(0, 0, (fNplanes-1)*(fFeZ+fFeGap)+fCoilY+fFeZ));
+
+    }
 
 }
 

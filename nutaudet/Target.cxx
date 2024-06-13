@@ -329,8 +329,8 @@ void Target::ConstructGeometry()
   TGeoBBox *TargetBox = new TGeoBBox("TargetBox",XDimension/2, YDimension/2, ZDimension/2);
   TGeoVolume *volTarget = new TGeoVolume("volTarget",TargetBox, air);
 
-  // In both fDesign=0 & fDesign=1 the emulsion target is inserted within a magnet
-  if(fDesign!=2 && fDesign!=4)
+  // In fDesign 0, fDesign 1 and fDesign 3 the emulsion target is inserted within a magnet
+  if(fDesign==0 || fDesign==1 || fDesign == 3)
     {
       TGeoVolume *MagnetVol;
 
@@ -354,7 +354,7 @@ void Target::ConstructGeometry()
 	}
 
       //Definition of the target box containing emulsion bricks + CES + target trackers (TT)
-      if (fDesign != 3 && fDesign != 4) volTarget->SetField(magField2);
+      if (fDesign < 3) volTarget->SetField(magField2);
       volTarget->SetVisibility(1);
       volTarget->SetVisDaughters(1);
       if(fDesign==0) //TP
@@ -452,7 +452,7 @@ void Target::ConstructGeometry()
   volBrick->SetVisibility(kTRUE);
 
   //The CES is required only in the option with magnet surrounding the emulsion target
-  if(fDesign!=2 && fDesign!=4)
+  if(fDesign==0 || fDesign==1 || fDesign == 3)
     {
       //CES
 
@@ -556,10 +556,8 @@ void Target::ConstructGeometry()
 
   //in fDesign==2 and fDesign==4 the emulsion target is not surrounded by a magnet => no magnetic field inside
   //In the no Magnetic field option, no CES is needed => only brick walls + TT
-  if(fDesign==2 || fDesign == 4)
+  if(fDesign==2 || fDesign == 4 || fDesign==5)
     {
-      EmulsionMagnet emuMag;
-
       TGeoVolume *tTauNuDet = gGeoManager->GetVolume("tTauNuDet");
       cout<< "Tau Nu Detector fMagnetConfig: "<< fDesign<<endl;
 
