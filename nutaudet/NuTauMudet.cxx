@@ -838,26 +838,25 @@ void NuTauMudet::ConstructGeometry()
 
 */
     //putting geometry values hard coded for first test
-    Int_t fNplanes = 22;
-    Double_t fFeGap = 2.0;
+    Int_t fNplanes = fNFe;
+    Double_t fFeGap = fGapMiddle;
     //muon system plane size
-    Double_t fMuonSysPlaneX = 60.;
-    Double_t fMuonSysPlaneY = fMuonSysPlaneX;
+    Double_t fMuonSysPlaneX = fXRpc;
+    Double_t fMuonSysPlaneY = fYRpc;
     //coil size
-    Double_t fCoilX = fMuonSysPlaneX;
-    Double_t fCoilY = 9.2;
+    Double_t fCoilX = fCoilW;
+    Double_t fCoilY = fCoilH;
     //iron size
-    Double_t fFeX = 2*fMuonSysPlaneX;
-    Double_t fFeY = 2*fMuonSysPlaneY+3*fCoilY;
-    Double_t fFeZ = 8.0;
+    Double_t fFeX = fXFe;
+    Double_t fFeY = fYFe;
+    Double_t fFeZ = fZFe;
     //
     Double_t fCoilZ         = (fNplanes)*(fFeZ+fFeGap)-fFeGap;
-    Double_t fCutOffset = 3.0;
     // yoke and cuts
-     Double_t fFeYokeX       = (fFeX-fMuonSysPlaneX)/2.;
-    Double_t fFeYokeY       = (fFeY-fMuonSysPlaneY-fCoilY)/2.;
-    Double_t fFeCutX        = fFeYokeX - fCutOffset;
-    Double_t fFeCutY        = fFeYokeY - fCutOffset;
+    Double_t fFeYokeX       = fXRyoke;
+    Double_t fFeYokeY       = fYRyoke; 
+    Double_t fFeCutX        = fFeYokeX - fCutLength;
+    Double_t fFeCutY        = fFeYokeY - fCutHeight;
 
     TGeoVolumeAssembly *volMuFilter = new TGeoVolumeAssembly("volMuFilter");
     //TGeoBBox *MuFilter = new TGeoBBox("MuFilter",fXtot/2., fYtot/2., fZtot/2.);

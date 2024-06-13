@@ -239,7 +239,13 @@ def configure(run,ship_geo):
      taumuondetector.SetMagneticField(ship_geo.tauMudet.B)
      taumuondetector.SetReturnYokeDimensions(ship_geo.tauMudet.XRyoke,ship_geo.tauMudet.YRyoke, ship_geo.tauMudet.ZRyoke)
      taumuondetector.SetCoilParameters(ship_geo.tauMudet.CoilH, ship_geo.tauMudet.CoilW, 1, 0.) #for now, only containers
+   if ship_geo.nuTauTargetDesign==5: #version from AdvSNDMinimal
+     taumuondetector.SetFeDimensions(ship_geo.tauMudet.XFe,ship_geo.tauMudet.YFe, ship_geo.tauMudet.ZFe)
+     taumuondetector.SetNFeInArm(ship_geo.tauMudet.NFe)
+     taumuondetector.SetLateralCutSize(ship_geo.tauMudet.CutHeight, ship_geo.tauMudet.CutLength)
+
    detectorList.append(taumuondetector)
+
    if ship_geo.nuTauTargetDesign==0 or ship_geo.nuTauTargetDesign==1 or ship_geo.nuTauTargetDesign==3:
     EmuMagnet = ROOT.EmulsionMagnet("EmuMagnet",ship_geo.EmuMagnet.zC,"EmulsionMagnet")
     EmuMagnet.SetDesign(ship_geo.EmuMagnet.Design)

@@ -298,7 +298,7 @@ void Target::ConstructGeometry()
   Double_t rho_film = (NEmuMat->GetDensity() * 2 * EmulsionThickness +  PBaseMat->GetDensity() * PlasticBaseThickness)/(2* EmulsionThickness  + PlasticBaseThickness);
   Double_t frac_emu = NEmuMat->GetDensity() * 2 * EmulsionThickness /(NEmuMat->GetDensity() * 2 * EmulsionThickness + PBaseMat->GetDensity() * PlasticBaseThickness);
 
-  if (fsingleemulsionfilm) cout<<"TARGET PRINTOUT: Single volume for emulsion film chosen: average density: "<<rho_film<<" fraction in mass of emulsion "<<frac_emu<<endl;
+  if (fsingleemulsionfilm && fDesign < 5) cout<<"TARGET PRINTOUT: Single volume for emulsion film chosen: average density: "<<rho_film<<" fraction in mass of emulsion "<<frac_emu<<endl;
 
   TGeoMixture * emufilmmixture = new TGeoMixture("EmulsionFilmMixture", 2.00); // two nuclear emulsions separated by the plastic base
 
@@ -321,6 +321,9 @@ void Target::ConstructGeometry()
 
   InitMedium("steel");
   TGeoMedium *Steel =gGeoManager->GetMedium("steel");
+
+  InitMedium("silicon");
+  TGeoMedium *Silicon = gGeoManager->GetMedium("silicon");
 
   Int_t NPlates = number_of_plates; //Number of doublets emulsion + Pb
   Int_t NRohacellGap = 2;
@@ -412,18 +415,39 @@ void Target::ConstructGeometry()
       volBrick->AddNode(fDesign < 4 ? volLead: volTungsten, n, new TGeoTranslation(0,0,-BrickZ/2+BrickPackageZ/2+ EmPlateWidth + LeadThickness/2 + n*AllPlateWidth));
     }
   if (fsingleemulsionfilm){  //simplified configuration, unique sensitive layer for the whole emulsion plate
-   TGeoBBox *EmulsionFilm = new TGeoBBox("EmulsionFilm", EmulsionX/2, EmulsionY/2, EmPlateWidth/2);
-   TGeoVolume *volEmulsionFilm = new TGeoVolume("Emulsion",EmulsionFilm,Emufilm); //TOP
-   volEmulsionFilm->SetLineColor(kBlue);
+   TGeoBBox *EmulsionFilm;
+   TGeoVolume *volEmulsionFilm;
 
-   if(fPassive==0)
+   TGeoBBox *SensitiveLayer;
+   TGeoVolume *volSNDTargetSensitive;
+
+   if (fDesign<5){
+    EmulsionFilm = new TGeoBBox("EmulsionFilm", EmulsionX/2, EmulsionY/2, EmPlateWidth/2);
+    volEmulsionFilm = new TGeoVolume("Emulsion",EmulsionFilm,Emufilm); //TOP
+    volEmulsionFilm->SetLineColor(kBlue);
+   }
+   else{
+    Double_t SensX = EmulsionX;
+    Double_t SensY = EmulsionY;
+    Double_t SensZ = EmPlateWidth; 
+
+    SensitiveLayer= new TGeoBBox("SNDTargetSensitiveLayer", SensX/2, SensY/2, SensZ/2);
+    volSNDTargetSensitive = new TGeoVolume("volSNDTargetSensitive",SensitiveLayer,Silicon); //TOP
+    volSNDTargetSensitive->SetLineColor(kRed);   
+    AddSensitiveVolume(volSNDTargetSensitive);
+
+   }
+   if(fPassive==0 && fDesign<5)
     {
       AddSensitiveVolume(volEmulsionFilm);
     }
 
    for(Int_t n=0; n<NPlates+1; n++)
     {
-      volBrick->AddNode(volEmulsionFilm, n, new TGeoTranslation(0,0,-BrickZ/2+BrickPackageZ/2+ EmPlateWidth/2 + n*AllPlateWidth));
+      if (fDesign < 5)
+       volBrick->AddNode(volEmulsionFilm, n, new TGeoTranslation(0,0,-BrickZ/2+BrickPackageZ/2+ EmPlateWidth/2 + n*AllPlateWidth));
+      else
+       volBrick->AddNode(volSNDTargetSensitive, n, new TGeoTranslation(0,0,-BrickZ/2+BrickPackageZ/2+ EmPlateWidth/2 + n*AllPlateWidth));
     }
    }
   else { //more accurate configuration, two emulsion films divided by a plastic base

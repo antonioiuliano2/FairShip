@@ -673,7 +673,7 @@ with ConfigRegistry.register_config("basic") as c:
      c.tauMudet.YEle =  c.tauMudet.YRpc
      c.tauMudet.ZEle = 1*u.mm
 
-    if nuTauTargetDesign==4 or nuTauTargetDesign == 5:
+    if nuTauTargetDesign==4:
      c.tauMudet.XRpc = 80 *u.cm
      c.tauMudet.YRpc = 140 *u.cm
      c.tauMudet.ZRpc = 8 *u.cm
@@ -691,6 +691,43 @@ with ConfigRegistry.register_config("basic") as c:
      c.tauMudet.ZRyoke = c.tauMudet.Ztot
      c.tauMudet.B = 1.0 * u.tesla #magnetic field is back in MuFilter!
      c.tauMudet.zMudetC = c.Chamber1.z -c.chambers.Tub1length - c.tauMudet.Ztot/2 -31*u.cm
+    
+    if nuTauTargetDesign==5: #configuration from AdvSND Minimal
+       MuonSysPlaneX = 60. * u.cm
+       MuonSysPlaneY = MuonSysPlaneX
+
+       c.tauMudet.XRpc = MuonSysPlaneX
+       c.tauMudet.YRpc = MuonSysPlaneY
+       c.tauMudet.ZRpc = 2 * u.cm
+
+       c.tauMudet.CoilW = 60 * u.cm #CoilX
+       c.tauMudet.CoilH = 9.2 * u.cm #CoilY
+
+       c.tauMudet.XFe = 2*MuonSysPlaneX
+       c.tauMudet.YFe = 2*MuonSysPlaneY+3*c.tauMudet.CoilH
+       c.tauMudet.ZFe = 8.0 * u.cm
+              
+       c.tauMudet.NFe = 22
+       c.tauMudet.NRpc= c.tauMudet.NFe - 1
+
+       #Cut Offset
+       c.tauMudet.CutHeight = 3.0 * u.cm
+       c.tauMudet.CutLength = c.tauMudet.CutHeight 
+
+       c.tauMudet.XRyoke = (c.tauMudet.XFe-c.tauMudet.XRpc)/2. #(fFeX-fMuonSysPlaneX)/2.;
+       c.tauMudet.YRyoke = (c.tauMudet.YFe-c.tauMudet.YRpc-c.tauMudet.CoilH)/2.#(fFeY-fMuonSysPlaneY-fCoilY)/2.;
+
+       c.tauMudet.GapM = c.tauMudet.ZRpc #FeGap
+
+       c.tauMudet.Xtot = c.tauMudet.XFe
+       c.tauMudet.Ytot = c.tauMudet.YFe
+       c.tauMudet.Ztot = c.tauMudet.ZFe * c.tauMudet.NFe + c.tauMudet.NRpc * c.tauMudet.ZRpc + 2 * c.tauMudet.CoilH
+
+       c.tauMudet.ZRyoke = c.tauMudet.Ztot
+
+       c.tauMudet.B = 1.0 * u.tesla #magnetic field is back in MuFilter!
+       c.tauMudet.zMudetC = c.Chamber1.z -c.chambers.Tub1length - c.tauMudet.Ztot -31*u.cm
+
 
     if nuTauTargetDesign==0 or nuTauTargetDesign==1:
        c.EmuMagnet.zC = -c.decayVolume.length/2. - c.tauMudet.GapD - c.tauMudet.Ztot - c.EmuMagnet.GapDown - c.EmuMagnet.Z/2
@@ -879,9 +916,12 @@ with ConfigRegistry.register_config("basic") as c:
         c.NuTauTarget.CESW = 0*u.cm
         c.NuTauTarget.CellW = c.NuTauTarget.BrZ
         c.NuTauTarget.zdim = c.NuTauTarget.wall* c.NuTauTarget.CellW + (c.NuTauTarget.wall+1)*c.NuTauTT.TTZ
-    if nuTauTargetDesign==4 or nuTauTargetDesign==5:
+    if nuTauTargetDesign==4:
         c.EmuMagnet.GapDown = 20 * u.cm
         c.NuTauTarget.zC = c.tauMudet.zMudetC - c.tauMudet.Ztot/2 - c.EmuMagnet.GapDown - c.NuTauTarget.zdim/2.
+    if nuTauTargetDesign==5:
+        c.tauMudet.GapDown = 0 * u.cm
+        c.NuTauTarget.zC = c.tauMudet.zMudetC - c.tauMudet.GapDown - c.NuTauTarget.zdim/2.
 
     c.NuTauTarget.BaseX =  c.NuTauTarget.xdim + 20*u.cm
     c.NuTauTarget.BaseY = 20*u.cm     
