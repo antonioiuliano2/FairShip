@@ -973,4 +973,7 @@ with ConfigRegistry.register_config("basic") as c:
     c.UpstreamTagger.X_Strip = 229 * u.cm  - UBT_x_crop
     c.UpstreamTagger.X_Strip64 = 1.534 * u.cm
     c.UpstreamTagger.Y_Strip64 = 111 * u.cm
-    c.UpstreamTagger.Z_Position = c.tauMudet.zMudetC + (c.tauMudet.Ztot)/2 + 12.0*u.cm
+    if (nuTauTargetDesign < 5):
+     c.UpstreamTagger.Z_Position = c.tauMudet.zMudetC + (c.tauMudet.Ztot/2.) + 12.0*u.cm
+    else:
+     c.UpstreamTagger.Z_Position = c.tauMudet.zMudetC + (c.tauMudet.Ztot) + 12.0*u.cm
