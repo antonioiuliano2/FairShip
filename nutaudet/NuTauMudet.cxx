@@ -839,7 +839,6 @@ void NuTauMudet::ConstructGeometry()
     Double_t fFeCutX        = fXRyoke - fCutLength;
     Double_t fFeCutY        = fYRyoke - fCutHeight;
 
-    //TGeoVolumeAssembly *volMuFilter = new TGeoVolumeAssembly("volMuFilter");
     TGeoBBox *MuFilter = new TGeoBBox("MuFilter",fXtot/2., fYtot/2., fZtot/2.);
     TGeoVolume *volMuFilter = new TGeoVolume("volMuFilter",MuFilter,air); //MuFilter
   
@@ -848,7 +847,6 @@ void NuTauMudet::ConstructGeometry()
     TGeoBBox *MuonSysPlane = new TGeoBBox("MuonSysPlane", fXRpc/2., fYRpc/2., fZFe/2.+0.001);
     TGeoBBox *CoilSpace = new TGeoBBox("CoilSpace", fCoilW/2., fCoilH/2.+0.005, fZFe/2.+0.05);
     TGeoBBox *Coil = new TGeoBBox("Coil", fCoilW/2., fCoilH/2., fCoilZ/2.);
-    //TGeoBBox *MuonSysDet = new TGeoBBox("MuonSysDet", fXRpc/2., fYRpc/2., fZRpc/2.); //unused
 
     TGeoBBox *VertCoil = new TGeoBBox("VertCoil", fCoilW/2., fYRpc/2., fCoilH/2.);
 
