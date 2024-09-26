@@ -107,37 +107,6 @@ def configure_veto(yaml_file):
     )
 
     Veto.SetLiquidVeto(1)
-   if ship_geo.nuTauTargetDesign==4 or ship_geo.nuTauTargetDesign==5: #magnetic field is back in taumuondetector for mufilter
-     taumuondetector.SetRpcDimensions(ship_geo.tauMudet.XRpc,ship_geo.tauMudet.YRpc, ship_geo.tauMudet.ZRpc)
-     taumuondetector.SetGapMiddle(ship_geo.tauMudet.GapM)
-     taumuondetector.SetMagneticField(ship_geo.tauMudet.B)
-     taumuondetector.SetReturnYokeDimensions(ship_geo.tauMudet.XRyoke,ship_geo.tauMudet.YRyoke, ship_geo.tauMudet.ZRyoke)
-     taumuondetector.SetCoilParameters(ship_geo.tauMudet.CoilH, ship_geo.tauMudet.CoilW, 1, 0.) #for now, only containers
-   if ship_geo.nuTauTargetDesign==5: #version from AdvSNDMinimal
-     taumuondetector.SetFeDimensions(ship_geo.tauMudet.XFe,ship_geo.tauMudet.YFe, ship_geo.tauMudet.ZFe)
-     taumuondetector.SetNFeInArm(ship_geo.tauMudet.NFe)
-     taumuondetector.SetLateralCutSize(ship_geo.tauMudet.CutHeight, ship_geo.tauMudet.CutLength)
-
-   detectorList.append(taumuondetector)
-
-   if ship_geo.nuTauTargetDesign==0 or ship_geo.nuTauTargetDesign==1 or ship_geo.nuTauTargetDesign==3:
-    EmuMagnet = ROOT.EmulsionMagnet("EmuMagnet",ship_geo.EmuMagnet.zC,"EmulsionMagnet")
-    EmuMagnet.SetDesign(ship_geo.EmuMagnet.Design)
-    EmuMagnet.SetGaps(ship_geo.EmuMagnet.GapUp, ship_geo.EmuMagnet.GapDown)
-    EmuMagnet.SetMagneticField(ship_geo.EmuMagnet.B)
-    EmuMagnet.SetConstantField(ship_geo.EmuMagnet.WithConstField)
-    EmuMagnet.SetMagnetSizes(ship_geo.EmuMagnet.X, ship_geo.EmuMagnet.Y, ship_geo.EmuMagnet.Z)
-    if ship_geo.nuTauTargetDesign==0 or ship_geo.nuTauTargetDesign==1:
-      EmuMagnet.SetCoilParameters(ship_geo.EmuMagnet.Radius, ship_geo.EmuMagnet.Height1, ship_geo.EmuMagnet.Height2, ship_geo.EmuMagnet.Distance)
-    if ship_geo.nuTauTargetDesign==3:
-      EmuMagnet.SetCoilParameters(ship_geo.EmuMagnet.CoilX,ship_geo.EmuMagnet.CoilY,ship_geo.EmuMagnet.Height1, ship_geo.EmuMagnet.Height2, ship_geo.EmuMagnet.Thickness)
-      EmuMagnet.SetCutDimensions(ship_geo.EmuMagnet.CutLength, ship_geo.EmuMagnet.CutHeight)
-    EmuMagnet.SetMagnetColumn(ship_geo.EmuMagnet.ColX, ship_geo.EmuMagnet.ColY, ship_geo.EmuMagnet.ColZ)
-    EmuMagnet.SetBaseDim(ship_geo.EmuMagnet.BaseX, ship_geo.EmuMagnet.BaseY, ship_geo.EmuMagnet.BaseZ)
-    EmuMagnet.SetPillarDimensions(ship_geo.EmuMagnet.PillarX, ship_geo.EmuMagnet.PillarY, ship_geo.EmuMagnet.PillarZ)
-    detectorList.append(EmuMagnet)
-   if ship_geo.nuTauTargetDesign==2 or ship_geo.nuTauTargetDesign==4:
-     EmuMagnet = ROOT.EmulsionMagnet()
 
     Veto.SetVesselStructure(
         veto_geo.innerSupport,
@@ -152,36 +121,6 @@ def configure_veto(yaml_file):
     )
     
     detectorList.append(Veto)
-
-   NuTauTarget.SetCESParam(ship_geo.NuTauTarget.RohG, ship_geo.NuTauTarget.LayerCESW, ship_geo.NuTauTarget.CESW, ship_geo.NuTauTarget.CESPack)
-   NuTauTarget.SetCellParam(ship_geo.NuTauTarget.CellW)
-   if ship_geo.nuTauTargetDesign==0 or ship_geo.nuTauTargetDesign==1:
-    NuTauTarget.SetMagnetHeight(ship_geo.EmuMagnet.Y)
-    NuTauTarget.SetColumnHeight(ship_geo.EmuMagnet.ColY)
-    NuTauTarget.SetBaseHeight(ship_geo.EmuMagnet.BaseY)
-    NuTauTarget.SetCoilUpHeight(ship_geo.EmuMagnet.Height1)
-    NuTauTarget.SetCoilDownHeight(ship_geo.EmuMagnet.Height2)
-   if ship_geo.nuTauTargetDesign==0 or ship_geo.nuTauTargetDesign==1 or ship_geo.nuTauTargetDesign==3: #options with magnet
-    NuTauTarget.SetMagneticField(ship_geo.EmuMagnet.B)
-   if (ship_geo.nuTauTargetDesign==2 or ship_geo.nuTauTargetDesign==4):
-    NuTauTarget.SetPillarDimension(ship_geo.NuTauTarget.PillarX,ship_geo.NuTauTarget.PillarY,ship_geo.NuTauTarget.PillarZ)
-    NuTauTarget.SetBaseDimension(ship_geo.NuTauTarget.BaseX, ship_geo.NuTauTarget.BaseY, ship_geo.NuTauTarget.BaseZ)
-
-# Target Tracker
-   detectorList.append(NuTauTarget)
-  if ship_geo.nuTauTargetDesign<5: #no TT or HPT in the new ECN3 version
-   NuTauTT = ROOT.TargetTracker("TargetTrackers", ship_geo.NuTauTT.TTX, ship_geo.NuTauTT.TTY, ship_geo.NuTauTT.TTZ, ROOT.kTRUE)
-   NuTauTT.SetDesign(ship_geo.NuTauTT.design)
-   if hasattr(ship_geo.NuTauTT, "scifimat_width"):#for backward compatibility
-    NuTauTT.SetSciFiParam(ship_geo.NuTauTT.scifimat_width, ship_geo.NuTauTT.scifimat_hor, ship_geo.NuTauTT.scifimat_vert, ship_geo.NuTauTT.scifimat_z, ship_geo.NuTauTT.support_z, ship_geo.NuTauTT.honeycomb_z)
-    NuTauTT.SetNumberSciFi(ship_geo.NuTauTT.n_hor_planes, ship_geo.NuTauTT.n_vert_planes)
-   NuTauTT.SetTargetTrackerParam(ship_geo.NuTauTT.TTX, ship_geo.NuTauTT.TTY, ship_geo.NuTauTT.TTZ)
-   NuTauTT.SetBrickParam(ship_geo.NuTauTarget.CellW)
-   NuTauTT.SetTotZDimension(ship_geo.NuTauTarget.zdim)
-   NuTauTT.SetNumberTT(ship_geo.NuTauTT.n)
-   # method of nutau target that must be called after TT parameter definition
-   NuTauTarget.SetTTzdimension(ship_geo.NuTauTT.TTZ)
-   detectorList.append(NuTauTT)
 
 def configure(run, ship_geo):
     # ---- for backward compatibility ----
@@ -506,7 +445,7 @@ def configure(run, ship_geo):
                     )
 
             if (
-                ship_geo.nuTauTargetDesign == 4
+                ship_geo.nuTauTargetDesign == 4 or ship_geo.nuTauTargetDesign==5
             ):  # magnetic field is back in taumuondetector for mufilter
                 taumuondetector.SetRpcDimensions(
                     ship_geo.tauMudet.XRpc,
@@ -523,6 +462,15 @@ def configure(run, ship_geo):
                 taumuondetector.SetCoilParameters(
                     ship_geo.tauMudet.CoilH, ship_geo.tauMudet.CoilW, 1, 0.0
                 )  # for now, only containers
+            if ship_geo.nuTauTargetDesign==5: #version from AdvSNDMinimal
+                    taumuondetector.SetFeDimensions(
+                        ship_geo.tauMudet.XFe,
+                        ship_geo.tauMudet.YFe,
+                        ship_geo.tauMudet.ZFe,
+                    )
+                    taumuondetector.SetNFeInArm(ship_geo.tauMudet.NFe)
+                    taumuondetector.SetLateralCutSize(ship_geo.tauMudet.CutHeight,
+                                                      ship_geo.tauMudet.CutLength)
             detectorList.append(taumuondetector)
             if (
                 ship_geo.nuTauTargetDesign == 0
@@ -652,7 +600,7 @@ def configure(run, ship_geo):
                 NuTauTarget.SetBaseHeight(ship_geo.EmuMagnet.BaseY)
                 NuTauTarget.SetCoilUpHeight(ship_geo.EmuMagnet.Height1)
                 NuTauTarget.SetCoilDownHeight(ship_geo.EmuMagnet.Height2)
-            if ship_geo.nuTauTargetDesign != 2 and ship_geo.nuTauTargetDesign != 4:
+            if ship_geo.nuTauTargetDesign == 0 or ship_geo.nuTauTargetDesign == 1 or ship_geo.nuTauTargetDesign == 3:
                 NuTauTarget.SetMagneticField(ship_geo.EmuMagnet.B)
             if ship_geo.nuTauTargetDesign == 2 or ship_geo.nuTauTargetDesign == 4:
                 NuTauTarget.SetPillarDimension(
@@ -667,17 +615,18 @@ def configure(run, ship_geo):
                 )
 
             # Target Tracker
-            NuTauTT = ROOT.TargetTracker(
+            if ship_geo.nuTauTargetDesign<5:
+             NuTauTT = ROOT.TargetTracker(
                 "TargetTrackers",
                 ship_geo.NuTauTT.TTX,
                 ship_geo.NuTauTT.TTY,
                 ship_geo.NuTauTT.TTZ,
                 ROOT.kTRUE,
-            )
-            NuTauTT.SetDesign(ship_geo.NuTauTT.design)
-            if hasattr(
+             )
+             NuTauTT.SetDesign(ship_geo.NuTauTT.design)
+             if hasattr(
                 ship_geo.NuTauTT, "scifimat_width"
-            ):  # for backward compatibility
+             ):  # for backward compatibility
                 NuTauTT.SetSciFiParam(
                     ship_geo.NuTauTT.scifimat_width,
                     ship_geo.NuTauTT.scifimat_hor,
@@ -689,16 +638,17 @@ def configure(run, ship_geo):
                 NuTauTT.SetNumberSciFi(
                     ship_geo.NuTauTT.n_hor_planes, ship_geo.NuTauTT.n_vert_planes
                 )
-            NuTauTT.SetTargetTrackerParam(
+             NuTauTT.SetTargetTrackerParam(
                 ship_geo.NuTauTT.TTX, ship_geo.NuTauTT.TTY, ship_geo.NuTauTT.TTZ
-            )
-            NuTauTT.SetBrickParam(ship_geo.NuTauTarget.CellW)
-            NuTauTT.SetTotZDimension(ship_geo.NuTauTarget.zdim)
-            NuTauTT.SetNumberTT(ship_geo.NuTauTT.n)
-            # method of nutau target that must be called after TT parameter definition
-            NuTauTarget.SetTTzdimension(ship_geo.NuTauTT.TTZ)
+             )
+             NuTauTT.SetBrickParam(ship_geo.NuTauTarget.CellW)
+             NuTauTT.SetTotZDimension(ship_geo.NuTauTarget.zdim)
+             NuTauTT.SetNumberTT(ship_geo.NuTauTT.n)
+             # method of nutau target that must be called after TT parameter definition
+             NuTauTarget.SetTTzdimension(ship_geo.NuTauTT.TTZ)
+             detectorList.append(NuTauTT)
+
             detectorList.append(NuTauTarget)
-            detectorList.append(NuTauTT)
 
             # High Precision Tracker
             if ship_geo.nuTauTargetDesign < 4:
