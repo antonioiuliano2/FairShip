@@ -919,6 +919,53 @@ void NuTauMudet::ConstructGeometry()
 
     }
 
+    //Target study to be put in the muon shield
+    Double_t fMuShieldZFe = 5.;
+    Double_t fMuShieldZDet = 2.;
+    Int_t fMuShieldNFe = 20;
+
+    Double_t fXTarget = 40.;
+    Double_t fYTarget = 40.;
+    Double_t fZTarget = fMuShieldNFe * fMuShieldZFe + (fMuShieldNFe-1)* fMuShieldZDet;
+    //defining mother volume
+    TGeoBBox * NuTauMuShieldTarget = new TGeoBBox("NuTauMuShieldTarget",fXTarget/2.,fYTarget/2., fZTarget/2.);
+    TGeoVolume * volNuTauMuShieldTarget = new TGeoVolume("volNuTauMuShieldTarget", NuTauMuShieldTarget, air);
+
+    //defining iron blocks and active layers
+    TGeoBBox * NuTauMuShieldPassive = new TGeoBBox("NuTauMuShieldPassive", fXTarget/2.,fYTarget/2.,fMuShieldZFe/2.);
+    TGeoVolume * volNuTauMuShieldPassive = new TGeoVolume("volNuTauMuShieldPassive",NuTauMuShieldPassive, Iron);
+    volNuTauMuShieldPassive->SetLineColor(kGray+1);
+
+    TGeoBBox * NuTauMuShieldActive= new TGeoBBox("NuTauMuShieldActive", fXTarget/2.,fYTarget/2.,fMuShieldZDet/2.);
+    TGeoVolume * volNuTauMuShieldActive = new TGeoVolume("volNuTauMuShieldActive",NuTauMuShieldActive, Silicon);
+    volNuTauMuShieldActive->SetLineColor(kRed);
+    AddSensitiveVolume(volNuTauMuShieldActive);
+
+    //building volume
+    Double_t dZstep = 0.;
+    volNuTauMuShieldTarget->AddNode(volNuTauMuShieldPassive,0,
+      new TGeoTranslation(0,0,-fZTarget/2.+ dZstep + fMuShieldZFe/2.));
+    dZstep += fMuShieldZFe;
+    //starting loop
+    for (int i = 0; i < (fMuShieldNFe-1); i++){
+      volNuTauMuShieldTarget->AddNode(volNuTauMuShieldActive,i*1e+3,
+        new TGeoTranslation(0,0,-fZTarget/2. + dZstep + fMuShieldZDet/2.));
+      volNuTauMuShieldTarget->AddNode(volNuTauMuShieldPassive,i+1,
+        new TGeoTranslation(0,0,-fZTarget/2. + dZstep + fMuShieldZDet + fMuShieldZFe/2.));
+      dZstep += fMuShieldZFe + fMuShieldZDet;
+    }
+    //for now putting in an empty space for check
+    //tTauNuDet->AddNode(volNuTauMuShieldTarget,0,new TGeoTranslation(0.,0.,fZcenter + fZtot/2. + 100.));
+    //tTauNuDet->AddNode(volNuTauMuShieldTarget,0,new TGeoTranslation(0.,0.,-3239.));
+    //tTauNuDet->AddNode(volNuTauMuShieldTarget,1,new TGeoTranslation(0.,0.,-3632.624));
+    //tTauNuDet->AddNode(volNuTauMuShieldTarget,2,new TGeoTranslation(0.,0.,-3933.01));
+
+    //no SC, all Warm
+    tTauNuDet->AddNode(volNuTauMuShieldTarget,0,new TGeoTranslation(0.,0.,-3239.));
+    tTauNuDet->AddNode(volNuTauMuShieldTarget,1,new TGeoTranslation(0.,0.,-3753.));
+    tTauNuDet->AddNode(volNuTauMuShieldTarget,2,new TGeoTranslation(0.,0.,-4372.));
+
+
 }
 
 
