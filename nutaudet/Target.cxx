@@ -312,6 +312,9 @@ void Target::ConstructGeometry()
   InitMedium("silicon");
   TGeoMedium *Silicon = gGeoManager->GetMedium("silicon");
 
+  InitMedium("iron");
+  TGeoMedium *Iron =gGeoManager->GetMedium("iron");
+
   Int_t NPlates = number_of_plates; //Number of doublets emulsion + Pb
   Int_t NRohacellGap = 2;
 
@@ -610,6 +613,92 @@ void Target::ConstructGeometry()
 	  tTauNuDet->AddNode(PillarVol,3, new TGeoTranslation(-XDimension/2+fPillarX/2,-YDimension/2-fBaseY-fPillarY/2, fCenterZ+ZDimension/2-fPillarZ/2));
 	  tTauNuDet->AddNode(PillarVol,4, new TGeoTranslation(XDimension/2-fPillarX/2,-YDimension/2-fBaseY-fPillarY/2, fCenterZ+ZDimension/2-fPillarZ/2));
     }
+  }
+  if (fDesign == 5){
+    TGeoVolume *tTauNuDet = gGeoManager->GetVolume("tTauNuDet");
+    //Target study to be put in the muon shield
+    Double_t fMuShieldZFe = 5.;
+    Double_t fMuShieldZDet = 2.;
+    Int_t fMuShieldNFe = 20;
+
+    Double_t fXTarget = 40.;
+    Double_t fYTarget = 40.;
+    Double_t fZTarget = fMuShieldNFe * fMuShieldZFe + (fMuShieldNFe-1)* fMuShieldZDet;
+    //defining mother volume
+    TGeoBBox * NuTauMuShieldTarget = new TGeoBBox("NuTauMuShieldTarget",fXTarget/2.,fYTarget/2., fZTarget/2.);
+    TGeoVolume * volNuTauMuShieldTarget = new TGeoVolume("volNuTauMuShieldTarget", NuTauMuShieldTarget, air);
+
+    //defining iron blocks and active layers
+    TGeoBBox * NuTauMuShieldPassive = new TGeoBBox("NuTauMuShieldPassive", fXTarget/2.,fYTarget/2.,fMuShieldZFe/2.);
+    TGeoVolume * volNuTauMuShieldPassive = new TGeoVolume("volNuTauMuShieldPassive",NuTauMuShieldPassive, Iron);
+    volNuTauMuShieldPassive->SetLineColor(kGray+1);
+
+    TGeoBBox * NuTauMuShieldActive= new TGeoBBox("NuTauMuShieldActive", fXTarget/2.,fYTarget/2.,fMuShieldZDet/2.);
+    TGeoVolume * volNuTauMuShieldActive = new TGeoVolume("volNuTauMuShieldActive",NuTauMuShieldActive, Silicon);
+    volNuTauMuShieldActive->SetLineColor(kRed);
+    AddSensitiveVolume(volNuTauMuShieldActive);
+
+    //building volume
+    Double_t dZstep = 0.;
+    volNuTauMuShieldTarget->AddNode(volNuTauMuShieldPassive,0,
+      new TGeoTranslation(0,0,-fZTarget/2.+ dZstep + fMuShieldZFe/2.));
+    dZstep += fMuShieldZFe;
+    //starting loop
+    for (int i = 0; i < (fMuShieldNFe-1); i++){
+      volNuTauMuShieldTarget->AddNode(volNuTauMuShieldActive,i*1e+3,
+        new TGeoTranslation(0,0,-fZTarget/2. + dZstep + fMuShieldZDet/2.));
+      volNuTauMuShieldTarget->AddNode(volNuTauMuShieldPassive,i+1,
+        new TGeoTranslation(0,0,-fZTarget/2. + dZstep + fMuShieldZDet + fMuShieldZFe/2.));
+      dZstep += fMuShieldZFe + fMuShieldZDet;
+    }
+    //redefining thickness to avoid accidents
+    Double_t PassiveThicknessMS = 0.1;
+    Double_t EPlW_MB = 2* EmulsionThickness + PlasticBaseThickness;
+    Double_t AllPlateWidthMS = EPlW_MB + PassiveThicknessMS;
+
+    //emulsion layers inside
+    TGeoBBox *EmulsionFilmMS = new TGeoBBox("EmulsionFilmMS", EmulsionX/2, EmulsionY/2, EmulsionThickness/2);
+    TGeoVolume *volEmulsionFilmMS = new TGeoVolume("EmulsionMS",EmulsionFilmMS,NEmu); //TOP
+    TGeoVolume *volEmulsionFilm2MS = new TGeoVolume("Emulsion2MS",EmulsionFilmMS,NEmu); //BOTTOM
+    volEmulsionFilmMS->SetLineColor(kBlue);
+    volEmulsionFilm2MS->SetLineColor(kBlue);
+
+    if(fPassive==0)
+     {
+       AddSensitiveVolume(volEmulsionFilmMS);
+       AddSensitiveVolume(volEmulsionFilm2MS);
+     }
+    TGeoBBox *PlBaseMS = new TGeoBBox("PlBaseMS", EmulsionX/2, EmulsionY/2, PlasticBaseThickness/2);
+    TGeoVolume *volPlBaseMS = new TGeoVolume("PlasticBaseMS",PlBaseMS,PBase);
+    volPlBaseMS->SetLineColor(kYellow-4);
+    Int_t NPlatesMS = 15;
+    for(Int_t n=0; n<NPlatesMS+1; n++)
+    {
+      volNuTauMuShieldActive->AddNode(volEmulsionFilm2MS, n, new TGeoTranslation(0,0,-fMuShieldZDet/2+ EmulsionThickness/2 + n*AllPlateWidthMS)); //BOTTOM
+      volNuTauMuShieldActive->AddNode(volEmulsionFilmMS, n, new TGeoTranslation(0,0,-fMuShieldZDet/2+3*EmulsionThickness/2+PlasticBaseThickness+n*AllPlateWidthMS)); //TOP
+      volNuTauMuShieldActive->AddNode(volPlBaseMS, n, new TGeoTranslation(0,0,-fMuShieldZDet/2+EmulsionThickness+PlasticBaseThickness/2+n*AllPlateWidthMS)); //PLASTIC BASE
+    }
+
+    TGeoBBox * TungstenMS = new TGeoBBox("WMS", EmulsionX/2, EmulsionY/2, PassiveThicknessMS/2);
+    TGeoVolume *volTungstenMS = new TGeoVolume("TungstenMS",TungstenMS,tungsten);
+    volTungstenMS->SetLineColor(kGray+3);
+
+    for(Int_t n=0; n<NPlatesMS; n++)
+    {
+      //decide to use lead or tungsten, according to fDesign
+      volNuTauMuShieldActive->AddNode(volTungstenMS, n, new TGeoTranslation(0,0,-fMuShieldZDet/2+ EPlW_MB + PassiveThicknessMS/2 + n*AllPlateWidthMS));
+    }
+
+    //for now putting in an empty space for check
+    //tTauNuDet->AddNode(volNuTauMuShieldTarget,0,new TGeoTranslation(0.,0.,fZcenter + fZtot/2. + 100.));
+    //tTauNuDet->AddNode(volNuTauMuShieldTarget,0,new TGeoTranslation(0.,0.,-3239.));
+    //tTauNuDet->AddNode(volNuTauMuShieldTarget,1,new TGeoTranslation(0.,0.,-3632.624));
+    //tTauNuDet->AddNode(volNuTauMuShieldTarget,2,new TGeoTranslation(0.,0.,-3933.01));
+
+    //no SC, all Warm
+    tTauNuDet->AddNode(volNuTauMuShieldTarget,0,new TGeoTranslation(0.,0.,-3239.));
+    tTauNuDet->AddNode(volNuTauMuShieldTarget,1,new TGeoTranslation(0.,0.,-3753.));
+    tTauNuDet->AddNode(volNuTauMuShieldTarget,2,new TGeoTranslation(0.,0.,-4372.));
   }
 }//end construct geometry
 
