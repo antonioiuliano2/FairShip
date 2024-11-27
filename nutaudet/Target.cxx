@@ -648,7 +648,6 @@ void Target::ConstructGeometry()
     auto * SNDSensitiveLayer = new TGeoBBox("SNDSensitiveLayer", SensX/2., SensY/2., SensZ/2.);
     auto * volSNDSensitiveLayer = new TGeoVolume("volSNDSensitiveLayer",SNDSensitiveLayer, air); //TOP
     volSNDSensitiveLayer->SetLineColor(kCyan);
-    AddSensitiveVolume(volSNDSensitiveLayer);
 
     //composition of sensitive volumes
     const Double_t SciFiX = EmulsionX;
@@ -662,6 +661,7 @@ void Target::ConstructGeometry()
     auto * SNDSciFi = new TGeoBBox("SNDSciFi", SciFiX/2., SciFiY/2., SciFiZ/2.);
     auto * volSNDSciFi = new TGeoVolume("volSNDSciFi",SNDSciFi, Silicon); //TOP
     volSNDSciFi->SetLineColor(kGreen);
+    AddSensitiveVolume(volSNDSciFi);
 
     auto * SNDScint = new TGeoBBox("SNDScint", ScintX/2., ScintY/2., ScintZ/2.);
     auto * volSNDScint = new TGeoVolume("volSNDScint",SNDScint, Silicon); //TOP
@@ -832,7 +832,7 @@ Bool_t  Target::ProcessHits(FairVolume* vol)
     if(strcmp(name, "volSNDTargetSiliconLayer") == 0){
       detID = detID +1e+4;
     }
-    else if(strcmp(name, "volSNDSensitiveLayer") == 0){
+    else if(strcmp(name, "volSNDSciFi") == 0){
       detID = detID +2e+4;
     }
     else{
