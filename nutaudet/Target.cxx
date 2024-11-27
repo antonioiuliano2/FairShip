@@ -648,6 +648,7 @@ void Target::ConstructGeometry()
     auto * SNDSensitiveLayer = new TGeoBBox("SNDSensitiveLayer", SensX/2., SensY/2., SensZ/2.);
     auto * volSNDSensitiveLayer = new TGeoVolume("volSNDSensitiveLayer",SNDSensitiveLayer, air); //TOP
     volSNDSensitiveLayer->SetLineColor(kCyan);
+    AddSensitiveVolume(volSNDSensitiveLayer);
 
     //composition of sensitive volumes
     const Double_t SciFiX = EmulsionX;
@@ -747,7 +748,7 @@ void Target::ConstructGeometry()
     auto *SiTargetBox = new TGeoBBox("SiTargetBox",SiTargetX/2.,SiTargetY/2.,SiTargetZ/2.);
     auto *volSiTarget = new TGeoVolume("volSiTarget",SiTargetBox,air);
 
-    //AddSensitiveVolume(volSNDTargetSiliconLayer) //uncomment when copying in actual class!
+    AddSensitiveVolume(volSNDTargetSiliconLayer); //uncomment when copying in actual class!
 
     auto * SNDTargetTungstenBlock = new TGeoBBox("SNDTargetTungstenBlock", TungstenX/2., TungstenY/2., TungstenZ/2.);
     auto * volSNDTargetTungstenBlock = new TGeoVolume("volSNDTargetTungstenBlock",SNDTargetTungstenBlock,tungsten); //TOP
@@ -827,6 +828,14 @@ Bool_t  Target::ProcessHits(FairVolume* vol)
     const char *name;
 
     name = gMC->CurrentVolName();
+
+    if(strcmp(name, "volSNDTargetSiliconLayer") == 0){
+      detID = detID +1e+4;
+    }
+    else if(strcmp(name, "volSNDSensitiveLayer") == 0){
+      detID = detID +2e+4;
+    }
+    else{
     //cout << name << endl;
 
     if(strcmp(name, "Emulsion") == 0)
@@ -880,7 +889,7 @@ Bool_t  Target::ProcessHits(FairVolume* vol)
 
 
     detID = (NWall+1) *1E7 + (NRow+1) * 1E6 + (NColumn+1)*1E4 + BrickorCES *1E3 + (NPlate+1)*1E1 + EmTop*1 ;
-
+    }//end else about detector name
 
     fVolumeID = detID;
     if (fELoss == 0. ) { return kFALSE; }
