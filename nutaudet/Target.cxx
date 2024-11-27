@@ -832,9 +832,19 @@ Bool_t  Target::ProcessHits(FairVolume* vol)
     if(strcmp(name, "volSNDTargetSiliconLayer") == 0){
       detID = detID +1e+4;
     }
-    else if(strcmp(name, "volSNDSciFi") == 0){
-      detID = detID +2e+4;
+    
+    else if(strcmp(name, "volSNDSciFi") == 0){ 
+      //retrieve detector ID of mother volume
+      for(Int_t i = 0; i < MaxL;i++)
+      {     
+       motherV[i] = gGeoManager->GetMother(i)->GetNumber();
+       const char *mumname = gMC->CurrentVolOffName(i);
+       if(strcmp(mumname, "volSNDSensitiveLayer") == 0){ 
+        detID = motherV[i] + 2e+4;      
+       }
+      }
     }
+
     else{
     //cout << name << endl;
 
