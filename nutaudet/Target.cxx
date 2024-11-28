@@ -426,7 +426,7 @@ void Target::ConstructGeometry()
    volEmulsionFilm = new TGeoVolume("Emulsion",EmulsionFilm,Emufilm); //TOP
    volEmulsionFilm->SetLineColor(kBlue);
    
-   if(fPassive==0 && fDesign<5)
+   if(fPassive==0)
     {
       AddSensitiveVolume(volEmulsionFilm);
     }
@@ -757,7 +757,7 @@ void Target::ConstructGeometry()
     for(Int_t n=0; n<nlayers_SiTarget; n++)
     {
       volSiTarget->AddNode(volSNDTargetTungstenBlock, n, new TGeoTranslation(0,0, -SiTargetZ/2. + n *(SiZ+TungstenZ) + TungstenZ/2. )); //W
-      volSiTarget->AddNode(volSNDTargetSiliconLayer, n*1000, new TGeoTranslation(0,0,-SiTargetZ/2. + n *(SiZ+TungstenZ) + TungstenZ + SiZ/2 )); //Silicon
+      volSiTarget->AddNode(volSNDTargetSiliconLayer, n+1e+2, new TGeoTranslation(0,0,-SiTargetZ/2. + n *(SiZ+TungstenZ) + TungstenZ + SiZ/2 )); //Silicon
     }
 
     //cutting the holes in the magnet for the big targets
@@ -896,7 +896,6 @@ Bool_t  Target::ProcessHits(FairVolume* vol)
       }
 
     Bool_t BrickorCES = EmBrick == 1;
-
 
     detID = (NWall+1) *1E7 + (NRow+1) * 1E6 + (NColumn+1)*1E4 + BrickorCES *1E3 + (NPlate+1)*1E1 + EmTop*1 ;
     }//end else about detector name
