@@ -606,7 +606,7 @@ void Target::ConstructGeometry()
      TGeoBBox *TT = new TGeoBBox("TT", EmulsionX/2, EmulsionY/2, (TTrackerZ)/2);
      TGeoVolume *volTT = new TGeoVolume("TargetTracker",TT,air); //TOP
      volTT->SetLineColor(kBlue);
-
+     if (fPassive == 0) AddSensitiveVolume(volTT);
      volTarget->AddNode(volTT,l,new TGeoTranslation(0, 0, d_cl_z +BrickZ+TTrackerZ/2));
 
     }
@@ -661,7 +661,7 @@ void Target::ConstructGeometry()
     auto * SNDSciFi = new TGeoBBox("SNDSciFi", SciFiX/2., SciFiY/2., SciFiZ/2.);
     auto * volSNDSciFi = new TGeoVolume("volSNDSciFi",SNDSciFi, Silicon); //TOP
     volSNDSciFi->SetLineColor(kGreen);
-    AddSensitiveVolume(volSNDSciFi);
+    if (fPassive == 0) AddSensitiveVolume(volSNDSciFi);
 
     auto * SNDScint = new TGeoBBox("SNDScint", ScintX/2., ScintY/2., ScintZ/2.);
     auto * volSNDScint = new TGeoVolume("volSNDScint",SNDScint, Silicon); //TOP
@@ -748,7 +748,7 @@ void Target::ConstructGeometry()
     auto *SiTargetBox = new TGeoBBox("SiTargetBox",SiTargetX/2.,SiTargetY/2.,SiTargetZ/2.);
     auto *volSiTarget = new TGeoVolume("volSiTarget",SiTargetBox,air);
 
-    AddSensitiveVolume(volSNDTargetSiliconLayer); //uncomment when copying in actual class!
+    if (fPassive == 0) AddSensitiveVolume(volSNDTargetSiliconLayer); //uncomment when copying in actual class!
 
     auto * SNDTargetTungstenBlock = new TGeoBBox("SNDTargetTungstenBlock", TungstenX/2., TungstenY/2., TungstenZ/2.);
     auto * volSNDTargetTungstenBlock = new TGeoVolume("volSNDTargetTungstenBlock",SNDTargetTungstenBlock,tungsten); //TOP
