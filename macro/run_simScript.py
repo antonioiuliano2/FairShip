@@ -383,7 +383,8 @@ if simEngine == "PG":
   myPgun = ROOT.FairBoxGenerator(options.pID,1)
   myPgun.SetPRange(options.Estart,options.Eend)
   myPgun.SetPhiRange(0, 360) # // Azimuth angle range [degree]
-  myPgun.SetXYZ(0.*u.cm, 0.*u.cm, 0.*u.cm)
+  #myPgun.SetXYZ(0.*u.cm, 0.*u.cm, -4157.*u.cm)
+  myPgun.SetBoxXYZ(-20.*u.cm, -20.*u.cm, 20 *u.cm, 20 * u.cm, -4157.*u.cm)
   myPgun.SetThetaRange(0,0) # // Polar angle in lab system range [degree]
   primGen.AddGenerator(myPgun)
 # -----muon DIS Background------------------------
@@ -395,7 +396,9 @@ if simEngine == "muonDIS":
  # mu_start, mu_end =  ship_geo.tauMudet.zMudetC,ship_geo.TrackStation2.z
  #
  # in front of UVT up to tracking station 1
- mu_start, mu_end = ship_geo.Chamber1.z-ship_geo.chambers.Tub1length-10.*u.cm,ship_geo.TrackStation1.z
+ mu_start = -4157. #-3989 - 168 (10 iron interaction lengths)
+ mu_end = -3170.
+ #mu_start, mu_end = ship_geo.Chamber1.z-ship_geo.chambers.Tub1length-10.*u.cm,ship_geo.TrackStation1.z
  print('MuDIS position info input=',mu_start, mu_end)
  DISgen.SetPositions(mu_start, mu_end)
  DISgen.Init(inputFile,options.firstEvent)
@@ -439,7 +442,7 @@ if simEngine == "Genie":
  primGen.SetTarget(0., 0.) # do not interfere with GenieGenerator
  Geniegen = ROOT.GenieGenerator()
  Geniegen.Init(inputFile,options.firstEvent)
- Geniegen.SetPositions(ship_geo.target.z0, ship_geo.tauMudet.zMudetC-5*u.m, ship_geo.TrackStation2.z)
+ Geniegen.SetPositions(ship_geo.target.z0, -3693., -3535.)
  primGen.AddGenerator(Geniegen)
  options.nEvents = min(options.nEvents,Geniegen.GetNevents())
  run.SetPythiaDecayer("DecayConfigNuAge.C")
