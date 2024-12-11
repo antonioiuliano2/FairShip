@@ -85,6 +85,8 @@ class UpstreamTagger: public FairDetector
     void SetSizeY_Strip64(Double_t ystrip64) {det_yStripPos64 = ystrip64;}
     void SetSizeZ_Strip(Double_t zstrip) {det_zStripPos = zstrip;}
 
+    void CheckSND(Bool_t SND){fSND = SND;}
+
     /**  Create the detector geometry */
     void ConstructGeometry();
 
@@ -171,6 +173,7 @@ class UpstreamTagger: public FairDetector
     Double_t z_space_layers = 0.2;
     Double_t extra_y = 6.5 * cm;  // overlap between modules
 
+    Bool_t fSND; //check if SND is present
 
   private:
 

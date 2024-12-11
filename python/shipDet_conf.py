@@ -865,6 +865,7 @@ def configure(run, ship_geo):
     upstreamTagger.SetSizeX_Strip64(ship_geo.UpstreamTagger.X_Strip64)
     upstreamTagger.SetSizeY_Strip64(ship_geo.UpstreamTagger.Y_Strip64)
     upstreamTagger.SetSizeZ_Strip(ship_geo.UpstreamTagger.Z_Strip)
+    upstreamTagger.CheckSND(ship_geo.SND) #check if SND was built or not
     detectorList.append(upstreamTagger)
 
     timeDet = ROOT.TimeDet("TimeDet", ROOT.kTRUE)

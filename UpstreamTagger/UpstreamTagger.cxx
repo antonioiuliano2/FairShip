@@ -604,76 +604,78 @@ void UpstreamTagger::ConstructGeometry()
   cout << " Z Position (Upstream Tagger1) " << det_zPos << endl;
   //////////////////////////////////////////////////////////////////
 
-  ///start scoring planes section///
-  auto *volScoringPlanes_Mag6 = new TGeoVolumeAssembly("volScoringPlanes_Mag6");
-  top->AddNode(volScoringPlanes_Mag6,0,new TGeoTranslation(0,0,-3432.0000)); //please modify the position to retrieve it from, well, somewhere in the program
-  //sensitive volumes in muon shield
-  const Double_t ScoringPlaneX = 40.;
-  const Double_t ScoringPlaneY = 40.;
-  const Double_t ScoringPlaneZ = 0.1;
+  if (!fSND){
 
-  TGeoBBox *SNDScoringPlane = new TGeoBBox("SNDScoringPlane",ScoringPlaneX/2.,ScoringPlaneY/2.,ScoringPlaneZ/2.);
-  TGeoVolume * volSNDScoringPlane = new TGeoVolume("volSNDScoringPlane",SNDScoringPlane,rpc_air);
+    ///start scoring planes section///
+    auto *volScoringPlanes_Mag6 = new TGeoVolumeAssembly("volScoringPlanes_Mag6");
+    top->AddNode(volScoringPlanes_Mag6,0,new TGeoTranslation(0,0,-3432.0000)); //please modify the position to retrieve it from, well, somewhere in the program
+    //sensitive volumes in muon shield
+    const Double_t ScoringPlaneX = 40.;
+    const Double_t ScoringPlaneY = 40.;
+    const Double_t ScoringPlaneZ = 0.1;
 
-  volSNDScoringPlane->SetLineColor(kBlue);
-  AddSensitiveVolume(volSNDScoringPlane);
+    TGeoBBox *SNDScoringPlane = new TGeoBBox("SNDScoringPlane",ScoringPlaneX/2.,ScoringPlaneY/2.,ScoringPlaneZ/2.);
+    TGeoVolume * volSNDScoringPlane = new TGeoVolume("volSNDScoringPlane",SNDScoringPlane,rpc_air);
 
-  //***CUTTING THE MUON SHIELD HERE****//
-  const Double_t dz_6R = 242. *cm *2; //better to define dZ as the full length, as usual
-  const Double_t dz_6L = dz_6R; 
+    volSNDScoringPlane->SetLineColor(kBlue);
+    AddSensitiveVolume(volSNDScoringPlane);
 
-  //retrieving the muon shield shapes
-  auto Magn6_MiddleMagR = gGeoManager->GetVolume("Magn6_MiddleMagR");
-  TGeoArb8 * arb_6R = (TGeoArb8*) Magn6_MiddleMagR->GetShape();
+    //***CUTTING THE MUON SHIELD HERE****//
+    const Double_t dz_6R = 242. *cm *2; //better to define dZ as the full length, as usual
+    const Double_t dz_6L = dz_6R; 
 
-  auto Magn6_MiddleMagL = gGeoManager->GetVolume("Magn6_MiddleMagL");
-  TGeoArb8 * arb_6L = (TGeoArb8*) Magn6_MiddleMagR->GetShape();
+    //retrieving the muon shield shapes
+    auto Magn6_MiddleMagR = gGeoManager->GetVolume("Magn6_MiddleMagR");
+    TGeoArb8 * arb_6R = (TGeoArb8*) Magn6_MiddleMagR->GetShape();
+
+    auto Magn6_MiddleMagL = gGeoManager->GetVolume("Magn6_MiddleMagL");
+    TGeoArb8 * arb_6L = (TGeoArb8*) Magn6_MiddleMagR->GetShape();
 
 
-  //computing the translations of the holes
-  const Int_t nlayers_scoringplanes_magn6 = 6;
-  const Double_t dZ_sc_magn6 = 95.;
+    //computing the translations of the holes
+    const Int_t nlayers_scoringplanes_magn6 = 6;
+    const Double_t dZ_sc_magn6 = 95.;
 
-  TString BooleanUnionShapes = PrepareBooleanOperation(volScoringPlanes_Mag6, volSNDScoringPlane, nlayers_scoringplanes_magn6,  "SNDScoringPlane" , arb_6R->GetName(), dz_6R, ScoringPlaneZ, dZ_sc_magn6,0);
-  //check how long it was in the end
-  TGeoShapeAssembly * ScoringPlanes_Mag6 = static_cast<TGeoShapeAssembly*> (volScoringPlanes_Mag6->GetShape());
-  ScoringPlanes_Mag6->ComputeBBox(); //for an assembly needs to be computed
-  Double_t dZ_ScoringPlanes_Mag6 = ScoringPlanes_Mag6->GetDZ();
+    TString BooleanUnionShapes = PrepareBooleanOperation(volScoringPlanes_Mag6, volSNDScoringPlane, nlayers_scoringplanes_magn6,  "SNDScoringPlane" , arb_6R->GetName(), dz_6R, ScoringPlaneZ, dZ_sc_magn6,0);
+    //check how long it was in the end
+    TGeoShapeAssembly * ScoringPlanes_Mag6 = static_cast<TGeoShapeAssembly*> (volScoringPlanes_Mag6->GetShape());
+    ScoringPlanes_Mag6->ComputeBBox(); //for an assembly needs to be computed
+    Double_t dZ_ScoringPlanes_Mag6 = ScoringPlanes_Mag6->GetDZ();
 
-  cout<<"Check of boolean operation "<<(TString(arb_6R->GetName())+TString(" - ")+BooleanUnionShapes).Data()<<endl;
+    cout<<"UpstreamTagger:: Check of boolean operation "<<(TString(arb_6R->GetName())+TString(" - ")+BooleanUnionShapes).Data()<<endl;
 
-  TGeoCompositeShape *cs6R = new TGeoCompositeShape("cs6R_sc",(TString(arb_6R->GetName())+TString(" - ")+BooleanUnionShapes).Data());
+    TGeoCompositeShape *cs6R = new TGeoCompositeShape("cs6R_sc",(TString(arb_6R->GetName())+TString(" - ")+BooleanUnionShapes).Data());
 
-  Magn6_MiddleMagR->SetShape(cs6R);
+    Magn6_MiddleMagR->SetShape(cs6R);
 
-  TGeoCompositeShape *cs6L = new TGeoCompositeShape("cs6L_sc",(TString(arb_6L->GetName())+TString(" - ")+BooleanUnionShapes).Data());
-  Magn6_MiddleMagL->SetShape(cs6L);
+    TGeoCompositeShape *cs6L = new TGeoCompositeShape("cs6L_sc",(TString(arb_6L->GetName())+TString(" - ")+BooleanUnionShapes).Data());
+    Magn6_MiddleMagL->SetShape(cs6L);
 
-  //magnet 5 section
-  const Int_t nlayers_scoringplanes_magn5= 4;
-  const Double_t dZ_sc_magn5 = 95.;
-  Double_t dz_5L = 2*305. *cm;
-  Double_t dz_5R = dz_5L;
+    //magnet 5 section
+    const Int_t nlayers_scoringplanes_magn5= 4;
+    const Double_t dZ_sc_magn5 = 95.;
+    Double_t dz_5L = 2*305. *cm;
+    Double_t dz_5R = dz_5L;
   
-  auto *volScoringPlanes_Mag5 = new TGeoVolumeAssembly("volScoringPlanes_Mag5");
-  top->AddNode(volScoringPlanes_Mag5,0,new TGeoTranslation(0,0,-3432.0000 -dz_6L/2.-dz_5R/2.-10.));
+    auto *volScoringPlanes_Mag5 = new TGeoVolumeAssembly("volScoringPlanes_Mag5");
+    top->AddNode(volScoringPlanes_Mag5,0,new TGeoTranslation(0,0,-3432.0000 -dz_6L/2.-dz_5R/2.-10.));
 
-  auto Magn5_MiddleMagR = gGeoManager->GetVolume("Magn5_MiddleMagR");
-  TGeoArb8 * arb_5R = (TGeoArb8*) Magn5_MiddleMagR->GetShape();
+    auto Magn5_MiddleMagR = gGeoManager->GetVolume("Magn5_MiddleMagR");
+    TGeoArb8 * arb_5R = (TGeoArb8*) Magn5_MiddleMagR->GetShape();
 
-  auto Magn5_MiddleMagL = gGeoManager->GetVolume("Magn5_MiddleMagL");
-  TGeoArb8 * arb_5L = (TGeoArb8*) Magn5_MiddleMagR->GetShape();
+    auto Magn5_MiddleMagL = gGeoManager->GetVolume("Magn5_MiddleMagL");
+    TGeoArb8 * arb_5L = (TGeoArb8*) Magn5_MiddleMagR->GetShape();
 
-  //cutting them and inserting sensitive volumes
-  BooleanUnionShapes = PrepareBooleanOperation(volScoringPlanes_Mag5, volSNDScoringPlane, nlayers_scoringplanes_magn5, "SNDScoringPlane" , arb_5R->GetName(), dz_5R, ScoringPlaneZ, dZ_sc_magn5,nlayers_scoringplanes_magn6);
-  cout<<"Check of boolean operation magnet5"<<(TString("arb_5R - ")+BooleanUnionShapes).Data()<<endl;
-  TGeoCompositeShape *cs5R = new TGeoCompositeShape("cs5R",(TString(arb_5R->GetName())+TString(" - ")+BooleanUnionShapes).Data());
+    //cutting them and inserting sensitive volumes
+    BooleanUnionShapes = PrepareBooleanOperation(volScoringPlanes_Mag5, volSNDScoringPlane, nlayers_scoringplanes_magn5, "SNDScoringPlane" , arb_5R->GetName(), dz_5R, ScoringPlaneZ, dZ_sc_magn5,nlayers_scoringplanes_magn6);
+    cout<<"Check of boolean operation magnet5"<<(TString("arb_5R - ")+BooleanUnionShapes).Data()<<endl;
+    TGeoCompositeShape *cs5R = new TGeoCompositeShape("cs5R",(TString(arb_5R->GetName())+TString(" - ")+BooleanUnionShapes).Data());
 
-  TGeoCompositeShape *cs5L = new TGeoCompositeShape("cs5L",(TString(arb_5L->GetName())+TString(" - ")+BooleanUnionShapes).Data());
+    TGeoCompositeShape *cs5L = new TGeoCompositeShape("cs5L",(TString(arb_5L->GetName())+TString(" - ")+BooleanUnionShapes).Data());
 
-  Magn5_MiddleMagR->SetShape(cs5R);
-  Magn5_MiddleMagL->SetShape(cs5L);
-  
+    Magn5_MiddleMagR->SetShape(cs5R);
+    Magn5_MiddleMagL->SetShape(cs5L);
+  } //end of !fSND condition
 
   return;
 }
