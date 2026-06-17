@@ -19,6 +19,12 @@ CHICC_REF = 1.7e-3  # prob to produce primary ccbar pair/pot on Mo
 CHIBB_REF = 1.6e-7  # prob to produce primary bbbar pair/pot on Mo
 TARGET_A = {"W": 184.0, "Mo": 98.0}
 
+Emin = 1.
+print("WARNING: HARDCODE CUTTING AT EMIN!!!! ", Emin)
+# latest production May 2016,76 M pot which produce a charm event equivalent,roughly 150 M charm hadrons
+fname = "/eos/experiment/ship/data/Charm/Cascade-parp16-MSTP82-1-MSEL4-76Mpot_1"
+
+
 ap = argparse.ArgumentParser(description="Decay charm/beauty signals from makeCascade output with Pythia8")
 ap.add_argument(
     "-f",
@@ -160,7 +166,8 @@ for n in range(nEvents):
             nDsprim += 1
     P8.event.reset()
     P8.event.append(int(sTree.id), 1, 0, 0, sTree.px, sTree.py, sTree.pz, sTree.E, sTree.M, 0.0, 9.0)
-    next(P8)
+    #next(P8)
+    P8.next()
     # P8.event.list()
     for n in range(len(P8.event)):
         # ask for stable particles
@@ -169,6 +176,8 @@ for n in range(nEvents):
             idabs = int(abs(P8.event[n].id()))
             if idabs > 11 and idabs < 17:
                 par = P8.event[n]
+                if par.e() < Emin: #energy cut
+                 continue
                 ptGM = ROOT.TMath.Sqrt(sTree.mpx * sTree.mpx + sTree.mpy * sTree.mpy)
                 Ntup.Fill(
                     par.id(),
